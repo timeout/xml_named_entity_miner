@@ -1,0 +1,1 @@
+/usr/bin/clang++   -std=c++14 -g    CMakeFiles/program.dir/main.cpp.o  -o program -rdynamic liblogger_lib.a libxml_lib.a -lpthread -lxml2 libpathname_lib.a 

@@ -1,0 +1,8 @@
+/home/joe/programming/cpp/projects/xml_named_entity_miner/build/CMakeFiles/dir_lib.dir
+/home/joe/programming/cpp/projects/xml_named_entity_miner/build/gtest-1.7.0/CMakeFiles/gtest.dir
+/home/joe/programming/cpp/projects/xml_named_entity_miner/build/gtest-1.7.0/CMakeFiles/gtest_main.dir
+/home/joe/programming/cpp/projects/xml_named_entity_miner/build/CMakeFiles/logger_lib.dir
+/home/joe/programming/cpp/projects/xml_named_entity_miner/build/CMakeFiles/pathname_lib.dir
+/home/joe/programming/cpp/projects/xml_named_entity_miner/build/CMakeFiles/program.dir
+/home/joe/programming/cpp/projects/xml_named_entity_miner/build/tests/CMakeFiles/run_tests.dir
+/home/joe/programming/cpp/projects/xml_named_entity_miner/build/CMakeFiles/xml_lib.dir

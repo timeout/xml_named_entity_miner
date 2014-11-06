@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/joe/programming/cpp/projects/xml_named_entity_miner/lib/bilanz.hpp
+iostream
+-
+cassert
+-
+
+/home/joe/programming/cpp/projects/xml_named_entity_miner/lib/pathname.cpp
+pathname.hpp
+/home/joe/programming/cpp/projects/xml_named_entity_miner/lib/pathname.hpp
+bilanz.hpp
+/home/joe/programming/cpp/projects/xml_named_entity_miner/lib/bilanz.hpp
+iostream
+-
+stdexcept
+-
+
+/home/joe/programming/cpp/projects/xml_named_entity_miner/lib/pathname.hpp
+string
+-
+iostream
+-
+
