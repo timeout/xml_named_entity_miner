@@ -1,2 +1,0 @@
-/usr/bin/ar cr libpathname_lib.a  CMakeFiles/pathname_lib.dir/lib/pathname.cpp.o
-/usr/bin/ranlib libpathname_lib.a

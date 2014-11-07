@@ -2,6 +2,18 @@
 *.o
 *.out
 
+# compiled dynamic libraries
+*.so
+*.dylib
+
+# compiled static libraries
+*.a
+*.lib
+
+# executables
+*.out
+*.app
+
 # data aka xml, txt, etc.
 *.xml
 *.dtd
@@ -9,7 +21,14 @@
 *.xsl
 
 # cmake
+CMakeCache.txt
 CMakeLists.txt.user
+CMakeFiles
+Makefile
+cmake_install.cmake
 
 # youcompleteme
 .ycm*
+
+# log files
+*.log

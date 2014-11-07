@@ -24,5 +24,5 @@ set(test_sources gtest_main.cpp
     dir_test.cpp
     xml_doc_test.cpp
     )
-add_executable(run_tests ${test_sources})
-target_link_libraries(run_tests gtest_main pathname_lib dir_lib xml_lib)
+add_executable(run_tests.out ${test_sources})
+target_link_libraries(run_tests.out gtest_main pathname_lib dir_lib xml_lib)

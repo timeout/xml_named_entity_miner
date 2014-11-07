@@ -33,6 +33,6 @@ include_directories(${LIBXML2_INCLUDE_DIR})
 add_subdirectory(gtest-1.7.0)
 add_subdirectory(tests)
 
-add_executable(program main.cpp)
-target_link_libraries(program logger_lib xml_lib pthread)
+add_executable(program.out main.cpp)
+target_link_libraries(program.out logger_lib xml_lib pthread)
 

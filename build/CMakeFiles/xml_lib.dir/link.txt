@@ -1,2 +1,0 @@
-/usr/bin/ar cr libxml_lib.a  CMakeFiles/xml_lib.dir/lib/xml_doc.cpp.o
-/usr/bin/ranlib libxml_lib.a

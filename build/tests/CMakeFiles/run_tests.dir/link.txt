@@ -1,1 +1,0 @@
-/usr/bin/clang++   -std=c++14 -g    CMakeFiles/run_tests.dir/gtest_main.cpp.o CMakeFiles/run_tests.dir/pathname_test.cpp.o CMakeFiles/run_tests.dir/dir_test.cpp.o CMakeFiles/run_tests.dir/xml_doc_test.cpp.o  -o run_tests -rdynamic ../gtest-1.7.0/libgtest_main.a ../libpathname_lib.a ../libdir_lib.a ../libxml_lib.a ../gtest-1.7.0/libgtest.a -lpthread ../libpathname_lib.a -lxml2 
