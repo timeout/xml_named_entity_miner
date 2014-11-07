@@ -81,15 +81,17 @@ auto Dir::read( ) -> Dir & {
 
 auto Dir::entries( ) const -> const std::vector<Pathname> & { return entries_; }
 
-auto Dir::filter( const std::regex &glob ) const -> std::vector<Pathname> {
+auto filter( const std::vector<Pathname> &ls, const std::regex &glob )
+    -> std::vector<Pathname> {
     std::vector<Pathname> result;
-    std::copy_if( std::begin( entries_ ), std::end( entries_ ),
-                  std::back_inserter( result ), [&]( const Pathname &pathname ) {
+    std::copy_if( std::begin( ls ), std::end( ls ), std::back_inserter( result ),
+                  [&]( const Pathname &pathname ) {
         return std::regex_match( pathname.toString( ), glob );
     } );
     return result;
 }
 
+// implementation
 static auto getWorkingPath( std::string &path ) -> bool {
     typedef std::pair<dev_t, ino_t> file_id; // (device number, inode number)
     bool success = false;

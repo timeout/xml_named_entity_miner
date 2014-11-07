@@ -17,7 +17,6 @@ public:
     auto chdir( const Pathname &pathname ) -> Dir &;
     auto read( ) -> Dir &;
     auto entries( ) const -> const std::vector<Pathname> &;
-    auto filter( const std::regex &glob ) const -> std::vector<Pathname>;
 
 private:
     Dir( );
@@ -31,3 +30,4 @@ private:
     bool read_;
 };
 
+auto filter(const std::vector<Pathname>& ls, const std::regex &glob) -> std::vector<Pathname>;
