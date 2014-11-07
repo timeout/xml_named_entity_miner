@@ -1,0 +1,15 @@
+# compiled source
+*.o
+*.out
+
+# data aka xml, txt, etc.
+*.xml
+*.dtd
+*.xsd
+*.xsl
+
+# cmake
+CMakeLists.txt.user
+
+# youcompleteme
+.ycm*
