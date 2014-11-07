@@ -30,8 +30,16 @@ function invoke_cmake {
     fi
     options+=( "-DCMAKE_BUILD_TYPE=${BUILD_TYPE}" )
     echo "${options[@]}"
-    command=( cmake "${options[@]}" "${SRC_DIR}" )    
-    "${command[@]}"
+    invoke=( cmake "${options[@]}" "${SRC_DIR}" )    
+    "${invoke[@]}"
+}
+
+function prep {
+    echo "$(pwd)"
+    cd "${SRC_DIR}"
+    echo "$(pwd)"
+    execute_prep=( "./prep_tests.sh"  "${BUILD_DIR}" )
+    "${execute_prep[@]}"
 }
 
 if [ "$#" == "0" ]; then
@@ -48,4 +56,4 @@ else
     invoke_cmake
 fi
 
-
+prep

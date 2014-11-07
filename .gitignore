@@ -20,6 +20,10 @@
 *.xsd
 *.xsl
 
+# test files
+**xmltest
+**dummy_directory
+
 # cmake
 CMakeCache.txt
 CMakeLists.txt.user
