@@ -9,19 +9,37 @@
 #include <algorithm>
 #include <iostream>
 
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include <limits.h>
+#include <glog/logging.h>
 
-// save pathname of build directory
-const Pathname buildDir{Dir::getInstance( )->pwd( )};
+static const Pathname buildDir_{Dir::getInstance( )->pwd( )};
 
-TEST( XmlDocTests, DefaultCtor ) {
+class XmlDocTests : public ::testing::Test {
+protected:
+    static void SetUpTestCase() {
+    }
+
+    virtual auto SetUp( ) -> void {
+        std::cerr << __PRETTY_FUNCTION__ << std::endl;
+        Dir::getInstance( )->chdir( buildDir_ );
+    }
+
+    virtual auto TearDown( ) -> void {
+        std::cerr << __PRETTY_FUNCTION__ << std::endl;
+        Dir::getInstance( )->chdir( buildDir_ );
+        Dir::killInstance( );
+    }
+};
+
+TEST_F( XmlDocTests, DefaultCtor ) {
+    LOG(INFO) << "blah blah";
     const XmlDoc xml;
     auto pathname = xml.pathname( );
     EXPECT_FALSE( pathname.isValid( ) );
 }
 
-TEST( XmlDocTests, ValidPathnameConstructor ) {
+TEST_F( XmlDocTests, ValidPathnameConstructor ) {
     Dir::getInstance( )->chdir( Pathname{"tests/xmltest/valid/sa"} );
     std::regex glob{".*\\.xml"};
     auto ls = Dir::getInstance( )->read( ).entries( );
@@ -30,24 +48,20 @@ TEST( XmlDocTests, ValidPathnameConstructor ) {
     for ( auto &p : xmlValidEntries ) {
         EXPECT_NO_THROW( XmlDoc doc{p} );
     }
-
-    Dir::getInstance( )->chdir( buildDir );
-    Dir::killInstance( );
 }
 
-TEST( XmlDocTests, NotWellFormedXml ) {
+TEST_F( XmlDocTests, NotWellFormedXml ) {
+    std::cerr << Dir::getInstance( )->pwd( ).toString( ) << std::endl;
     Dir::getInstance( )->chdir( Pathname{"tests/xmltest/not-wf/sa"} );
     std::regex glob{".*\\.xml"};
     auto ls = Dir::getInstance( )->read( ).entries( );
     std::vector<Pathname> xmlNotWFEntries{filter( ls, glob )};
     std::sort( xmlNotWFEntries.begin( ), xmlNotWFEntries.end( ) );
     for ( auto &p : xmlNotWFEntries ) {
-        std::cout << p << std::endl;
-        if (std::string{"140.xml"} == p.basename().toString()) continue;
-        if (std::string{"141.xml"} == p.basename().toString()) continue;
+        if ( std::string{"140.xml"} == p.basename( ).toString( ) )
+            continue;
+        if ( std::string{"141.xml"} == p.basename( ).toString( ) )
+            continue;
         ASSERT_THROW( XmlDoc doc{p}, XmlException );
     }
-
-    Dir::getInstance( )->chdir( buildDir );
-    Dir::killInstance( );
 }

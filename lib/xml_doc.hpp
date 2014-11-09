@@ -2,7 +2,7 @@
 
 #include "xml_parser_ctxt.hpp"
 #include "pathname.hpp"
-// #include "xml_error_handler.hpp"
+#include "libxml2_error_handlers.hpp"
 
 #include <string>
 #include <iosfwd>
@@ -34,7 +34,7 @@ private:
     XmlDocT xmlDoc_;
     Pathname pathname_;
     XmlParserCtxt parserCtxt_;
-    // XmlErrorHandler handler_;
+    XmlErrorHandler handler_;
 };
 
 auto fileToString( const std::string &path ) -> std::string;

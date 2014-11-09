@@ -1,6 +1,5 @@
 #include "xml_doc.hpp"
 #include "xml_exception.hpp"
-// #include "xml_error_handler.hpp"
 
 #include <string>
 #include <fstream>
@@ -19,7 +18,7 @@ XmlDoc::XmlDoc( ) : xmlDoc_{nullptr}, pathname_{} {}
 
 XmlDoc::XmlDoc( const Pathname &pathname ) : pathname_{pathname} {
     std::string fbuff{fileToString( pathname_.toString( ) )};
-    // handler_.registerHandler( );
+    handler_.registerHandler( );
     std::unique_ptr<xmlDoc, FreeXmlDoc> xml{xmlCtxtReadMemory(
         parserCtxt_.get( ), fbuff.data( ), fbuff.size( ), pathname_.toString( ).c_str( ),
         NULL, XML_PARSE_NONET | XML_PARSE_NOWARNING )};
@@ -29,9 +28,9 @@ XmlDoc::XmlDoc( const Pathname &pathname ) : pathname_{pathname} {
         std::ostringstream out( "XmlException: XML tree could not be created: [ ",
                                 std::ios_base::ate );
         out << pathname_ << " ]\n";
-        //         if ( handler_.hasErrors( ) ) {
-        //             handler_.stream_to( out );
-        //         }
+        if ( handler_.hasErrors( ) ) {
+            handler_.stream_to( out );
+        }
         throw XmlException{out.str( )};
     }
 }

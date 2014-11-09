@@ -19,7 +19,7 @@ add_library(logger_lib
 )
 add_library(xml_lib 
     lib/xml_parser_ctxt.hpp 
-    # lib/xml_parser_ctxt.cpp
+    lib/libxml2_error_handlers.cpp
     lib/xml_doc.hpp
     lib/xml_doc.cpp
 )
