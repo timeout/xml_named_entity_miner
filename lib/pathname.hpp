@@ -7,13 +7,15 @@ class Pathname {
 public:
     Pathname( );
     Pathname( const std::string &path );
-    auto isValid() const -> bool;
+    auto isValid( ) const -> bool;
     auto basename( ) const -> Pathname;
     auto dirname( ) const -> Pathname;
     auto isAbsolute( ) const -> bool;
     auto isRelative( ) const -> bool;
     auto toString( ) const -> const std::string &;
     auto operator+=( const Pathname &path ) -> Pathname &;
+    friend auto operator<<( std::ostream &os, const Pathname &pathname ) -> std::ostream
+        &;
     friend auto operator>>( std::istream &is, const Pathname &pathname ) -> std::istream
         &;
     friend auto operator+( Pathname lhs, const Pathname &rhs ) -> Pathname;
@@ -28,12 +30,12 @@ private:
     std::string path_;
 };
 
-inline std::ostream &operator<<( std::ostream &os, const Pathname &pathname ) {
-    os << pathname.toString( );
+inline auto operator<<( std::ostream &os, const Pathname &pathname ) -> std::ostream & {
+    os << pathname.path_;
     return os;
 }
 
-inline std::istream &operator>>( std::istream &is, const Pathname &pathname ) {
+inline auto operator>>( std::istream &is, const Pathname &pathname ) -> std::istream & {
     is >> pathname.path_;
     return is;
 }

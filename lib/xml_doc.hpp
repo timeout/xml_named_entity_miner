@@ -16,30 +16,30 @@ public:
 };
 
 class XmlDoc {
+
 public:
     XmlDoc( );
-    explicit XmlDoc( const Pathname& pathname );
-    explicit XmlDoc( xmlDocPtr xml );
+    explicit XmlDoc( std::istream &is );
     XmlDoc( const XmlDoc &doc );
-
-    auto operator=( const XmlDoc &xml ) -> XmlDoc &;
-    auto release( ) -> xmlDocPtr { return xmlDoc_.release( ); }
-    auto get( ) const -> xmlDocPtr { return xmlDoc_.get( ); }
-    auto pathname() const -> const Pathname& { return pathname_; }
-    auto swap(XmlDoc & other) -> void;
-    auto toString() const -> std::string;
+    XmlDoc( XmlDoc &&doc );
+    auto operator=( const XmlDoc &rhs ) -> XmlDoc &;
+    auto operator=( XmlDoc &&rhs ) -> XmlDoc &;
+    friend auto operator>>( std::istream &is, XmlDoc &doc ) -> std::istream &;
+    auto errorHandler( ) const -> const IErrorHandler & { return handler_; }
+    auto toString( ) const -> std::string;
+    auto swap( XmlDoc &other ) -> void;
 
 private:
-    typedef std::unique_ptr<xmlDoc, FreeXmlDoc> XmlDocT;
-    XmlDocT xmlDoc_;
-    Pathname pathname_;
-    XmlParserCtxt parserCtxt_;
+    std::unique_ptr<xmlDoc, FreeXmlDoc> xmlDoc_;
     XmlErrorHandler handler_;
 };
 
 auto fileToString( const std::string &path ) -> std::string;
 
-auto operator<<( std::ostream &os, const XmlDoc &doc ) -> std::ostream &;
+inline auto operator<<( std::ostream &os, const XmlDoc &doc ) -> std::ostream & {
+    os << doc.toString( );
+    return os;
+}
 
 namespace std {
     template <>

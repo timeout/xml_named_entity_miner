@@ -25,3 +25,9 @@ void XmlErrorHandler::registerHandler( ) {
     xmlSetStructuredErrorFunc( static_cast<void *>( this ),
                                &LibXml2ErrorHandler::errors );
 }
+
+void SchemaParserErrorHandler::registerHandler( xmlSchemaParserCtxtPtr &schemaParser ) {
+    xmlSchemaSetParserStructuredErrors( schemaParser, &LibXml2ErrorHandler::errors,
+                                        static_cast<void *>( this ) );
+}
+

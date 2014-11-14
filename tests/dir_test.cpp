@@ -1,15 +1,22 @@
-#include "../lib/dir.hpp"
-#include "../lib/pathname.hpp"
+#include "pathname.hpp"
+#include "dir.hpp"
 
 #include <stdexcept>
 #include <algorithm>
 
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include <limits.h>
 
-const Pathname buildDir = Dir::getInstance()->pwd();
+const Pathname buildDir_ = Dir::getInstance()->pwd();
 
-TEST( DirTests, Exists ) {
+class DirTests : public ::testing::Test {
+protected:
+    virtual auto SetUp( ) -> void {
+        Dir::getInstance( )->chdir( buildDir_ );
+    }
+};
+
+TEST_F( DirTests, Exists ) {
     Dir *dir = Dir::getInstance( );
     // relative path
     EXPECT_TRUE( dir->exists( Pathname{"tests"} ) );
@@ -31,7 +38,7 @@ TEST( DirTests, Exists ) {
  *    file_2
  *    file_3
  */
-TEST( DirTests, ChangeDir ) {
+TEST_F( DirTests, ChangeDir ) {
     const Pathname dd{"tests/dummy_directory"};
     EXPECT_TRUE( Dir::getInstance( )->exists( dd ) );
 
@@ -46,12 +53,11 @@ TEST( DirTests, ChangeDir ) {
     EXPECT_THROW( Dir::getInstance( )->chdir( Pathname{"road/to/nowhere"} ),
                   std::runtime_error );
     EXPECT_TRUE( Dir::getInstance( )->exists( startPath ) );
-    Dir::getInstance( )->chdir( startPath );
 
     Dir::killInstance( );
 }
 
-TEST( DirTests, Listings ) {
+TEST_F( DirTests, Listings ) {
     // read current directory and get entries
     auto ls = Dir::getInstance( )
                   ->chdir( Pathname{"."} + Pathname{"tests/dummy_directory"} )
@@ -74,7 +80,6 @@ TEST( DirTests, Listings ) {
                  std::end( ls ) );
     EXPECT_FALSE( std::find( std::begin( ls ), std::end( ls ), Pathname{"/usr/"} ) !=
                   std::end( ls ) );
-    Dir::getInstance()->chdir(buildDir);
     Dir::killInstance( );
 }
 

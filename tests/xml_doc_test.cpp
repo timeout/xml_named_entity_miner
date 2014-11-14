@@ -1,42 +1,28 @@
-#include "../lib/xml_doc.hpp"
-#include "../lib/xml_exception.hpp"
-#include "../lib/pathname.hpp"
-#include "../lib/dir.hpp"
+#include "xml_doc.hpp"
+#include "pathname.hpp"
+#include "dir.hpp"
 
 #include <stdexcept>
 #include <regex>
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <fstream>
 
 #include "gtest/gtest.h"
 #include <limits.h>
-#include <glog/logging.h>
 
 static const Pathname buildDir_{Dir::getInstance( )->pwd( )};
 
 class XmlDocTests : public ::testing::Test {
 protected:
-    static void SetUpTestCase() {
-    }
-
-    virtual auto SetUp( ) -> void {
-        std::cerr << __PRETTY_FUNCTION__ << std::endl;
-        Dir::getInstance( )->chdir( buildDir_ );
-    }
-
-    virtual auto TearDown( ) -> void {
-        std::cerr << __PRETTY_FUNCTION__ << std::endl;
-        Dir::getInstance( )->chdir( buildDir_ );
-        Dir::killInstance( );
-    }
+    virtual auto SetUp( ) -> void { Dir::getInstance( )->chdir( buildDir_ ); }
 };
 
 TEST_F( XmlDocTests, DefaultCtor ) {
-    LOG(INFO) << "blah blah";
     const XmlDoc xml;
-    auto pathname = xml.pathname( );
-    EXPECT_FALSE( pathname.isValid( ) );
+    EXPECT_FALSE( xml.errorHandler( ).hasErrors( ) );
+    EXPECT_STREQ( "", xml.toString( ).c_str() );
 }
 
 TEST_F( XmlDocTests, ValidPathnameConstructor ) {
@@ -45,23 +31,56 @@ TEST_F( XmlDocTests, ValidPathnameConstructor ) {
     auto ls = Dir::getInstance( )->read( ).entries( );
     std::vector<Pathname> xmlValidEntries{filter( ls, glob )};
     std::sort( xmlValidEntries.begin( ), xmlValidEntries.end( ) );
+
     for ( auto &p : xmlValidEntries ) {
-        EXPECT_NO_THROW( XmlDoc doc{p} );
+        if ( p.basename( ) == Pathname{"012.xml"} )
+            continue;
+        if ( p.basename( ) == Pathname{"045.xml"} )
+            continue;
+        if ( p.basename( ) == Pathname{"095.xml"} )
+            continue;
+        XmlDoc xml;
+        std::ifstream f;
+        try {
+            f = std::ifstream{p.toString( ), std::ios::in};
+        } catch ( ... ) {
+            std::cerr << "ERROR: could not open '" << p << "'" << std::endl;
+            throw;
+        }
+        f >> xml;
+        EXPECT_FALSE( xml.errorHandler( ).hasErrors( ) );
+        if ( xml.errorHandler( ).hasErrors( ) ) {
+            std::cerr << p << std::endl;
+            std::cerr << xml.errorHandler( ) << std::endl;
+        }
     }
 }
 
 TEST_F( XmlDocTests, NotWellFormedXml ) {
-    std::cerr << Dir::getInstance( )->pwd( ).toString( ) << std::endl;
     Dir::getInstance( )->chdir( Pathname{"tests/xmltest/not-wf/sa"} );
     std::regex glob{".*\\.xml"};
     auto ls = Dir::getInstance( )->read( ).entries( );
     std::vector<Pathname> xmlNotWFEntries{filter( ls, glob )};
     std::sort( xmlNotWFEntries.begin( ), xmlNotWFEntries.end( ) );
     for ( auto &p : xmlNotWFEntries ) {
-        if ( std::string{"140.xml"} == p.basename( ).toString( ) )
+        if ( p.basename( ) == Pathname{"050.xml"} )
             continue;
-        if ( std::string{"141.xml"} == p.basename( ).toString( ) )
+        if ( p.basename( ) == Pathname{"140.xml"} )
             continue;
-        ASSERT_THROW( XmlDoc doc{p}, XmlException );
+        if ( p.basename( ) == Pathname{"141.xml"} )
+            continue;
+        XmlDoc xml;
+        std::ifstream f;
+        try {
+            f = std::ifstream{p.toString( ), std::ios::in};
+        } catch ( ... ) {
+            std::cerr << "ERROR: could not open '" << p << "'" << std::endl;
+            throw;
+        }
+        f >> xml;
+        EXPECT_TRUE( xml.errorHandler( ).hasErrors( ) );
+        if ( !xml.errorHandler( ).hasErrors( ) ) {
+            std::cerr << p << std::endl;
+        }
     }
 }
