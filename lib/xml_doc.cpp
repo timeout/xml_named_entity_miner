@@ -1,5 +1,4 @@
 #include "xml_doc.hpp"
-#include "xml_exception.hpp"
 #include "xml_parser_ctxt.hpp"
 
 #include <string>
@@ -12,15 +11,16 @@
 
 // #include "bilanz.hpp"
 
+static auto loadXml( std::istream &is, XmlErrorHandler &handler )
+    -> std::unique_ptr<xmlDoc, FreeXmlDoc>;
+
 typedef enum { NON_RECURSIVE = 0, RECURSIVE = 1 } XmlCopy;
 typedef enum { KEEP_BLANKS = 0, INDENT = 1 } XmlFormat;
-
-static auto loadXml( std::istream &is, XmlErrorHandler& handler ) -> std::unique_ptr<xmlDoc, FreeXmlDoc>;
 
 XmlDoc::XmlDoc( ) : xmlDoc_{nullptr} {}
 
 XmlDoc::XmlDoc( std::istream &is ) : xmlDoc_{nullptr} {
-    xmlDoc_ = loadXml(is, handler_);
+    xmlDoc_ = loadXml( is, xmlHandler_ );
 }
 
 // XmlDoc::XmlDoc( xmlDocPtr xml ) : xmlDoc_{xml} {
@@ -31,7 +31,7 @@ XmlDoc::XmlDoc( const XmlDoc &doc )
     : xmlDoc_{xmlCopyDoc( doc.xmlDoc_.get( ), RECURSIVE )} {}
 
 XmlDoc::XmlDoc( XmlDoc &&doc )
-    : xmlDoc_{std::move( doc.xmlDoc_ )}, handler_{std::move( doc.handler_ )} {}
+    : xmlDoc_{std::move( doc.xmlDoc_ )}, xmlHandler_{std::move( doc.xmlHandler_ )} {}
 
 auto XmlDoc::operator=( const XmlDoc &rhs ) -> XmlDoc & {
     XmlDoc tmp{rhs};
@@ -41,7 +41,7 @@ auto XmlDoc::operator=( const XmlDoc &rhs ) -> XmlDoc & {
 
 auto XmlDoc::operator=( XmlDoc &&rhs ) -> XmlDoc & {
     xmlDoc_ = std::move( rhs.xmlDoc_ );
-    handler_ = std::move( rhs.handler_ );
+    xmlHandler_ = std::move( rhs.xmlHandler_ );
     return *this;
 }
 
@@ -59,7 +59,7 @@ auto XmlDoc::toString( ) const -> std::string {
     return std::string{};
 }
 
-static auto loadXml( std::istream &is, XmlErrorHandler& handler )
+static auto loadXml( std::istream &is, XmlErrorHandler &handler )
     -> std::unique_ptr<xmlDoc, FreeXmlDoc> {
     std::istreambuf_iterator<char> eos;
     std::string fbuff{std::istreambuf_iterator<char>{is}, eos};
@@ -71,7 +71,7 @@ static auto loadXml( std::istream &is, XmlErrorHandler& handler )
 }
 
 auto operator>>( std::istream &is, XmlDoc &doc ) -> std::istream & {
-    doc.xmlDoc_ = loadXml(is, doc.handler_);
+    doc.xmlDoc_ = loadXml( is, doc.xmlHandler_ );
     return is;
 }
 

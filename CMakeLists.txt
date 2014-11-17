@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 3.0.2)
 
 project(sample)
-include(CheckIncludeFiles)
+include(CheckIncludeFiles) # macro
 
-set(CMAKE_CXX_FLAGS "-Wall")
-set(CMAKE_CXX_FLAGS "-std=c++14")
+set(CMAKE_CXX_FLAGS "-Wall -pedantic -std=c++11")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 # set(ADDITIONAL_LIBS "")
@@ -26,6 +25,9 @@ add_library(xml_lib
     lib/libxml2_error_handlers.cpp
     lib/xml_doc.hpp
     lib/xml_doc.cpp
+    lib/xml_schema_parser.cpp
+    lib/xml_schema_parser.hpp
+    lib/xml_schema.hpp
 )
 
 target_link_libraries(dir_lib pathname_lib)

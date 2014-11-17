@@ -1,8 +1,6 @@
 #pragma once
 
-#include <iosfwd>
-#include <vector>
-#include <string>
+#include <iostream>
 
 class IErrorHandler {
 public:
@@ -15,7 +13,9 @@ public:
 
 inline IErrorHandler::~IErrorHandler( ) {}
 
-inline std::ostream &operator<<( std::ostream &os, const IErrorHandler &handler ) {
+inline std::ostream &operator<<( std::ostream &os,
+                                 const IErrorHandler &handler ) {
     handler.stream_to( os );
     return os;
 }
+

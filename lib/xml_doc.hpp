@@ -16,6 +16,7 @@ public:
 };
 
 class XmlDoc {
+    friend class XmlSchemaParserCtxt;
 
 public:
     XmlDoc( );
@@ -24,14 +25,15 @@ public:
     XmlDoc( XmlDoc &&doc );
     auto operator=( const XmlDoc &rhs ) -> XmlDoc &;
     auto operator=( XmlDoc &&rhs ) -> XmlDoc &;
+    auto get() const -> xmlDoc * { return xmlDoc_.get(); }
     friend auto operator>>( std::istream &is, XmlDoc &doc ) -> std::istream &;
-    auto errorHandler( ) const -> const IErrorHandler & { return handler_; }
+    auto errorHandler( ) const -> const IErrorHandler & { return xmlHandler_; }
     auto toString( ) const -> std::string;
     auto swap( XmlDoc &other ) -> void;
 
 private:
     std::unique_ptr<xmlDoc, FreeXmlDoc> xmlDoc_;
-    XmlErrorHandler handler_;
+    XmlErrorHandler xmlHandler_;
 };
 
 auto fileToString( const std::string &path ) -> std::string;
@@ -43,6 +45,6 @@ inline auto operator<<( std::ostream &os, const XmlDoc &doc ) -> std::ostream & 
 
 namespace std {
     template <>
-    void swap( XmlDoc &lhs, XmlDoc &rhs );
+    void swap( ::XmlDoc &lhs, XmlDoc &rhs );
 }
 
