@@ -11,10 +11,17 @@ public:
 
 class XmlErrorHandler : public LibXml2ErrorHandler {
 public:
-    void registerHandler( );
+    void registerHandler( ) {
+        xmlSetStructuredErrorFunc( static_cast<void *>( this ),
+                                   &LibXml2ErrorHandler::errors );
+    }
 };
 
-class SchemaParserErrorHandler : public LibXml2ErrorHandler {
+class XmlSchemaParserErrorHandler : public LibXml2ErrorHandler {
 public:
-    void registerHandler( xmlSchemaParserCtxtPtr &schemaParser );
+    void registerHandler( xmlSchemaParserCtxt *spcp ) {
+        xmlSchemaSetParserStructuredErrors( spcp, &LibXml2ErrorHandler::errors,
+                                            static_cast<void *>( this ) );
+    }
 };
+

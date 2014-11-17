@@ -1,9 +1,10 @@
 #include "libxml2_error_handlers.hpp"
 
+
 #include <iostream>
 #include <sstream>
 
-void LibXml2ErrorHandler::errors( void *ctx, xmlErrorPtr p ) {
+auto LibXml2ErrorHandler::errors( void *ctx, xmlErrorPtr p ) -> void {
     if ( p->level != XML_ERR_NONE ) {
         std::ostringstream out;
         if ( p->file ) {
@@ -19,15 +20,5 @@ void LibXml2ErrorHandler::errors( void *ctx, xmlErrorPtr p ) {
             std::cerr << out.str( );
         }
     }
-}
-
-void XmlErrorHandler::registerHandler( ) {
-    xmlSetStructuredErrorFunc( static_cast<void *>( this ),
-                               &LibXml2ErrorHandler::errors );
-}
-
-void SchemaParserErrorHandler::registerHandler( xmlSchemaParserCtxtPtr &schemaParser ) {
-    xmlSchemaSetParserStructuredErrors( schemaParser, &LibXml2ErrorHandler::errors,
-                                        static_cast<void *>( this ) );
 }
 
