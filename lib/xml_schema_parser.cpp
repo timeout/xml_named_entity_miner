@@ -13,15 +13,15 @@
 //     }
 // }
 
-XmlSchemaParserCtxt::XmlSchemaParserCtxt( ) : spc_{nullptr} {}
+XmlSchemaParser::XmlSchemaParser( ) : spc_{nullptr} {}
 
-XmlSchemaParserCtxt::XmlSchemaParserCtxt( const XmlDoc &xml )
-    : spc_{xmlSchemaNewDocParserCtxt( xml.xmlDoc_.get( ) )} {
+XmlSchemaParser::XmlSchemaParser( const XmlDoc &xml )
+    : spc_{xmlSchemaNewDocParserCtxt( xml.get( ) )} {
     spch_.registerHandler( spc_.get( ) );
 }
 
-auto operator>>( const XmlDoc &xml, XmlSchemaParserCtxt &spc ) -> XmlSchemaParserCtxt & {
-    using SchemaParserCtxtT = std::unique_ptr<xmlSchemaParserCtxt, FreeXmlSchemaParserCtxt>;
+auto operator>>( const XmlDoc &xml, XmlSchemaParser &spc ) -> XmlSchemaParser & {
+    using SchemaParserCtxtT = std::unique_ptr<xmlSchemaParserCtxt, FreeXmlSchemaParser>;
     SchemaParserCtxtT tmp{xmlSchemaNewDocParserCtxt( xml.get( ) )};
     spc.spc_ = std::move( tmp );
     spc.spch_.registerHandler( spc.get( ) );
