@@ -8,26 +8,26 @@
 #include <iosfwd>
 #include <memory>
 
-class FreeXmlSchemaParserCtxt {
+class FreeXmlSchemaParser {
 public:
     auto operator( )( xmlSchemaParserCtxt *schemaParserCtxt ) const -> void {
         xmlSchemaFreeParserCtxt( schemaParserCtxt );
     }
 };
 
-class XmlSchemaParserCtxt {
+class XmlSchemaParser {
 public:
-    XmlSchemaParserCtxt( );
-    explicit XmlSchemaParserCtxt( const XmlDoc &xml );
-    XmlSchemaParserCtxt( const XmlSchemaParserCtxt & ) = delete;
-    XmlSchemaParserCtxt &operator=( const XmlSchemaParserCtxt & ) = delete;
+    XmlSchemaParser( );
+    explicit XmlSchemaParser( const XmlDoc &xml );
+    XmlSchemaParser( const XmlSchemaParser & ) = delete;
+    XmlSchemaParser &operator=( const XmlSchemaParser & ) = delete;
     auto get( ) const -> xmlSchemaParserCtxt * { return spc_.get( ); }
-    friend auto operator>>( const XmlDoc &xml, XmlSchemaParserCtxt &xmlSchemaParser )
-        -> XmlSchemaParserCtxt &;
+    friend auto operator>>( const XmlDoc &xml, XmlSchemaParser &xmlSchemaParser )
+        -> XmlSchemaParser &;
     auto errorHandler( ) const -> const IErrorHandler & { return spch_; }
 
 private:
-    using SchemaParserCtxtT = std::unique_ptr<xmlSchemaParserCtxt, FreeXmlSchemaParserCtxt>;
+    using SchemaParserCtxtT = std::unique_ptr<xmlSchemaParserCtxt, FreeXmlSchemaParser>;
     SchemaParserCtxtT spc_;
     XmlSchemaParserErrorHandler spch_;
 };
