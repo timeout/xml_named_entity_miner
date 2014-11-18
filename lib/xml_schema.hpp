@@ -12,7 +12,7 @@ public:
 class XmlSchema {
 public:
     XmlSchema( ) : schema_{nullptr} {}
-    explicit XmlSchema( const XmlSchemaParserCtxt &spc ) {
+    explicit XmlSchema( const XmlSchemaParser &spc ) {
         schema_ = loadSchema( spc, schemaHandler_ );
     }
 
@@ -20,7 +20,7 @@ public:
     auto operator=( const XmlSchema & ) -> XmlSchema & = delete;
 
     auto get( ) const -> xmlSchema * { return schema_.get( ); }
-    friend auto operator>>( XmlSchemaParserCtxt &spc, XmlSchema &schema ) -> XmlSchema & {
+    friend auto operator>>( XmlSchemaParser &spc, XmlSchema &schema ) -> XmlSchema & {
         schema.schema_ = loadSchema( spc, schema.schemaHandler_ );
         return schema;
     }
@@ -28,7 +28,7 @@ public:
 
 private:
     using XmlSchemaT = std::unique_ptr<xmlSchema, FreeXmlSchema>;
-    static auto loadSchema( const XmlSchemaParserCtxt &spc,
+    static auto loadSchema( const XmlSchemaParser &spc,
                             StandardErrorHandler &handler ) -> XmlSchemaT {
         XmlSchemaT tmp{xmlSchemaParse( spc.get( ) )};
         if ( !tmp ) {
