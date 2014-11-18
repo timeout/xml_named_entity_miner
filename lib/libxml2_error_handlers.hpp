@@ -25,3 +25,10 @@ public:
     }
 };
 
+class XmlSchemaValidatorErrorHandler : public LibXml2ErrorHandler {
+public:
+    void registerHandler( xmlSchemaValidCtxt *schemaValidator ) {
+        xmlSchemaSetValidStructuredErrors( schemaValidator, &LibXml2ErrorHandler::errors,
+                                           static_cast<void *>( this ) );
+    }
+};
