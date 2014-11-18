@@ -28,6 +28,7 @@ add_library(xml_lib
     lib/xml_schema_parser.cpp
     lib/xml_schema_parser.hpp
     lib/xml_schema.hpp
+    lib/xml_schema_validator.hpp
 )
 
 target_link_libraries(dir_lib pathname_lib)
