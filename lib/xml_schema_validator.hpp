@@ -43,7 +43,7 @@ private:
                             XmlSchemaValidatorErrorHandler &errorHandler )
         -> XmlSchemaValidatorT {
         XmlSchemaValidatorT tmp{xmlSchemaNewValidCtxt( schema.get( ) )};
-        errorHandler.registerHandler( tmp.get() );
+        errorHandler.registerHandler( tmp.get() ); // moved into class
         return tmp;
     }
 
