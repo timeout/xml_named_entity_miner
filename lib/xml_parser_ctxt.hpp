@@ -19,7 +19,7 @@ public:
     auto get( ) const -> xmlParserCtxtPtr { return xmlParserCtxt_.get( ); }
 
 private:
-    typedef std::unique_ptr<xmlParserCtxt, FreeXmlParserCtxt> XmlParserCtxtT;
+    using XmlParserCtxtT = std::unique_ptr<xmlParserCtxt, FreeXmlParserCtxt>;
     XmlParserCtxtT xmlParserCtxt_;
 };
 
