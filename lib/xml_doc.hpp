@@ -17,6 +17,7 @@ public:
 
 class XmlDoc {
     friend class XmlSchemaParserCtxt;
+    friend class XsltDoc;
 
 public:
     XmlDoc( );
@@ -25,6 +26,7 @@ public:
     XmlDoc( XmlDoc &&doc );
     auto operator=( const XmlDoc &rhs ) -> XmlDoc &;
     auto operator=( XmlDoc &&rhs ) -> XmlDoc &;
+    explicit operator bool() const;
     auto get() const -> xmlDoc * { return xmlDoc_.get(); }
     friend auto operator>>( std::istream &is, XmlDoc &doc ) -> std::istream &;
     auto errorHandler( ) const -> const IErrorHandler & { return xmlHandler_; }

@@ -45,6 +45,8 @@ auto XmlDoc::operator=( XmlDoc &&rhs ) -> XmlDoc & {
     return *this;
 }
 
+XmlDoc::operator bool( ) const { return ( xmlDoc_.get() != nullptr ); }
+
 auto XmlDoc::swap( XmlDoc &other ) -> void { std::swap( xmlDoc_, other.xmlDoc_ ); }
 
 auto XmlDoc::toString( ) const -> std::string {
