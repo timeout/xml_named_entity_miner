@@ -9,13 +9,21 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 # set(ADDITIONAL_LIBS "")
 
 find_package(LibXml2 REQUIRED)
-message(STATUS "LBXML2_INCLUDE_DIR: " ${LIBXML2_INCLUDE_DIR})
+message(STATUS "LIBXML2_INCLUDE_DIR: " ${LIBXML2_INCLUDE_DIR})
 include_directories(${LIBXML2_INCLUDE_DIR})
 # list(APPEND ADDITIONAL_LIBS  ${LIBXML2_INCLUDE_DIR})
 find_path(ICONV_INCLUDE_DIR iconv.h)
 include_directories(${ICONV_INCLUDE_DIR})
 set(CMAKE_REQUIRED_INCLUDES ${ICONV_INCLUDE_DIR} ${LIBXML2_INCLUDE_DIR})
 check_include_files("libxml/tree.h" HAVE_LIBXML_TREE_H)
+set(CMAKE_REQUIRED_INCLUDES "")
+
+find_package(LibXslt REQUIRED)
+message(STATUS "LIBXSLT_INCLUDE_DIR: " ${LIBXSLT_INCLUDE_DIR})
+message(STATUS "LIBXSLT_LIBRARIES: " ${LIBXSLT_LIBRARIES})
+message(STATUS "LIBXSLT_EXSLT_LIBRARIES: " ${LIBXSLT_EXSLT_LIBRARIES})
+include_directories(${LIBXSLT_INCLUDE_DIR})
+check_include_files("transform.h" HAVE_LIBXSLT_TRANSFORM_H)
 set(CMAKE_REQUIRED_INCLUDES "")
 
 add_library(pathname_lib lib/pathname.cpp lib/pathname.hpp)
@@ -29,10 +37,16 @@ add_library(xml_lib
     lib/xml_schema_parser.hpp
     lib/xml_schema.hpp
     lib/xml_schema_validator.hpp
+    lib/xslt_doc.hpp
 )
 
 target_link_libraries(dir_lib pathname_lib)
-target_link_libraries(xml_lib ${LIBXML2_LIBRARIES} pathname_lib)
+target_link_libraries(xml_lib 
+    pathname_lib
+    ${LIBXML2_LIBRARIES} 
+    ${LIBXSLT_LIBRARIES}
+    ${LIBXSLT_EXSLT_LIBRARIES} 
+)
 
 include_directories(lib)
 
