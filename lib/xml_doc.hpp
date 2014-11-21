@@ -18,6 +18,7 @@ public:
 class XmlDoc {
     friend class XmlSchemaParserCtxt;
     friend class XsltDoc;
+    friend class XPathCtxt;
 
 public:
     XmlDoc( );
