@@ -28,10 +28,11 @@ public:
     XPathCtxt( XPathCtxt &&xpathCtxt )
         : xpathCtxt_{std::move( xpathCtxt.xpathCtxt_ )},
           xpathHandler_{std::move( xpathCtxt.xpathHandler_ )} {}
-    auto operator=( const XPathCtxt &xpathCtxt ) -> XPathCtxt & {
-        XPathCtxt tmp( xpathCtxt );
-        xpathCtxt_ = std::move( tmp.xpathCtxt_ );
-        xpathHandler_.registerHandler( xpathCtxt_.get( ) );
+    auto operator=( const XPathCtxt &rhs ) -> XPathCtxt & {
+        if ( this != &rhs ) {
+            xpathCtxt_.reset( xmlXPathNewContext( rhs.xpathCtxt_->doc ) );
+            xpathHandler_ = rhs.xpathHandler_;
+        }
         return *this;
     }
     auto operator=( XPathCtxt &&xpathCtxt ) -> XPathCtxt & {
