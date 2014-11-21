@@ -3,6 +3,7 @@
 #include "standard_error_handler.hpp"
 #include <libxml/xmlerror.h>
 #include <libxml/xmlschemas.h>
+#include <libxml/xpath.h>
 
 class LibXml2ErrorHandler : public StandardErrorHandler {
 public:
@@ -30,5 +31,13 @@ public:
     void registerHandler( xmlSchemaValidCtxt *schemaValidator ) {
         xmlSchemaSetValidStructuredErrors( schemaValidator, &LibXml2ErrorHandler::errors,
                                            static_cast<void *>( this ) );
+    }
+};
+
+class XPathErrorHandler : public LibXml2ErrorHandler {
+public:
+    void registerHandler( xmlXPathContext *xpathctxt ) {
+        xpathctxt->userData = this;
+        xpathctxt->error = &LibXml2ErrorHandler::errors;
     }
 };
