@@ -4,6 +4,7 @@
 #include "libxml2_error_handlers.hpp"
 #include <libxml/xpath.h>
 #include <memory>
+#include <iostream>
 
 class FreeXPathCtxt {
 public:
@@ -40,7 +41,9 @@ public:
         xpathHandler_ = std::move( xpathCtxt.xpathHandler_ );
         return *this;
     }
-    explicit operator bool( ) const { return ( xpathCtxt_ != nullptr ); }
+    explicit operator bool( ) const {
+        return ( xpathCtxt_ != nullptr && xpathCtxt_->doc != nullptr );
+    }
     friend auto operator>>( const XmlDoc &xml, XPathCtxt &xpathCtxt ) -> XPathCtxt & {
         xpathCtxt.xpathCtxt_.reset( xmlXPathNewContext( xml.xmlDoc_.get( ) ) );
         xpathCtxt.xpathHandler_.registerHandler(
