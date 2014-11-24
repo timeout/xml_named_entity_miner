@@ -26,6 +26,7 @@ set(test_sources gtest_main.cpp
     xml_schema_parser_test.cpp
     xml_schema_test.cpp
     xml_schema_validator_test.cpp
+    xpath_ctxt_test.cpp
     )
 add_executable(run_tests.out ${test_sources})
 target_link_libraries(run_tests.out gtest_main 
