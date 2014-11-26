@@ -37,6 +37,8 @@ add_library(xml_lib
     lib/xml_schema_parser.hpp
     lib/xml_schema.hpp
     lib/xml_schema_validator.hpp
+    lib/xpath_ctxt.hpp
+    lib/xpath_query.hpp
     lib/xslt_doc.hpp
 )
 
