@@ -4,6 +4,7 @@
 // #include "xpath_result_set.hpp"
 
 #include <vector>
+#include <iostream>
 
 class FreeXPathQuery {
 public:
@@ -13,6 +14,8 @@ public:
 };
 
 class XPathQuery {
+    friend class XPathResultSet;
+
 public:
     XPathQuery( ) : query_{nullptr} {}
     explicit XPathQuery( const XPathCtxt &ctxt ) : query_{nullptr}, queryCtxt_{ctxt} {}
@@ -53,11 +56,9 @@ public:
                 query_.reset(
                     xmlXPathEvalExpression( expr, queryCtxt_.xpathCtxt_.get( ) ) );
             } else {
-                // query_ = std::move( XPathQueryT{
-                //     xmlXPathEvalExpression( expr, queryCtxt_.xpathCtxt_.get( ) )} );
                 XPathQueryT tmp{
                     xmlXPathEvalExpression( expr, queryCtxt_.xpathCtxt_.get( ) )};
-                query_.swap( tmp );
+                query_ = std::move( tmp );
             }
         }
     }
