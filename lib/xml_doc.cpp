@@ -34,8 +34,10 @@ XmlDoc::XmlDoc( XmlDoc &&doc )
     : xmlDoc_{std::move( doc.xmlDoc_ )}, xmlHandler_{std::move( doc.xmlHandler_ )} {}
 
 auto XmlDoc::operator=( const XmlDoc &rhs ) -> XmlDoc & {
-    XmlDoc tmp{rhs};
-    xmlDoc_ = std::move( tmp.xmlDoc_ );
+    if ( this != &rhs ) {
+        XmlDoc tmp{rhs};
+        xmlDoc_.swap( tmp.xmlDoc_ );
+    }
     return *this;
 }
 
@@ -45,7 +47,7 @@ auto XmlDoc::operator=( XmlDoc &&rhs ) -> XmlDoc & {
     return *this;
 }
 
-XmlDoc::operator bool( ) const { return ( xmlDoc_.get() != nullptr ); }
+XmlDoc::operator bool( ) const { return ( xmlDoc_.get( ) != nullptr ); }
 
 auto XmlDoc::swap( XmlDoc &other ) -> void { std::swap( xmlDoc_, other.xmlDoc_ ); }
 
