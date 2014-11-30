@@ -19,24 +19,24 @@ class XPathCtxt {
 public:
     XPathCtxt( ) : xpathCtxt_{nullptr} {}
     explicit XPathCtxt( const XmlDoc &xml )
-        : xml_{xml}, xpathCtxt_{xmlXPathNewContext( xml_.xmlDoc_.get( ) )} {
+        : xpathCtxt_{xmlXPathNewContext( xml.xmlDoc_.get( ) )}, xml_{xml} {
         xpathHandler_.registerHandler( xpathCtxt_.get( ) );
     }
     XPathCtxt( const XPathCtxt &xpathCtxt ) : xml_{xpathCtxt.xml_} {
         if ( xpathCtxt ) {
-            xpathCtxt_.reset( xmlXPathNewContext( xml_.xmlDoc_.get( ) ) );
+            xpathCtxt_.reset( xmlXPathNewContext( xpathCtxt.xml_.xmlDoc_.get( ) ) );
             xpathHandler_.registerHandler( xpathCtxt_.get( ) );
         }
     }
     XPathCtxt( XPathCtxt &&xpathCtxt )
-        : xml_{std::move( xpathCtxt.xml_ )},
-          xpathCtxt_{std::move( xpathCtxt.xpathCtxt_ )},
+        : xpathCtxt_{std::move( xpathCtxt.xpathCtxt_ )},
+          xml_{std::move( xpathCtxt.xml_ )},
           xpathHandler_{std::move( xpathCtxt.xpathHandler_ )} {}
     auto operator=( const XPathCtxt &rhs ) -> XPathCtxt & {
         if ( this != &rhs ) {
             xml_ = rhs.xml_;
             if ( rhs ) {
-                xpathCtxt_.reset( xmlXPathNewContext( xml_.xmlDoc_.get( ) ) );
+                xpathCtxt_.reset( xmlXPathNewContext( rhs.xml_.xmlDoc_.get( ) ) );
                 xpathHandler_ = rhs.xpathHandler_;
             } else {
                 xpathCtxt_.reset( nullptr );
@@ -63,9 +63,9 @@ public:
     auto errorHandler( ) const -> const IErrorHandler & { return xpathHandler_; }
 
 private:
-    XmlDoc xml_;
     using XPathCtxtT = std::unique_ptr<xmlXPathContext, FreeXPathCtxt>;
     XPathCtxtT xpathCtxt_;
+    XmlDoc xml_;
     XPathErrorHandler xpathHandler_;
 };
 
