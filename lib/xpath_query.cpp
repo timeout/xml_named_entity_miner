@@ -17,17 +17,19 @@ XPathQuery::XPathQuery( const XPathQuery &query ) : queryCtxt_{query.queryCtxt_}
 XPathQuery::XPathQuery( XPathQuery &&query )
     : query_{std::move( query.query_ )}, queryCtxt_{std::move( query.queryCtxt_ )} {}
 auto XPathQuery::operator=( const XPathQuery &rhs ) -> XPathQuery & {
+    std::cerr << "assigning with the assignment operator= XPathQuery" << std::endl;
     if ( this != &rhs ) {
         queryCtxt_ = rhs.queryCtxt_;
         if ( rhs.query_ ) {
-            query_.reset( xmlXPathObjectCopy( rhs.query_.get( ) ) );
+            // query_.reset( xmlXPathObjectCopy( rhs.query_.get( ) ) );
         } else {
-            query_.reset( nullptr );
+            // query_.reset( nullptr );
         }
     }
     return *this;
 }
 auto XPathQuery::operator=( XPathQuery &&rhs ) -> XPathQuery & {
+    std::cerr << "moving with the assignment operator= XPathQuery" << std::endl;
     query_ = std::move( rhs.query_ );
     queryCtxt_ = std::move( rhs.queryCtxt_ );
     return *this;
