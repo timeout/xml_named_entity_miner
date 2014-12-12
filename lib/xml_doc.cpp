@@ -12,7 +12,7 @@
 // #include "bilanz.hpp"
 
 static auto loadXml( std::istream &is, XmlErrorHandler &handler )
-    -> std::unique_ptr<xmlDoc, FreeXmlDoc>;
+    -> std::shared_ptr<xmlDoc>;
 
 typedef enum { NON_RECURSIVE = 0, RECURSIVE = 1 } XmlCopy;
 typedef enum { KEEP_BLANKS = 0, INDENT = 1 } XmlFormat;
@@ -28,15 +28,14 @@ XmlDoc::XmlDoc( std::istream &is ) : xmlDoc_{nullptr} {
 // }
 
 XmlDoc::XmlDoc( const XmlDoc &doc )
-    : xmlDoc_{xmlCopyDoc( doc.xmlDoc_.get( ), RECURSIVE )} {}
+    : xmlDoc_{doc.xmlDoc_} {}
 
 XmlDoc::XmlDoc( XmlDoc &&doc )
     : xmlDoc_{std::move( doc.xmlDoc_ )}, xmlHandler_{std::move( doc.xmlHandler_ )} {}
 
 auto XmlDoc::operator=( const XmlDoc &rhs ) -> XmlDoc & {
     if ( this != &rhs ) {
-        XmlDoc tmp{rhs};
-        xmlDoc_.swap( tmp.xmlDoc_ );
+        xmlDoc_ = rhs.xmlDoc_;
     }
     return *this;
 }
@@ -64,14 +63,15 @@ auto XmlDoc::toString( ) const -> std::string {
 }
 
 static auto loadXml( std::istream &is, XmlErrorHandler &handler )
-    -> std::unique_ptr<xmlDoc, FreeXmlDoc> {
+    -> std::shared_ptr<xmlDoc> {
     std::istreambuf_iterator<char> eos;
     std::string fbuff{std::istreambuf_iterator<char>{is}, eos};
     handler.registerHandler( );
     XmlParserCtxt parser;
-    return std::unique_ptr<xmlDoc, FreeXmlDoc>{
+    return std::shared_ptr<xmlDoc>{
         xmlCtxtReadMemory( parser.get( ), fbuff.data( ), fbuff.size( ), NULL, NULL,
-                           XML_PARSE_NONET | XML_PARSE_NOWARNING )};
+                           XML_PARSE_NONET | XML_PARSE_NOWARNING ),
+        FreeXmlDoc( )};
 }
 
 auto operator>>( std::istream &is, XmlDoc &doc ) -> std::istream & {

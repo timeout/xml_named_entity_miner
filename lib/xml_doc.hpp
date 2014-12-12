@@ -10,7 +10,7 @@
 
 #include <libxml/tree.h>
 
-class FreeXmlDoc {
+struct FreeXmlDoc {
 public:
     auto operator( )( xmlDoc *xml ) const -> void { xmlFreeDoc( xml ); }
 };
@@ -35,7 +35,9 @@ public:
     auto swap( XmlDoc &other ) -> void;
 
 private:
-    std::unique_ptr<xmlDoc, FreeXmlDoc> xmlDoc_;
+    using XmlDocT = std::shared_ptr<xmlDoc>;
+    // std::unique_ptr<xmlDoc, FreeXmlDoc> xmlDoc_;
+    XmlDocT xmlDoc_;
     XmlErrorHandler xmlHandler_;
 };
 
