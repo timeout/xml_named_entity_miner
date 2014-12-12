@@ -31,6 +31,7 @@ add_library(dir_lib lib/dir.cpp lib/dir.hpp lib/singleton.hpp)
 add_library(xml_lib 
     lib/xml_parser_ctxt.hpp 
     lib/libxml2_error_handlers.cpp
+    lib/xml_string.hpp
     lib/xml_doc.hpp
     lib/xml_doc.cpp
     lib/xml_schema_parser.cpp
@@ -38,7 +39,12 @@ add_library(xml_lib
     lib/xml_schema.hpp
     lib/xml_schema_validator.hpp
     lib/xpath_ctxt.hpp
+    lib/xpath_ctxt.cpp
     lib/xpath_query.hpp
+    lib/xpath_query.cpp
+    lib/xpath_result_set.hpp
+    lib/xml_node.hpp
+    lib/xml_node.cpp
     lib/xslt_doc.hpp
 )
 
