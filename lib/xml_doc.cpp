@@ -1,5 +1,6 @@
 #include "xml_doc.hpp"
 #include "xml_parser_ctxt.hpp"
+#include "xml_string.hpp"
 
 #include <string>
 #include <fstream>
@@ -27,8 +28,7 @@ XmlDoc::XmlDoc( std::istream &is ) : xmlDoc_{nullptr} {
 //     pathname_ = ( xml->name ) ? Pathname{std::string{xml->name}} : Pathname{};
 // }
 
-XmlDoc::XmlDoc( const XmlDoc &doc )
-    : xmlDoc_{doc.xmlDoc_} {}
+XmlDoc::XmlDoc( const XmlDoc &doc ) : xmlDoc_{doc.xmlDoc_} {}
 
 XmlDoc::XmlDoc( XmlDoc &&doc )
     : xmlDoc_{std::move( doc.xmlDoc_ )}, xmlHandler_{std::move( doc.xmlHandler_ )} {}
@@ -55,9 +55,8 @@ auto XmlDoc::toString( ) const -> std::string {
         xmlChar *buff;
         int size;
         xmlDocDumpFormatMemory( xmlDoc_.get( ), &buff, &size, INDENT );
-        std::string strbuff{( char * )buff, static_cast<size_t>( size )};
-        xmlFree( buff ); // free buff
-        return strbuff;
+        XmlString str{buff};
+        return str.toString( );
     }
     return std::string{};
 }
