@@ -25,7 +25,7 @@ public:
     explicit operator bool( ) const;
     friend auto operator>>( const XmlDoc &xml, XPathCtxt &xpathCtxt ) -> XPathCtxt &;
     auto errorHandler( ) const -> const IErrorHandler &;
-    auto makeQuery() const -> const XPathQuery;
+    auto makeQuery( ) const -> XPathQuery;
 
 private:
     using XPathCtxtT = std::unique_ptr<xmlXPathContext, FreeXPathCtxt>;

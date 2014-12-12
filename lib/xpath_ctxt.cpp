@@ -42,5 +42,5 @@ XPathCtxt::operator bool( ) const {
     return ( xpathCtxt_ != nullptr && xpathCtxt_->doc != nullptr );
 }
 auto XPathCtxt::errorHandler( ) const -> const IErrorHandler & { return xpathHandler_; }
-auto XPathCtxt::makeQuery( ) const -> const XPathQuery { return XPathQuery{*this}; }
+auto XPathCtxt::makeQuery( ) const -> XPathQuery { return XPathQuery{*this}; }
 
