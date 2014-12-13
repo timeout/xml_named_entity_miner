@@ -28,7 +28,11 @@ public:
         return *this;
     }
     auto toString( ) const -> std::string {
-        return std::string{reinterpret_cast<char *>( ustr_.get( ) )};
+        std::string ret{reinterpret_cast<char *>( ustr_.get( ) )};
+        if ( ret.back( ) == '\n' ) { // libxml2 adds a newline character?
+            ret.pop_back( );
+        }
+        return ret;
     }
 
 private:
