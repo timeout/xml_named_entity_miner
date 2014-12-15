@@ -172,3 +172,15 @@ XmlCreator::XmlCreator( ) {
     std::istringstream menu_is{menu_xml};
     menu_xml_ = XmlDoc{menu_is};
 }
+
+XPathCtxtCreator::XPathCtxtCreator( ) {
+    XmlCreator xmlCreator;
+    books_xpctx_ = XPathCtxt{xmlCreator.booksXml()};
+    menu_xpctx_ = XPathCtxt{xmlCreator.menuXml()};
+}
+
+XPathQueryCreator::XPathQueryCreator( ) {
+    XPathCtxtCreator xpcCreator;
+    books_query_ = XPathQuery{xpcCreator.booksCtxt()};
+    menu_query_ = XPathQuery{xpcCreator.menuCtxt()};
+}
