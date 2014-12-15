@@ -15,10 +15,10 @@ public:
     explicit XmlSchema( const XmlSchemaParser &spc ) {
         schema_ = loadSchema( spc, schemaHandler_ );
     }
-
-    XmlSchema( const XmlSchema &other ) = delete;
+    XmlSchema( const XmlSchema &) = delete;
+    XmlSchema( XmlSchema &&) = delete;
     auto operator=( const XmlSchema & ) -> XmlSchema & = delete;
-
+    auto operator=( XmlSchema && ) -> XmlSchema & = delete;
     auto get( ) const -> xmlSchema * { return schema_.get( ); }
     friend auto operator>>( XmlSchemaParser &spc, XmlSchema &schema ) -> XmlSchema & {
         schema.schema_ = loadSchema( spc, schema.schemaHandler_ );
