@@ -21,6 +21,8 @@ public:
     explicit XmlSchemaParser( const XmlDoc &xml );
     XmlSchemaParser( const XmlSchemaParser & ) = delete;
     XmlSchemaParser &operator=( const XmlSchemaParser & ) = delete;
+    XmlSchemaParser( XmlSchemaParser&&) = delete;
+    XmlSchemaParser &operator=( XmlSchemaParser && ) = delete;
     auto get( ) const -> xmlSchemaParserCtxt * { return spc_.get( ); }
     friend auto operator>>( const XmlDoc &xml, XmlSchemaParser &xmlSchemaParser )
         -> XmlSchemaParser &;
