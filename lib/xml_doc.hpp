@@ -3,6 +3,7 @@
 #include "xml_parser_ctxt.hpp"
 #include "pathname.hpp"
 #include "libxml2_error_handlers.hpp"
+#include "xml_string.hpp"
 
 #include <string>
 #include <iosfwd>
@@ -27,8 +28,8 @@ public:
     XmlDoc( XmlDoc &&doc );
     auto operator=( const XmlDoc &rhs ) -> XmlDoc &;
     auto operator=( XmlDoc &&rhs ) -> XmlDoc &;
-    explicit operator bool() const;
-    auto get() const -> xmlDoc * { return xmlDoc_.get(); }
+    explicit operator bool( ) const;
+    auto get( ) const -> xmlDoc * { return xmlDoc_.get( ); }
     friend auto operator>>( std::istream &is, XmlDoc &doc ) -> std::istream &;
     auto errorHandler( ) const -> const IErrorHandler & { return xmlHandler_; }
     auto toString( ) const -> std::string;
@@ -50,6 +51,6 @@ inline auto operator<<( std::ostream &os, const XmlDoc &doc ) -> std::ostream & 
 
 namespace std {
     template <>
-    void swap( ::XmlDoc &lhs, XmlDoc &rhs );
+    void swap( XmlDoc &lhs, XmlDoc &rhs );
 }
 
