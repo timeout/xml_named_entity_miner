@@ -9,11 +9,11 @@
 
 class XPathResultSetTest : public testing::Test {
 protected:
-    auto xmlBooksDoc( ) const -> const XmlDoc & { return creator.booksXml( ); }
-    auto xmlMenuDoc( ) const -> const XmlDoc & { return creator.menuXml( ); }
+    auto queryBooks( ) const -> const XPathQuery & { return queryCreator_.booksQuery( ); }
+    auto queryMenu( ) const -> const XPathQuery & { return queryCreator_.menuQuery( ); }
 
 private:
-    XmlCreator creator;
+    XPathQueryCreator queryCreator_;
 };
 
 TEST_F( XPathResultSetTest, DefaultCtor ) {
@@ -28,15 +28,12 @@ TEST_F( XPathResultSetTest, Ctor ) {
     XPathResultSet nullResultSet{nullQuery};
     EXPECT_EQ( 0, nullResultSet.size( ) );
 
-    XmlDoc menuDoc{xmlMenuDoc( )};
-    XPathCtxt menuCtxt{menuDoc};
-    XPathQuery menuQuery{menuCtxt};
+    XPathQuery menuQuery{queryMenu( )};
     menuQuery.query( "//calories" );
     XPathResultSet menuResultSet{menuQuery};
     EXPECT_EQ( 5, menuResultSet.size( ) );
 
-    XPathCtxt booksCtxt{xmlBooksDoc( )};
-    XPathQuery booksQuery{booksCtxt};
+    XPathQuery booksQuery{queryBooks( )};
     booksQuery.query( "//bad/query" );
     XPathResultSet booksResultSet{booksQuery};
     EXPECT_EQ( 0, booksResultSet.size( ) );
@@ -52,8 +49,7 @@ TEST_F( XPathResultSetTest, CopyCtor ) {
     XPathResultSet cpNullResultSet{nullResultSet};
     EXPECT_EQ( 0, cpNullResultSet.size( ) );
 
-    XPathCtxt menuCtxt{xmlMenuDoc( )};
-    XPathQuery menuQuery{menuCtxt};
+    XPathQuery menuQuery{queryMenu( )};
     menuQuery.query( "//calories" );
     XPathResultSet menuResultSet{menuQuery};
     ASSERT_EQ( 5, menuResultSet.size( ) );
@@ -61,8 +57,7 @@ TEST_F( XPathResultSetTest, CopyCtor ) {
     XPathResultSet cpMenuResultSet{menuResultSet};
     EXPECT_EQ( 5, cpMenuResultSet.size( ) );
 
-    XPathCtxt booksCtxt{xmlBooksDoc( )};
-    XPathQuery booksQuery{booksCtxt};
+    XPathQuery booksQuery{queryBooks( )};
     booksQuery.query( "//bad/query" );
     XPathResultSet booksResultSet{booksQuery};
     ASSERT_EQ( 0, booksResultSet.size( ) );
@@ -80,8 +75,7 @@ TEST_F( XPathResultSetTest, CopyMoveCtor ) {
     XPathResultSet mvCpNullResultSet{cp_f<XPathResultSet>( nullResultSet )};
     EXPECT_EQ( 0, mvCpNullResultSet.size( ) );
 
-    XPathCtxt menuCtxt{xmlMenuDoc( )};
-    XPathQuery menuQuery{menuCtxt};
+    XPathQuery menuQuery{queryMenu()};
     menuQuery.query( "//calories" );
     XPathResultSet menuResultSet{menuQuery};
     ASSERT_EQ( 5, menuResultSet.size( ) );
@@ -89,8 +83,7 @@ TEST_F( XPathResultSetTest, CopyMoveCtor ) {
     XPathResultSet mvCpMenuResultSet{cp_f<XPathResultSet>( menuResultSet )};
     EXPECT_EQ( 5, mvCpMenuResultSet.size( ) );
 
-    XPathCtxt booksCtxt{xmlBooksDoc( )};
-    XPathQuery booksQuery{booksCtxt};
+    XPathQuery booksQuery{queryBooks()};
     booksQuery.query( "//bad/query" );
     XPathResultSet booksResultSet{booksQuery};
     ASSERT_EQ( 0, booksResultSet.size( ) );
@@ -115,8 +108,7 @@ TEST_F( XPathResultSetTest, CopyAssignment ) {
     ASSERT_EQ( 0, nullResultSet.size( ) );
 
     // assign to null
-    XPathCtxt menuCtxt{xmlMenuDoc( )};
-    XPathQuery menuQuery{menuCtxt};
+    XPathQuery menuQuery{queryMenu()};
     menuQuery.query( "//calories" );
     XPathResultSet menuResultSet{menuQuery};
     ASSERT_EQ( 5, menuResultSet.size( ) );
@@ -128,8 +120,7 @@ TEST_F( XPathResultSetTest, CopyAssignment ) {
     EXPECT_EQ( 5, cpNullResultSet1.size( ) );
     EXPECT_EQ( 5, menuResultSet.size( ) );
 
-    XPathCtxt booksCtxt{xmlBooksDoc( )};
-    XPathQuery booksQuery{booksCtxt};
+    XPathQuery booksQuery{queryBooks()};
     booksQuery.query( "//bad/query" );
     XPathResultSet booksResultSet{booksQuery};
     ASSERT_EQ( 0, booksResultSet.size( ) );
@@ -149,15 +140,13 @@ TEST_F( XPathResultSetTest, CopyAssignment ) {
 
     // assign
     // booksQuery.query( "//title" );
-    XPathCtxt booksCtxt1{xmlBooksDoc( )};
-    XPathQuery booksQuery1{booksCtxt1};
+    XPathQuery booksQuery1{queryBooks()};
     booksQuery1.query( "//title" );
     XPathResultSet booksResultSet1{booksQuery1};
     ASSERT_EQ( 12, booksResultSet1.size( ) );
     ASSERT_EQ( 5, menuResultSet.size( ) );
 
-    XPathCtxt menuCtxt1{xmlMenuDoc( )};
-    XPathQuery menuQuery1{menuCtxt1};
+    XPathQuery menuQuery1{queryMenu()};
     menuQuery1.query( "//calories" );
     XPathResultSet menuResultSet1{menuQuery1};
     ASSERT_EQ( 5, menuResultSet1.size( ) );
@@ -183,8 +172,7 @@ TEST_F( XPathResultSetTest, CopyMoveAssignment ) {
     ASSERT_EQ( 0, nullResultSet.size( ) );
 
     // assign to null
-    XPathCtxt menuCtxt{xmlMenuDoc( )};
-    XPathQuery menuQuery{menuCtxt};
+    XPathQuery menuQuery{queryMenu()};
     menuQuery.query( "//calories" );
     XPathResultSet menuResultSet{menuQuery};
     ASSERT_EQ( 5, menuResultSet.size( ) );
@@ -196,8 +184,7 @@ TEST_F( XPathResultSetTest, CopyMoveAssignment ) {
     EXPECT_EQ( 5, cpNullResultSet1.size( ) );
     EXPECT_EQ( 5, menuResultSet.size( ) );
 
-    XPathCtxt booksCtxt{xmlBooksDoc( )};
-    XPathQuery booksQuery{booksCtxt};
+    XPathQuery booksQuery{queryBooks()};
     booksQuery.query( "//bad/query" );
     XPathResultSet booksResultSet{booksQuery};
     ASSERT_EQ( 0, booksResultSet.size( ) );
@@ -216,15 +203,13 @@ TEST_F( XPathResultSetTest, CopyMoveAssignment ) {
     EXPECT_EQ( 0, nullResultSet.size( ) );
 
     // assign
-    XPathCtxt booksCtxt1{xmlBooksDoc( )};
-    XPathQuery booksQuery1{booksCtxt1};
+    XPathQuery booksQuery1{queryBooks()};
     booksQuery1.query( "//title" );
     XPathResultSet booksResultSet1{booksQuery1};
     ASSERT_EQ( 12, booksResultSet1.size( ) );
     ASSERT_EQ( 5, menuResultSet.size( ) );
 
-    XPathCtxt menuCtxt1{xmlMenuDoc( )};
-    XPathQuery menuQuery1{menuCtxt1};
+    XPathQuery menuQuery1{queryMenu()};
     menuQuery1.query( "//calories" );
     XPathResultSet menuResultSet1{menuQuery1};
     ASSERT_EQ( 5, menuResultSet1.size( ) );
