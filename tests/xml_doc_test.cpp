@@ -13,6 +13,8 @@
 #include "gtest/gtest.h"
 #include <limits.h>
 
+#include "test_helper.hpp"
+
 static const Pathname buildDir_{Dir::getInstance( )->pwd( )};
 const std::string books_xml{
     R"(<?xml version="1.0"?>
@@ -180,15 +182,13 @@ const std::string menu_xml{
 class XmlDocTests : public ::testing::Test {
 protected:
     virtual auto SetUp( ) -> void { Dir::getInstance( )->chdir( buildDir_ ); }
-    auto testable( const XmlDoc &xml ) const -> bool { return xml ? true : false; }
-    auto cp_f( const XmlDoc doc ) -> XmlDoc { return doc; }
 };
 
 TEST_F( XmlDocTests, DefaultCtor ) {
     const XmlDoc xml;
     EXPECT_FALSE( xml.errorHandler( ).hasErrors( ) );
     EXPECT_STREQ( "", xml.toString( ).c_str( ) );
-    ASSERT_EQ( false, testable( xml ) );
+    ASSERT_EQ( false, testBool_f<XmlDoc>( xml ) );
 }
 
 TEST_F( XmlDocTests, ValidPathnameConstructor ) {
@@ -219,7 +219,7 @@ TEST_F( XmlDocTests, ValidPathnameConstructor ) {
             std::cerr << p << std::endl;
             std::cerr << xml.errorHandler( ) << std::endl;
         }
-        ASSERT_EQ( true, testable( xml ) );
+        ASSERT_EQ( true, testBool_f<XmlDoc>( xml ) );
     }
 }
 
@@ -255,123 +255,123 @@ TEST_F( XmlDocTests, NotWellFormedXml ) {
 TEST_F( XmlDocTests, Ctor ) {
     std::istringstream is{books_xml};
     XmlDoc xml{is};
-    ASSERT_EQ( true, testable( xml ) );
+    ASSERT_EQ( true, testBool_f<XmlDoc>( xml ) );
     EXPECT_FALSE( xml.errorHandler( ).hasErrors( ) );
 }
 
 TEST_F( XmlDocTests, CopyCtor ) {
     // copy a null doc
     XmlDoc nullDoc;
-    ASSERT_EQ( false, testable( nullDoc ) );
+    ASSERT_EQ( false, testBool_f<XmlDoc>( nullDoc ) );
 
     XmlDoc cpNullDoc( nullDoc );
-    ASSERT_EQ( false, testable( cpNullDoc ) );
+    ASSERT_EQ( false, testBool_f<XmlDoc>( cpNullDoc ) );
     EXPECT_FALSE( cpNullDoc.errorHandler( ).hasErrors( ) );
 
     // copy xml
     std::istringstream booksIs{books_xml};
     XmlDoc booksDoc{booksIs};
-    ASSERT_EQ( true, testable( booksDoc ) );
+    ASSERT_EQ( true, testBool_f<XmlDoc>( booksDoc ) );
 
     XmlDoc cpBooksDoc{booksDoc};
-    ASSERT_EQ( true, testable( cpBooksDoc ) );
+    ASSERT_EQ( true, testBool_f<XmlDoc>( cpBooksDoc ) );
     EXPECT_FALSE( cpBooksDoc.errorHandler( ).hasErrors( ) );
 }
 
 TEST_F( XmlDocTests, CopyAssignment ) {
     // null doc
     XmlDoc RHSNullDoc;
-    ASSERT_EQ( false, testable( RHSNullDoc ) );
+    ASSERT_EQ( false, testBool_f<XmlDoc>( RHSNullDoc ) );
 
     XmlDoc LHSNullDoc;
-    ASSERT_EQ( false, testable( LHSNullDoc ) );
+    ASSERT_EQ( false, testBool_f<XmlDoc>( LHSNullDoc ) );
 
     // assign null to null
     RHSNullDoc = LHSNullDoc;
-    ASSERT_EQ( false, testable( RHSNullDoc ) );
+    ASSERT_EQ( false, testBool_f<XmlDoc>( RHSNullDoc ) );
     EXPECT_FALSE( RHSNullDoc.errorHandler( ).hasErrors( ) );
 
     // xml
     std::istringstream booksIs{books_xml};
     XmlDoc booksDoc{booksIs};
-    ASSERT_EQ( true, testable( booksDoc ) );
+    ASSERT_EQ( true, testBool_f<XmlDoc>( booksDoc ) );
 
     std::istringstream menuIs{menu_xml};
     XmlDoc menuDoc{menuIs};
-    ASSERT_EQ( true, testable( menuDoc ) );
+    ASSERT_EQ( true, testBool_f<XmlDoc>( menuDoc ) );
 
     booksDoc = menuDoc;
-    ASSERT_EQ( true, testable( booksDoc ) );
+    ASSERT_EQ( true, testBool_f<XmlDoc>( booksDoc ) );
     EXPECT_FALSE( booksDoc.errorHandler( ).hasErrors( ) );
 
     // assign xml to null
     RHSNullDoc = booksDoc;
-    ASSERT_EQ( true, testable( RHSNullDoc ) );
+    ASSERT_EQ( true, testBool_f<XmlDoc>( RHSNullDoc ) );
     EXPECT_FALSE( RHSNullDoc.errorHandler( ).hasErrors( ) );
 
     // assign null to xml
     menuDoc = LHSNullDoc;
-    ASSERT_EQ( false, testable( menuDoc ) );
+    ASSERT_EQ( false, testBool_f<XmlDoc>( menuDoc ) );
     EXPECT_FALSE( menuDoc.errorHandler( ).hasErrors( ) );
 }
 
 TEST_F( XmlDocTests, CopyMoveCtor ) {
     XmlDoc nullDoc;
-    ASSERT_EQ( false, testable( nullDoc ) );
+    ASSERT_EQ( false, testBool_f<XmlDoc>( nullDoc ) );
 
-    XmlDoc cpMvNullDoc{cp_f( nullDoc )};
-    ASSERT_EQ( false, testable( cpMvNullDoc ) );
+    XmlDoc cpMvNullDoc{cp_f<XmlDoc>( nullDoc )};
+    ASSERT_EQ( false, testBool_f<XmlDoc>( cpMvNullDoc ) );
 
     std::istringstream menuIs{menu_xml};
     XmlDoc menuDoc{menuIs};
-    ASSERT_EQ( true, testable( menuDoc ) );
+    ASSERT_EQ( true, testBool_f<XmlDoc>( menuDoc ) );
 
-    XmlDoc cpMvMenuDoc{cp_f( menuDoc )};
-    ASSERT_EQ( true, testable( menuDoc ) );
+    XmlDoc cpMvMenuDoc{cp_f<XmlDoc>( menuDoc )};
+    ASSERT_EQ( true, testBool_f<XmlDoc>( menuDoc ) );
     EXPECT_FALSE( cpMvMenuDoc.errorHandler( ).hasErrors( ) );
 }
 
 TEST_F( XmlDocTests, CopyMoveAssignment ) {
     // null doc
     XmlDoc RHSNullDoc;
-    ASSERT_EQ( false, testable( RHSNullDoc ) );
+    ASSERT_EQ( false, testBool_f<XmlDoc>( RHSNullDoc ) );
 
     XmlDoc LHSNullDoc;
-    ASSERT_EQ( false, testable( LHSNullDoc ) );
+    ASSERT_EQ( false, testBool_f<XmlDoc>( LHSNullDoc ) );
 
     // assign null to null
-    RHSNullDoc = cp_f( LHSNullDoc );
-    ASSERT_EQ( false, testable( RHSNullDoc ) );
+    RHSNullDoc = cp_f<XmlDoc>( LHSNullDoc );
+    ASSERT_EQ( false, testBool_f<XmlDoc>( RHSNullDoc ) );
     EXPECT_FALSE( RHSNullDoc.errorHandler( ).hasErrors( ) );
 
     // xml
     std::istringstream booksIs{books_xml};
     XmlDoc booksDoc{booksIs};
-    ASSERT_EQ( true, testable( booksDoc ) );
+    ASSERT_EQ( true, testBool_f<XmlDoc>( booksDoc ) );
 
     std::istringstream menuIs{menu_xml};
     XmlDoc menuDoc{menuIs};
-    ASSERT_EQ( true, testable( menuDoc ) );
+    ASSERT_EQ( true, testBool_f<XmlDoc>( menuDoc ) );
 
-    booksDoc = cp_f( menuDoc );
-    ASSERT_EQ( true, testable( booksDoc ) );
+    booksDoc = cp_f<XmlDoc>( menuDoc );
+    ASSERT_EQ( true, testBool_f<XmlDoc>( booksDoc ) );
     EXPECT_FALSE( booksDoc.errorHandler( ).hasErrors( ) );
 
     // assign xml to null
-    RHSNullDoc = cp_f( booksDoc );
-    ASSERT_EQ( true, testable( RHSNullDoc ) );
+    RHSNullDoc = cp_f<XmlDoc>( booksDoc );
+    ASSERT_EQ( true, testBool_f<XmlDoc>( RHSNullDoc ) );
     EXPECT_FALSE( RHSNullDoc.errorHandler( ).hasErrors( ) );
 
     // assign null to xml
-    menuDoc = cp_f( LHSNullDoc );
-    ASSERT_EQ( false, testable( menuDoc ) );
+    menuDoc = cp_f<XmlDoc>( LHSNullDoc );
+    ASSERT_EQ( false, testBool_f<XmlDoc>( menuDoc ) );
     EXPECT_FALSE( menuDoc.errorHandler( ).hasErrors( ) );
 }
 
 TEST_F( XmlDocTests, ToString ) {
     std::istringstream menuIs{menu_xml};
     XmlDoc menuDoc{menuIs};
-    ASSERT_EQ( true, testable( menuDoc ) );
+    ASSERT_EQ( true, testBool_f<XmlDoc>( menuDoc ) );
     EXPECT_STREQ( menu_xml.c_str( ), menuDoc.toString( ).c_str( ) );
 
     XmlDoc cpMenuDoc{menuDoc};
