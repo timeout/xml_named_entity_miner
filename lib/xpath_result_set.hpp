@@ -1,7 +1,7 @@
 #pragma once
 
 #include "xpath_query.hpp"
-#include "xml_node.hpp"
+#include "xml_element.hpp"
 #include "libxml/tree.h"
 #include <limits>
 
@@ -14,7 +14,7 @@ public:
     auto operator=( const XPathResultSet &rhs ) -> XPathResultSet &;
     auto operator=( XPathResultSet &&rhs ) -> XPathResultSet &;
     auto size( ) const -> size_t { return sz_; }
-    auto operator[]( size_t idx ) -> XmlNode;
+    auto operator[]( size_t idx ) -> XmlElement;
 
 private:
     XPathQuery query_;

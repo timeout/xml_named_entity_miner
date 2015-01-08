@@ -20,7 +20,6 @@ public:
     friend auto operator>>( const XPathCtxt &xpctxt, XPathQuery &query ) -> XPathQuery &;
     explicit operator bool( ) const;
     auto query( const std::string &xpath ) -> void;
-    // auto process( ) -> XPathResultSet {}
 
 private:
     using XPathQueryT = std::unique_ptr<xmlXPathObject, FreeXPathQuery>;

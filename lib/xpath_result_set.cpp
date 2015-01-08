@@ -51,12 +51,12 @@ auto XPathResultSet::operator=( XPathResultSet &&rhs ) -> XPathResultSet & {
     return *this;
 }
 
-auto XPathResultSet::operator[]( size_t idx ) -> XmlNode {
+auto XPathResultSet::operator[]( size_t idx ) -> XmlElement {
     if ( resultSet_ && ( idx_ <= sz_ ) ) {
         idx_ = idx;
-        return XmlNode{resultSet_->nodeTab[idx_]};
+        return XmlElement{resultSet_->nodeTab[idx_]};
     }
-    return XmlNode{};
+    // return XmlNode{nullptr};
 }
 
 // private:
