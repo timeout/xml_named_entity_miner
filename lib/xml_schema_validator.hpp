@@ -24,7 +24,9 @@ public:
     }
 
     XmlSchemaValidator( const XmlSchemaValidator & ) = delete;
+    XmlSchemaValidator( XmlSchemaValidator && ) = delete;
     XmlSchemaValidator &operator=( const XmlSchemaValidator & ) = delete;
+    XmlSchemaValidator &operator=( XmlSchemaValidator && ) = delete;
 
     friend auto operator>>( const XmlSchema &schema, XmlSchemaValidator &validator )
         -> XmlSchemaValidator & {

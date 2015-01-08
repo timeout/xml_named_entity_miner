@@ -14,6 +14,7 @@ class XmlString {
 public:
     XmlString( ) : ustr_{nullptr} {}
     XmlString( xmlChar *ustr ) : ustr_{ustr} {}
+    XmlString( const std::string &str ) : ustr_{xmlCharStrdup( str.c_str( ) )} {}
     XmlString( const XmlString &str )
         : ustr_{xmlCharStrdup( reinterpret_cast<char *>( str.ustr_.get( ) ) )} {}
     XmlString( XmlString &&str ) : ustr_{std::move( str.ustr_ )} {}
@@ -23,12 +24,17 @@ public:
         }
         return *this;
     }
+    auto get( ) const -> const xmlChar * { return ustr_.get( ); }
     auto operator=( XmlString &&rhs ) -> XmlString & {
         ustr_ = std::move( rhs.ustr_ );
         return *this;
     }
     auto toString( ) const -> std::string {
-        return std::string{reinterpret_cast<char *>( ustr_.get( ) )};
+        std::string ret{reinterpret_cast<char *>( ustr_.get( ) )};
+        if ( ret.back( ) == '\n' ) { // libxml2 adds a newline character?
+            ret.pop_back( );
+        }
+        return ret;
     }
 
 private:

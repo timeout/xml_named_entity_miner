@@ -20,10 +20,16 @@ function unzip_tests {
     unzip assets/xmltest.zip -d "${1}/tests"
 }
 
+function move_xml_schemas {
+    echo "moving schemas..."
+    cp -Rv assets/schemas "${1}/tests"
+}
+
 if [ "$#" -eq "1" ]  || { [ "$#" -eq "0" ] && [ -n "${BUILD_DIR}" ]; } then
     [[ -n "${BUILD_DIR}" ]] && TARGET="${BUILD_DIR}" || TARGET="${1}"
     create_dummy_directory "${TARGET}"
     unzip_tests "${TARGET}"
+    move_xml_schemas "${TARGET}"
 else
     usage "${0}"
 fi

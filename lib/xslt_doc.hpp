@@ -21,7 +21,8 @@ public:
     XsltDoc( ) : stylesheet_{nullptr} {}
     /* /!\ xsltStylesheet takes ownership of xmlDoc /!\ */
     XsltDoc( XmlDoc &xml )
-        : stylesheet_{xsltParseStylesheetDoc( xml.xmlDoc_.release( ) )} {}
+        // : stylesheet_{xsltParseStylesheetDoc( xml.xmlDoc_.release( ) )} {}
+        : stylesheet_{xsltParseStylesheetDoc( xml.get( ) )} {}
     XsltDoc( const XsltDoc &stylesheet ) : stylesheet_{xsltNewStylesheet( )} {
         *stylesheet_ = *stylesheet.stylesheet_;
     }
@@ -38,7 +39,7 @@ public:
     explicit operator bool( ) const { return ( stylesheet_ != nullptr ); }
     /* /!\ xsltStylesheet takes ownership of xmlDoc /!\ */
     friend auto operator>>( XmlDoc &xml, XsltDoc &stylesheet ) -> XsltDoc & {
-        stylesheet.stylesheet_.reset( xsltParseStylesheetDoc( xml.xmlDoc_.release( ) ) );
+        stylesheet.stylesheet_.reset( xsltParseStylesheetDoc( xml.get( ) ) );
         return stylesheet;
     }
     auto transform( const XmlDoc &xml ) const -> XmlDoc {

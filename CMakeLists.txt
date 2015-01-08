@@ -43,9 +43,10 @@ add_library(xml_lib
     lib/xpath_query.hpp
     lib/xpath_query.cpp
     lib/xpath_result_set.hpp
-    lib/xml_node.hpp
-    lib/xml_node.cpp
+    lib/xpath_result_set.cpp
     lib/xslt_doc.hpp
+    lib/xml_element.hpp
+    lib/xml_element.cpp
 )
 
 target_link_libraries(dir_lib pathname_lib)

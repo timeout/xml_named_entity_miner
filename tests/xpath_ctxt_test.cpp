@@ -2,109 +2,179 @@
 #include "xml_doc.hpp"
 #include "pathname.hpp"
 
-#include <fstream>
-
 #include "gtest/gtest.h"
 #include <limits.h>
 
+#include "test_helper.hpp"
+
 class XPathCtxtTest : public testing::Test {
 protected:
-    auto testable( const XPathCtxt &ctxt ) const -> bool { return ctxt ? true : false; }
-    auto xml( const Pathname &path ) -> void {
-        std::ifstream f{path.toString( ), std::ios::in};
-        if ( !f.is_open( ) ) {
-            std::cerr << "couldn't open: " << path.toString( ) << std::endl;
-            ASSERT_FALSE( true );
-        }
-        xml_ = XmlDoc{f};
-        if ( !xml_ ) {
-            std::cerr << "xml empty" << std::endl;
-            ASSERT_FALSE( true );
-        }
-        if ( xml_.errorHandler( ).hasErrors( ) ) {
-            std::cerr << xml_.errorHandler( ) << std::endl;
-            ASSERT_FALSE( true ); // burn baby, burn
-        }
-    }
-    auto xml( ) const -> const XmlDoc & { return xml_; }
-    auto f( XPathCtxt xpc ) -> XPathCtxt { return xpc; }
+    auto xmlBooksDoc( ) const -> const XmlDoc & { return creator.booksXml( ); }
+    auto xmlMenuDoc( ) const -> const XmlDoc & { return creator.menuXml( ); }
 
 private:
-    XmlDoc xml_;
+    XmlCreator creator;
 };
 
 TEST_F( XPathCtxtTest, DefaultCtor ) {
     XPathCtxt xpc;
-    ASSERT_EQ( false, testable( xpc ) );
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( xpc ) );
     EXPECT_FALSE( xpc.errorHandler( ).hasErrors( ) );
 }
 
 TEST_F( XPathCtxtTest, NullCtor ) {
     // empty xml
     const XmlDoc nullXml;
-    XPathCtxt xpc( nullXml );
-    ASSERT_EQ( false, testable( xpc ) );
+    XPathCtxt xpc{nullXml};
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( xpc ) );
     EXPECT_FALSE( xpc.errorHandler( ).hasErrors( ) );
 }
 
 TEST_F( XPathCtxtTest, Ctor ) {
-    XPathCtxt xpc;
-    xml( Pathname{"transformations/Jean Studer invalid.xml"} );
-    xml( ) >> xpc;
-    ASSERT_EQ( true, testable( xpc ) );
+    XPathCtxt xpc{xmlBooksDoc( )};
+    ASSERT_EQ( true, testBool_f<XPathCtxt>( xpc ) );
     EXPECT_FALSE( xpc.errorHandler( ).hasErrors( ) );
 }
 
 TEST_F( XPathCtxtTest, CopyCtor ) {
-    XPathCtxt xpc;
-    xml( Pathname{"transformations/Jean Studer invalid.xml"} );
-    xml( ) >> xpc;
-    XPathCtxt cp{xpc};
-    ASSERT_EQ( true, testable( xpc ) );
-    EXPECT_FALSE( xpc.errorHandler( ).hasErrors( ) );
+    // null XPathCtxt
+    XPathCtxt nullXpc;
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( nullXpc ) );
 
-    const XmlDoc nullXml;
-    XPathCtxt nullXpc( nullXml );
-    XPathCtxt nullXpcCp{nullXpc};
-    ASSERT_EQ( false, testable( nullXpcCp ) );
-    EXPECT_FALSE( nullXpcCp.errorHandler( ).hasErrors( ) );
+    XPathCtxt cpNullXpc{nullXpc};
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( cpNullXpc ) );
+    EXPECT_FALSE( cpNullXpc.errorHandler( ).hasErrors( ) );
+
+    // XPathCtxt with null Xml
+    const XmlDoc nullDoc;
+    nullDoc >> nullXpc;
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( nullXpc ) );
+
+    XPathCtxt cpNullDocXpc{nullXpc};
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( cpNullDocXpc ) );
+    EXPECT_FALSE( cpNullDocXpc.errorHandler( ).hasErrors( ) );
+
+    // XPathCtxt
+    XPathCtxt xpc{xmlBooksDoc( )};
+    ASSERT_EQ( true, testBool_f<XPathCtxt>( xpc ) );
+
+    XPathCtxt cpXpc{xpc};
+    ASSERT_EQ( true, testBool_f<XPathCtxt>( cpXpc ) );
+    EXPECT_FALSE( cpXpc.errorHandler( ).hasErrors( ) );
 }
 
 TEST_F( XPathCtxtTest, CopyAssignment ) {
-    XPathCtxt xpc;
-    xml( Pathname{"tests/xmltest/valid/sa/001.xml"} );
-    xml( ) >> xpc;
+    // assign null to null
+    XPathCtxt nullXpc;
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( nullXpc ) );
 
-    XPathCtxt ass;
-    xml( Pathname{"tests/xmltest/valid/sa/005.xml"} );
-    xml( ) >> ass;
-    ASSERT_EQ( true, testable( ass ) );
-    EXPECT_FALSE( ass.errorHandler( ).hasErrors( ) );
+    XPathCtxt nullXpc1;
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( nullXpc1 ) );
 
-    ass = xpc;
-    ASSERT_EQ( true, testable( ass ) );
-    EXPECT_FALSE( ass.errorHandler( ).hasErrors( ) );
+    nullXpc = nullXpc1;
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( nullXpc ) );
+    EXPECT_FALSE( nullXpc.errorHandler( ).hasErrors( ) );
+
+    // assign xpc to xpc
+    XPathCtxt booksXpc{xmlBooksDoc( )};
+    ASSERT_EQ( true, testBool_f<XPathCtxt>( booksXpc ) );
+
+    XPathCtxt menuXpc{xmlMenuDoc( )};
+    ASSERT_EQ( true, testBool_f<XPathCtxt>( menuXpc ) );
+
+    booksXpc = menuXpc;
+    ASSERT_EQ( true, testBool_f<XPathCtxt>( booksXpc ) );
+    EXPECT_FALSE( booksXpc.errorHandler( ).hasErrors( ) );
+
+    // assign null to xpc
+    booksXpc = nullXpc;
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( booksXpc ) );
+    EXPECT_FALSE( booksXpc.errorHandler( ).hasErrors( ) );
+
+    // assign xpc to null
+    nullXpc1 = menuXpc;
+    ASSERT_EQ( true, testBool_f<XPathCtxt>( nullXpc1 ) );
+    EXPECT_FALSE( nullXpc1.errorHandler( ).hasErrors( ) );
 }
 
 TEST_F( XPathCtxtTest, CopyMoveCtor ) {
-    XPathCtxt c;
-    xml( Pathname{"tests/xmltest/valid/sa/007.xml"} );
-    xml( ) >> c;
-    XPathCtxt mxpc{f( c )};
-    ASSERT_EQ( true, testable( mxpc ) );
-    EXPECT_FALSE( mxpc.errorHandler( ).hasErrors( ) );
+    // null XPathCtxt
+    XPathCtxt nullXpc;
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( nullXpc ) );
+
+    XPathCtxt cpNullXpc{cp_f<XPathCtxt>( nullXpc )};
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( cpNullXpc ) );
+    EXPECT_FALSE( cpNullXpc.errorHandler( ).hasErrors( ) );
+
+    // XPathCtxt with null Xml
+    const XmlDoc nullDoc;
+    nullDoc >> nullXpc;
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( nullXpc ) );
+
+    XPathCtxt cpNullDocXpc{cp_f<XPathCtxt>( nullXpc )};
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( cpNullDocXpc ) );
+    EXPECT_FALSE( cpNullDocXpc.errorHandler( ).hasErrors( ) );
+
+    // XPathCtxt
+    XPathCtxt xpc{xmlBooksDoc( )};
+    ASSERT_EQ( true, testBool_f<XPathCtxt>( xpc ) );
+
+    XPathCtxt cpXpc{cp_f<XPathCtxt>( xpc )};
+    ASSERT_EQ( true, testBool_f<XPathCtxt>( cpXpc ) );
+    EXPECT_FALSE( cpXpc.errorHandler( ).hasErrors( ) );
 }
 
 TEST_F( XPathCtxtTest, CopyMoveAssignment ) {
-    XPathCtxt xpc;
-    xml( Pathname{"tests/xmltest/valid/sa/001.xml"} );
-    xml( ) >> xpc;
+    // assign null to null
+    XPathCtxt nullXpc;
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( nullXpc ) );
 
-    XPathCtxt mass;
-    xml( Pathname{"tests/xmltest/valid/sa/005.xml"} );
-    xml( ) >> mass;
+    XPathCtxt nullXpc1;
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( nullXpc1 ) );
 
-    mass = f( xpc );
-    ASSERT_EQ( true, testable( mass ) );
-    EXPECT_FALSE( mass.errorHandler( ).hasErrors( ) );
+    nullXpc = cp_f<XPathCtxt>( nullXpc1 );
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( nullXpc ) );
+    EXPECT_FALSE( nullXpc.errorHandler( ).hasErrors( ) );
+
+    // assign xpc to xpc
+    XPathCtxt xpc{xmlBooksDoc( )};
+    ASSERT_EQ( true, testBool_f<XPathCtxt>( xpc ) );
+
+    XPathCtxt xpc1{xmlMenuDoc( )};
+    ASSERT_EQ( true, testBool_f<XPathCtxt>( xpc1 ) );
+
+    xpc = cp_f<XPathCtxt>( xpc1 );
+    ASSERT_EQ( true, testBool_f<XPathCtxt>( xpc ) );
+    EXPECT_FALSE( xpc.errorHandler( ).hasErrors( ) );
+
+    // assign null to xpc
+    xpc = cp_f<XPathCtxt>( nullXpc );
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( xpc ) );
+    EXPECT_FALSE( xpc.errorHandler( ).hasErrors( ) );
+
+    // assign xpc to null
+    xpc1 = cp_f<XPathCtxt>( nullXpc1 );
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( nullXpc1 ) );
+    EXPECT_FALSE( nullXpc1.errorHandler( ).hasErrors( ) );
+}
+
+TEST_F( XPathCtxtTest, OperatorIn ) {
+    XPathCtxt nullXpc;
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( nullXpc ) );
+
+    XmlDoc xml;
+    xml >> nullXpc;
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( nullXpc ) );
+
+    xml = xmlBooksDoc( );
+    xml >> nullXpc;
+    ASSERT_EQ( true, testBool_f<XPathCtxt>( nullXpc ) );
+
+    xml = xmlMenuDoc( );
+    xml >> nullXpc;
+    ASSERT_EQ( true, testBool_f<XPathCtxt>( nullXpc ) );
+
+    XmlDoc nullDoc;
+    nullDoc >> nullXpc;
+    ASSERT_EQ( false, testBool_f<XPathCtxt>( nullXpc ) );
 }

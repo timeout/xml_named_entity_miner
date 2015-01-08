@@ -5,9 +5,9 @@
 #include "lib/xml_schema_validator.hpp"
 #include "lib/xpath_ctxt.hpp"
 #include "lib/xpath_query.hpp"
-#include "lib/xpath_result_set.hpp"
-#include "lib/xml_node.hpp"
-// #include "lib/xslt_doc.hpp"
+// #include "lib/xpath_result_set.hpp"
+// #include "lib/xml_node.hpp"
+#include "lib/xslt_doc.hpp"
 #include <iostream>
 #include <thread>
 #include <fstream>
@@ -85,8 +85,8 @@ int main( ) {
     if ( ctxt ) {
         std::cerr << "ctxt tests true" << std::endl;
     }
-    // XPathQuery query;
-    // ctxt >> query;
+    XPathQuery query;
+    ctxt >> query;
     // query.query( "//something" );
     if ( ctxt.errorHandler( ).hasErrors( ) ) {
         std::cerr << "ctxt has errors" << std::endl;
@@ -107,12 +107,12 @@ int main( ) {
 
     XPathQuery q = ctxt.makeQuery( );
     q.query( "//paragraph" );
-    XPathResultSet rs{q};
-    std::cerr << "result set size: " << rs.size( ) << std::endl;
+    // XPathResultSet rs{q};
+    // std::cerr << "result set size: " << rs.size( ) << std::endl;
     // XmlNode node{rs[0]};
-    for (int i = 0; i < rs.size(); ++i) {
-        std::cerr << rs[i] << std::endl;
-    }
+    // for (int i = 0; i < rs.size(); ++i) {
+    //     std::cerr << rs[i] << std::endl;
+    // }
 
     return 0;
 }

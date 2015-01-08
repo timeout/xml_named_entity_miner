@@ -20,6 +20,7 @@ XPathCtxt::XPathCtxt( const XPathCtxt &xpathCtxt ) : xml_{xpathCtxt.xml_} {
 XPathCtxt::XPathCtxt( XPathCtxt &&xpathCtxt )
     : xpathCtxt_{std::move( xpathCtxt.xpathCtxt_ )}, xml_{std::move( xpathCtxt.xml_ )},
       xpathHandler_{std::move( xpathCtxt.xpathHandler_ )} {}
+
 auto XPathCtxt::operator=( const XPathCtxt &rhs ) -> XPathCtxt & {
     if ( this != &rhs ) {
         xml_ = rhs.xml_;

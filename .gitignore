@@ -36,3 +36,7 @@ cmake_install.cmake
 
 # log files
 *.log
+
+# vim 
+# undo files
+*.un~

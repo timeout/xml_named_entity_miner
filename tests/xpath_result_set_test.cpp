@@ -1,312 +1,221 @@
 #include "xpath_result_set.hpp"
 #include "xpath_query.hpp"
 #include "xpath_ctxt.hpp"
-#include "xml_doc.hpp"
-
-#include <fstream>
 
 #include "gtest/gtest.h"
 #include <limits.h>
 
-const std::string books_xml{
-    R"(<?xml version="1.0"?>
-<catalog>
-   <book id="bk101">
-      <author>Gambardella, Matthew</author>
-      <title>XML Developer's Guide</title>
-      <genre>Computer</genre>
-      <price>44.95</price>
-      <publish_date>2000-10-01</publish_date>
-      <description>An in-depth look at creating applications 
-      with XML.</description>
-   </book>
-   <book id="bk102">
-      <author>Ralls, Kim</author>
-      <title>Midnight Rain</title>
-      <genre>Fantasy</genre>
-      <price>5.95</price>
-      <publish_date>2000-12-16</publish_date>
-      <description>A former architect battles corporate zombies, 
-      an evil sorceress, and her own childhood to become queen 
-      of the world.</description>
-   </book>
-   <book id="bk103">
-      <author>Corets, Eva</author>
-      <title>Maeve Ascendant</title>
-      <genre>Fantasy</genre>
-      <price>5.95</price>
-      <publish_date>2000-11-17</publish_date>
-      <description>After the collapse of a nanotechnology 
-      society in England, the young survivors lay the 
-      foundation for a new society.</description>
-   </book>
-   <book id="bk104">
-      <author>Corets, Eva</author>
-      <title>Oberon's Legacy</title>
-      <genre>Fantasy</genre>
-      <price>5.95</price>
-      <publish_date>2001-03-10</publish_date>
-      <description>In post-apocalypse England, the mysterious 
-      agent known only as Oberon helps to create a new life 
-      for the inhabitants of London. Sequel to Maeve 
-      Ascendant.</description>
-   </book>
-   <book id="bk105">
-      <author>Corets, Eva</author>
-      <title>The Sundered Grail</title>
-      <genre>Fantasy</genre>
-      <price>5.95</price>
-      <publish_date>2001-09-10</publish_date>
-      <description>The two daughters of Maeve, half-sisters, 
-      battle one another for control of England. Sequel to 
-      Oberon's Legacy.</description>
-   </book>
-   <book id="bk106">
-      <author>Randall, Cynthia</author>
-      <title>Lover Birds</title>
-      <genre>Romance</genre>
-      <price>4.95</price>
-      <publish_date>2000-09-02</publish_date>
-      <description>When Carla meets Paul at an ornithology 
-      conference, tempers fly as feathers get ruffled.</description>
-   </book>
-   <book id="bk107">
-      <author>Thurman, Paula</author>
-      <title>Splish Splash</title>
-      <genre>Romance</genre>
-      <price>4.95</price>
-      <publish_date>2000-11-02</publish_date>
-      <description>A deep sea diver finds true love twenty 
-      thousand leagues beneath the sea.</description>
-   </book>
-   <book id="bk108">
-      <author>Knorr, Stefan</author>
-      <title>Creepy Crawlies</title>
-      <genre>Horror</genre>
-      <price>4.95</price>
-      <publish_date>2000-12-06</publish_date>
-      <description>An anthology of horror stories about roaches,
-      centipedes, scorpions  and other insects.</description>
-   </book>
-   <book id="bk109">
-      <author>Kress, Peter</author>
-      <title>Paradox Lost</title>
-      <genre>Science Fiction</genre>
-      <price>6.95</price>
-      <publish_date>2000-11-02</publish_date>
-      <description>After an inadvertant trip through a Heisenberg
-      Uncertainty Device, James Salway discovers the problems 
-      of being quantum.</description>
-   </book>
-   <book id="bk110">
-      <author>O'Brien, Tim</author>
-      <title>Microsoft .NET: The Programming Bible</title>
-      <genre>Computer</genre>
-      <price>36.95</price>
-      <publish_date>2000-12-09</publish_date>
-      <description>Microsoft's .NET initiative is explored in 
-      detail in this deep programmer's reference.</description>
-   </book>
-   <book id="bk111">
-      <author>O'Brien, Tim</author>
-      <title>MSXML3: A Comprehensive Guide</title>
-      <genre>Computer</genre>
-      <price>36.95</price>
-      <publish_date>2000-12-01</publish_date>
-      <description>The Microsoft MSXML3 parser is covered in 
-      detail, with attention to XML DOM interfaces, XSLT processing, 
-      SAX and more.</description>
-   </book>
-   <book id="bk112">
-      <author>Galos, Mike</author>
-      <title>Visual Studio 7: A Comprehensive Guide</title>
-      <genre>Computer</genre>
-      <price>49.95</price>
-      <publish_date>2001-04-16</publish_date>
-      <description>Microsoft Visual Studio 7 is explored in depth,
-      looking at how Visual Basic, Visual C++, C#, and ASP+ are 
-      integrated into a comprehensive development 
-      environment.</description>
-   </book>
-</catalog>)"};
-
-const std::string menu_xml{
-    R"(<?xml version="1.0"?>
-<menu revision="2134" owner="Chief">
-    <food id="1">
-        <name>Belgian Waffles</name>
-        <price discount="15" currency="USD">5.95</price>
-        <description>two of our famous Belgian Waffles with plenty of real maple syrup</description>
-        <calories>650</calories>
-    </food>
-    <food id="2">
-        <name>Strawberry Belgian Waffles</name>
-        <photo><![CDATA[data:image/jpg;base64,/9j/4AAQSkZJRgABAQEASA...]]></photo>
-        <price currency="USD">7.95</price>
-        <description>light Belgian waffles covered with strawberries and whipped cream</description>
-        <calories variance="0.05">900</calories>
-    </food>
-    <food id="3">
-        <name>Berry-Berry Belgian Waffles</name>
-        <price currency="EUR">8.95</price>
-        <description>light Belgian waffles covered with an assortment of fresh berries and whipped cream</description>
-        <calories>900</calories>
-    </food>
-    <food id="4">
-        <name>French Toast</name>
-        <price currency="USD">4.50</price>
-        <description>thick slices made from our homemade sourdough bread</description>
-        <calories>600</calories>
-    </food>
-    <food id="5">
-        <name>Homestyle Breakfast</name>
-        <price currency="EUR">6.95</price>
-        <description>two eggs, bacon or sausage, toast, and our ever-popular hash browns</description>
-        <calories>950</calories>
-        <customer>
-            <name>Jimi Hendrix</name>
-            <time>15:30</time>
-            <billing>credit</billing>
-        </customer>
-    </food>
-</menu>)"};
+#include "test_helper.hpp"
 
 class XPathResultSetTest : public testing::Test {
 protected:
-    auto xpq( const std::string &query ) -> void {
-        std::istringstream is{books_xml};
-        XmlDoc xml{is};
-        XPathCtxt ctxt{xml};
-        xpq_ = XPathQuery{ctxt};
-        // xpq_ = ctxt.makeQuery( );
-        xpq_.query( query );
-    }
-    auto xpq( ) const -> const XPathQuery & { return xpq_; }
-    auto f( XPathResultSet rs ) -> XPathResultSet { return rs; }
+    auto queryBooks( ) const -> const XPathQuery & { return queryCreator_.booksQuery( ); }
+    auto queryMenu( ) const -> const XPathQuery & { return queryCreator_.menuQuery( ); }
 
 private:
-    XPathQuery xpq_;
+    XPathQueryCreator queryCreator_;
 };
 
 TEST_F( XPathResultSetTest, DefaultCtor ) {
-    XPathResultSet rs;
-    EXPECT_EQ( 0, rs.size( ) );
+    XPathResultSet resultSet;
+    EXPECT_EQ( 0, resultSet.size( ) );
 }
 
 TEST_F( XPathResultSetTest, Ctor ) {
-    std::istringstream is{books_xml};
-    XmlDoc xml{is};
-    XPathCtxt ctxt{xml};
-    XPathQuery q{ctxt};
-    q.query( "//genre" );
-    XPathResultSet rs{q};
-    EXPECT_EQ( 12, rs.size( ) );
+    XmlDoc nullXml;
+    XPathCtxt nullXpc{nullXml};
+    XPathQuery nullQuery{nullXpc};
+    XPathResultSet nullResultSet{nullQuery};
+    EXPECT_EQ( 0, nullResultSet.size( ) );
 
-    std::istringstream in{menu_xml};
-    XmlDoc doc{in};
-    XPathCtxt ct{doc};
-    XPathQuery n{ct}; // no query
-    XPathResultSet ns{n};
-    EXPECT_EQ( 0, ns.size( ) );
+    XPathQuery menuQuery{queryMenu( )};
+    menuQuery.query( "//calories" );
+    XPathResultSet menuResultSet{menuQuery};
+    EXPECT_EQ( 5, menuResultSet.size( ) );
+
+    XPathQuery booksQuery{queryBooks( )};
+    booksQuery.query( "//bad/query" );
+    XPathResultSet booksResultSet{booksQuery};
+    EXPECT_EQ( 0, booksResultSet.size( ) );
 }
 
 TEST_F( XPathResultSetTest, CopyCtor ) {
-    std::istringstream is{books_xml};
-    XmlDoc xml{is};
-    XPathCtxt ctxt{xml};
-    XPathQuery q{ctxt};
-    q.query( "//genre" );
-    XPathResultSet rs{q};
+    XmlDoc nullXml;
+    XPathCtxt nullXpc{nullXml};
+    XPathQuery nullQuery{nullXpc};
+    XPathResultSet nullResultSet{nullQuery};
+    ASSERT_EQ( 0, nullResultSet.size( ) );
 
-    XPathResultSet cpy{rs};
-    EXPECT_EQ( 12, cpy.size( ) );
+    XPathResultSet cpNullResultSet{nullResultSet};
+    EXPECT_EQ( 0, cpNullResultSet.size( ) );
 
-    std::istringstream in{menu_xml};
-    XmlDoc doc{in};
-    XPathCtxt ct{doc};
-    XPathQuery n{ct}; // no query
-    XPathResultSet ns{n};
+    XPathQuery menuQuery{queryMenu( )};
+    menuQuery.query( "//calories" );
+    XPathResultSet menuResultSet{menuQuery};
+    ASSERT_EQ( 5, menuResultSet.size( ) );
 
-    XPathResultSet ncp{ns};
-    EXPECT_EQ( 0, ncp.size( ) );
+    XPathResultSet cpMenuResultSet{menuResultSet};
+    EXPECT_EQ( 5, cpMenuResultSet.size( ) );
+
+    XPathQuery booksQuery{queryBooks( )};
+    booksQuery.query( "//bad/query" );
+    XPathResultSet booksResultSet{booksQuery};
+    ASSERT_EQ( 0, booksResultSet.size( ) );
+
+    XPathResultSet cpBooksResultSet{booksResultSet};
+    EXPECT_EQ( 0, cpBooksResultSet.size( ) );
 }
 
 TEST_F( XPathResultSetTest, CopyMoveCtor ) {
-    std::istringstream in{menu_xml};
-    XmlDoc doc{in};
-    XPathCtxt ct{doc};
-    XPathQuery n{ct}; // no query
-    XPathResultSet ns{n};
+    XPathCtxt nullXpc{XmlDoc{}};
+    XPathQuery nullQuery{nullXpc};
+    XPathResultSet nullResultSet{nullQuery};
+    ASSERT_EQ( 0, nullResultSet.size( ) );
 
-    XPathResultSet rscp1{f( ns )};
-    EXPECT_EQ( 0, rscp1.size( ) );
+    XPathResultSet mvCpNullResultSet{cp_f<XPathResultSet>( nullResultSet )};
+    EXPECT_EQ( 0, mvCpNullResultSet.size( ) );
 
-    std::istringstream is{books_xml};
-    XmlDoc xml{is};
-    XPathCtxt ctxt{xml};
-    XPathQuery q{ctxt};
-    q.query( "//genre" );
-    XPathResultSet rs{q};
+    XPathQuery menuQuery{queryMenu()};
+    menuQuery.query( "//calories" );
+    XPathResultSet menuResultSet{menuQuery};
+    ASSERT_EQ( 5, menuResultSet.size( ) );
 
-    XPathResultSet rscp2{f( rs )};
-    EXPECT_EQ( 12, rscp2.size( ) );
+    XPathResultSet mvCpMenuResultSet{cp_f<XPathResultSet>( menuResultSet )};
+    EXPECT_EQ( 5, mvCpMenuResultSet.size( ) );
+
+    XPathQuery booksQuery{queryBooks()};
+    booksQuery.query( "//bad/query" );
+    XPathResultSet booksResultSet{booksQuery};
+    ASSERT_EQ( 0, booksResultSet.size( ) );
+
+    XPathResultSet mvCpBooksResultSet{cp_f<XPathResultSet>( booksResultSet )};
+    EXPECT_EQ( 0, mvCpBooksResultSet.size( ) );
 }
 
 TEST_F( XPathResultSetTest, CopyAssignment ) {
-    // null-query
-    std::istringstream in{menu_xml};
-    XmlDoc doc{in};
-    XPathCtxt ct{doc};
-    XPathQuery n{ct}; // no query
-    XPathResultSet ns{n};
+    // assign null to null
+    XmlDoc nullXml;
+    XPathCtxt nullXpc{nullXml};
+    XPathQuery nullQuery{nullXpc};
+    XPathResultSet nullResultSet{nullQuery};
+    ASSERT_EQ( 0, nullResultSet.size( ) );
 
-    std::istringstream is{books_xml};
-    XmlDoc xml{is};
-    XPathCtxt ctxt{xml};
-    XPathQuery q{ctxt};
-    q.query( "//genre" );
-    XPathResultSet rs{q};
+    XPathQuery defaultQuery;
+    XPathResultSet nullResultSet1{defaultQuery};
+    ASSERT_EQ( 0, nullResultSet1.size( ) );
 
-    // assign to null-query
-    ns = rs;
-    EXPECT_EQ( 12, ns.size( ) );
+    nullResultSet = nullResultSet1;
+    ASSERT_EQ( 0, nullResultSet.size( ) );
 
-    // null-query
-    std::istringstream iss{menu_xml};
-    XmlDoc xd{iss};
-    XPathCtxt xct{xd};
-    XPathQuery nq{xct};
-    XPathResultSet nullSet{nq};
+    // assign to null
+    XPathQuery menuQuery{queryMenu()};
+    menuQuery.query( "//calories" );
+    XPathResultSet menuResultSet{menuQuery};
+    ASSERT_EQ( 5, menuResultSet.size( ) );
 
-    // assign null-query to query
-    rs = nq;
-    EXPECT_EQ( 0, rs.size( ) );
+    XPathResultSet cpNullResultSet1{nullResultSet};
+    ASSERT_EQ( 0, cpNullResultSet1.size( ) );
 
-    nq.query( "//food" );
-    XPathResultSet frs{nq};
-    EXPECT_EQ( 5, frs.size( ) );
+    cpNullResultSet1 = menuResultSet;
+    EXPECT_EQ( 5, cpNullResultSet1.size( ) );
+    EXPECT_EQ( 5, menuResultSet.size( ) );
 
-    // 'vanilla' assignment
-    frs = ns;
-    EXPECT_EQ( 12, frs.size( ) );
+    XPathQuery booksQuery{queryBooks()};
+    booksQuery.query( "//bad/query" );
+    XPathResultSet booksResultSet{booksQuery};
+    ASSERT_EQ( 0, booksResultSet.size( ) );
+
+    XPathResultSet cpNullResultSet2{nullResultSet};
+    ASSERT_EQ( 0, cpNullResultSet2.size( ) );
+
+    cpNullResultSet2 = booksResultSet;
+    EXPECT_EQ( 0, cpNullResultSet2.size( ) );
+    EXPECT_EQ( 0, booksResultSet.size( ) );
+
+    // assign null
+    ASSERT_EQ( 5, cpNullResultSet1.size( ) );
+    cpNullResultSet1 = nullResultSet;
+    EXPECT_EQ( 0, cpNullResultSet1.size( ) );
+    EXPECT_EQ( 0, nullResultSet.size( ) );
+
+    // assign
+    // booksQuery.query( "//title" );
+    XPathQuery booksQuery1{queryBooks()};
+    booksQuery1.query( "//title" );
+    XPathResultSet booksResultSet1{booksQuery1};
+    ASSERT_EQ( 12, booksResultSet1.size( ) );
+    ASSERT_EQ( 5, menuResultSet.size( ) );
+
+    XPathQuery menuQuery1{queryMenu()};
+    menuQuery1.query( "//calories" );
+    XPathResultSet menuResultSet1{menuQuery1};
+    ASSERT_EQ( 5, menuResultSet1.size( ) );
+
+    menuResultSet1 = booksResultSet1;
+    EXPECT_EQ( 12, menuResultSet1.size( ) );
+    EXPECT_EQ( 12, booksResultSet1.size( ) );
 }
 
 TEST_F( XPathResultSetTest, CopyMoveAssignment ) {
-    std::istringstream in{menu_xml};
-    XmlDoc doc{in};
-    XPathCtxt ct{doc};
-    XPathQuery n{ct}; // no query
-    XPathResultSet ns{n};
+    // assign null to null
+    XmlDoc nullXml;
+    XPathCtxt nullXpc{nullXml};
+    XPathQuery nullQuery{nullXpc};
+    XPathResultSet nullResultSet{nullQuery};
+    ASSERT_EQ( 0, nullResultSet.size( ) );
 
-    std::istringstream is{books_xml};
-    XmlDoc xml{is};
-    XPathCtxt ctxt{xml};
-    XPathQuery q{ctxt};
-    q.query( "//genre" );
-    XPathResultSet rs{q};
+    XPathQuery defaultQuery;
+    XPathResultSet nullResultSet1{defaultQuery};
+    ASSERT_EQ( 0, nullResultSet1.size( ) );
 
-    // assign to null-query
-    ns = f(rs);
-    EXPECT_EQ( 12, ns.size( ) );
+    nullResultSet = cp_f<XPathResultSet>( nullResultSet1 );
+    ASSERT_EQ( 0, nullResultSet.size( ) );
+
+    // assign to null
+    XPathQuery menuQuery{queryMenu()};
+    menuQuery.query( "//calories" );
+    XPathResultSet menuResultSet{menuQuery};
+    ASSERT_EQ( 5, menuResultSet.size( ) );
+
+    XPathResultSet cpNullResultSet1{nullResultSet};
+    ASSERT_EQ( 0, cpNullResultSet1.size( ) );
+
+    cpNullResultSet1 = cp_f<XPathResultSet>( menuResultSet );
+    EXPECT_EQ( 5, cpNullResultSet1.size( ) );
+    EXPECT_EQ( 5, menuResultSet.size( ) );
+
+    XPathQuery booksQuery{queryBooks()};
+    booksQuery.query( "//bad/query" );
+    XPathResultSet booksResultSet{booksQuery};
+    ASSERT_EQ( 0, booksResultSet.size( ) );
+
+    XPathResultSet cpNullResultSet2{nullResultSet};
+    ASSERT_EQ( 0, cpNullResultSet2.size( ) );
+
+    cpNullResultSet2 = cp_f<XPathResultSet>( booksResultSet );
+    EXPECT_EQ( 0, cpNullResultSet2.size( ) );
+    EXPECT_EQ( 0, booksResultSet.size( ) );
+
+    // assign null
+    ASSERT_EQ( 5, cpNullResultSet1.size( ) );
+    cpNullResultSet1 = cp_f<XPathResultSet>( nullResultSet );
+    EXPECT_EQ( 0, cpNullResultSet1.size( ) );
+    EXPECT_EQ( 0, nullResultSet.size( ) );
+
+    // assign
+    XPathQuery booksQuery1{queryBooks()};
+    booksQuery1.query( "//title" );
+    XPathResultSet booksResultSet1{booksQuery1};
+    ASSERT_EQ( 12, booksResultSet1.size( ) );
+    ASSERT_EQ( 5, menuResultSet.size( ) );
+
+    XPathQuery menuQuery1{queryMenu()};
+    menuQuery1.query( "//calories" );
+    XPathResultSet menuResultSet1{menuQuery1};
+    ASSERT_EQ( 5, menuResultSet1.size( ) );
+
+    menuResultSet1 = cp_f<XPathResultSet>( booksResultSet1 );
+    EXPECT_EQ( 12, menuResultSet1.size( ) );
+    EXPECT_EQ( 12, booksResultSet1.size( ) );
 }
 
