@@ -4,6 +4,7 @@
 #include "pathname.hpp"
 #include "libxml2_error_handlers.hpp"
 #include "xml_string.hpp"
+#include "xml_element.hpp"
 
 #include <string>
 #include <iosfwd>
@@ -31,13 +32,14 @@ public:
     explicit operator bool( ) const;
     auto get( ) const -> xmlDoc * { return xmlDoc_.get( ); }
     friend auto operator>>( std::istream &is, XmlDoc &doc ) -> std::istream &;
+    auto setRootElement( const std::string &name ) -> XmlElement;
+    auto getRootElement( ) const -> XmlElement;
     auto errorHandler( ) const -> const IErrorHandler & { return xmlHandler_; }
     auto toString( ) const -> std::string;
     auto swap( XmlDoc &other ) -> void;
 
 private:
     using XmlDocT = std::shared_ptr<xmlDoc>;
-    // std::unique_ptr<xmlDoc, FreeXmlDoc> xmlDoc_;
     XmlDocT xmlDoc_;
     XmlErrorHandler xmlHandler_;
 };
