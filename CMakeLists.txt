@@ -5,6 +5,8 @@ include(CheckIncludeFiles) # macro
 
 set(CMAKE_CXX_FLAGS "-Wall -pedantic -std=c++11")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # set(ADDITIONAL_LIBS "")
 
@@ -25,6 +27,11 @@ message(STATUS "LIBXSLT_EXSLT_LIBRARIES: " ${LIBXSLT_EXSLT_LIBRARIES})
 include_directories(${LIBXSLT_INCLUDE_DIR})
 check_include_files("transform.h" HAVE_LIBXSLT_TRANSFORM_H)
 set(CMAKE_REQUIRED_INCLUDES "")
+
+find_package(OpenGL REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+qt5_wrap_cpp(QT_SRC gui/mainwindow.hpp gui/xml_tree.hpp)
+include_directories(${QT_INCLUDES} ${OPENGL_INCLUDE_DIR})
 
 add_library(pathname_lib lib/pathname.cpp lib/pathname.hpp)
 add_library(dir_lib lib/dir.cpp lib/dir.hpp lib/singleton.hpp)
@@ -48,6 +55,11 @@ add_library(xml_lib
     lib/xml_element.hpp
     lib/xml_element.cpp
 )
+add_library(gui_widgets 
+    ${QT_SRC}
+    gui/xml_tree.cpp
+)
+qt5_use_modules(gui_widgets Widgets)
 
 target_link_libraries(dir_lib pathname_lib)
 target_link_libraries(xml_lib 
@@ -58,6 +70,7 @@ target_link_libraries(xml_lib
 )
 
 include_directories(lib)
+include_directories(gui)
 
 add_subdirectory(gtest-1.7.0)
 add_subdirectory(tests)
@@ -66,4 +79,5 @@ add_executable(program.out main.cpp)
 target_link_libraries(program.out 
     xml_lib
 )
+qt5_use_modules(program.out Widgets)
 
