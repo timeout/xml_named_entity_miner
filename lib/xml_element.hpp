@@ -1,7 +1,10 @@
 #pragma once
 #include <libxml/tree.h>
 #include <string>
+#include <vector>
 #include <map>
+
+class QTreeWidgetItem;
 
 class XmlElement {
 public:
@@ -30,7 +33,12 @@ public:
     // auto markupEntity(const std::string &entity) -> void;
     auto toString( ) const -> std::string;
 
+    // dev
     auto search( const std::string &needle, const std::string& entityType ) const -> void;
+    auto xpaths() const -> const std::vector<std::string>;
+    auto children() const -> const std::vector<XmlElement>;
+
+    auto get() const -> const xmlNode *{ return node_; }
 
 private:
     xmlNode *node_;

@@ -5,6 +5,9 @@
 #include <cstdlib>
 #include <functional>
 #include <vector>
+#include <stack>
+#include <utility>
+#include <numeric>
 
 static auto replaceAndDestroy( xmlNode *old, xmlNode *nn ) -> void;
 template <typename T>
@@ -191,6 +194,51 @@ auto XmlElement::search( const std::string &needle,
                                    splstr.second.c_str( ) ) ) );
         }
     }
+}
+
+auto XmlElement::xpaths( ) const -> const std::vector<std::string> {
+    if ( nullptr == node_ ) {
+        return std::vector<std::string>{};
+    }
+    std::vector<std::string> base;
+    std::vector<std::string> fullPath;
+    const xmlNode *tmp = node_;
+    while ( true ) {
+        if ( tmp->type == XML_ELEMENT_NODE ) {
+            std::string basePath =
+                std::accumulate( base.begin( ), base.end( ), std::string{} );
+            fullPath.push_back( basePath + "/" +
+                                reinterpret_cast<const char *>( tmp->name ) );
+        }
+
+        if ( tmp->children ) {
+            base.push_back( std::string{"/"} +
+                            reinterpret_cast<const char *>( tmp->name ) );
+            tmp = tmp->children;
+        } else {
+            while ( !tmp->next ) {
+                if ( tmp == node_ ) {
+                    return fullPath;
+                }
+                base.pop_back( );
+                tmp = tmp->parent;
+            }
+            tmp = tmp->next;
+        }
+    }
+}
+
+auto XmlElement::children( ) const -> const std::vector<XmlElement> {
+    if ( node_->children == nullptr ) {
+        return std::vector<XmlElement>{};
+    }
+    std::vector<XmlElement> ret;
+    for ( xmlNode *tmp = node_->children; tmp != nullptr; tmp = tmp->next ) {
+        if ( tmp->type == XML_ELEMENT_NODE ) {
+            ret.push_back( XmlElement{tmp} );
+        }
+    }
+    return ret;
 }
 
 static auto replaceAndDestroy( xmlNode *old, xmlNode *nn ) -> void {
