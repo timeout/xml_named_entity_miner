@@ -1,6 +1,7 @@
 #include "xml_doc.hpp"
 #include "pathname.hpp"
 #include "dir.hpp"
+#include "xml_element.hpp"
 
 #include <stdexcept>
 #include <regex>
@@ -380,4 +381,14 @@ TEST_F( XmlDocTests, ToString ) {
     std::istringstream booksIs{books_xml};
     XmlDoc booksDoc{booksIs};
     EXPECT_STRNE( booksDoc.toString( ).c_str( ), menuDoc.toString( ).c_str( ) );
+}
+
+TEST_F( XmlDocTests, ElementSearch ) {
+    std::istringstream menuIs{menu_xml};
+    XmlDoc menuDoc{menuIs};
+    ASSERT_EQ( true, testBool_f<XmlDoc>( menuDoc ) );
+    XmlElement root{menuDoc.getRootElement( )};
+
+    auto children = root.children( );
+    std::cerr << "size: " << children.size() << std::endl;
 }
