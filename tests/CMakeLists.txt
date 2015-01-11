@@ -24,7 +24,7 @@ set(test_sources gtest_main.cpp
     test_helper.cpp
     pathname_test.cpp
     dir_test.cpp
-    # xml_doc_test.cpp
+    xml_doc_test.cpp
     # xml_schema_parser_test.cpp
     # xml_schema_test.cpp
     # xml_schema_validator_test.cpp
