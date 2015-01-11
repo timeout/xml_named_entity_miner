@@ -68,6 +68,9 @@ target_link_libraries(xml_lib
     ${LIBXSLT_LIBRARIES}
     ${LIBXSLT_EXSLT_LIBRARIES} 
 )
+target_link_libraries(gui_widgets
+    xml_lib
+)
 
 include_directories(lib)
 include_directories(gui)
@@ -78,6 +81,7 @@ add_subdirectory(tests)
 add_executable(program.out main.cpp)
 target_link_libraries(program.out 
     xml_lib
+    gui_widgets
 )
 qt5_use_modules(program.out Widgets)
 
