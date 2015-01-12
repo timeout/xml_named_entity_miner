@@ -8,6 +8,7 @@
 #include <stack>
 #include <utility>
 #include <numeric>
+#include <sstream>
 
 static auto replaceAndDestroy( xmlNode *old, xmlNode *nn ) -> void;
 template <typename T>
@@ -89,17 +90,23 @@ auto XmlElement::child( const std::string &name,
 }
 auto XmlElement::hasSibling( ) const -> bool { return ( node_ && node_->next ); }
 auto XmlElement::sibling( const std::string &name ) -> XmlElement {
+    if ( !node_ ) {
+        return {nullptr};
+    }
     xmlNode *nn{
         xmlNewNode( nullptr, reinterpret_cast<const unsigned char *>( name.c_str( ) ) )};
     xmlNode *sibling = xmlAddNextSibling( node_, nn );
     if ( !sibling && nn ) {
         xmlFreeNode( nn );
     }
-    return XmlElement{sibling};
+    return sibling;
 }
 auto XmlElement::sibling( const std::string &name,
                           const std::map<std::string, std::string> &attrs )
     -> XmlElement {
+    if ( !node_ ) {
+        return {nullptr};
+    }
     XmlElement sibling = this->sibling( name );
     sibling.attributes( attrs );
     return sibling;
@@ -127,30 +134,38 @@ auto XmlElement::hasContent( ) const -> bool {
     }
 }
 auto XmlElement::content( ) const -> std::string {
-    std::string ret;
-    xmlTreeMap<std::string>( node_, catContent, &ret );
-    return ret;
+    if ( node_ ) {
+        std::string ret;
+        xmlTreeMap<std::string>( node_, catContent, &ret );
+        return ret;
+    }
+    return {};
 }
 auto XmlElement::content( const std::string &content ) -> void {
-    xmlNodeAddContent( node_,
-                       reinterpret_cast<const unsigned char *>( content.c_str( ) ) );
+    if ( node_ ) {
+        xmlNodeAddContent( node_,
+                           reinterpret_cast<const unsigned char *>( content.c_str( ) ) );
+    }
 }
 auto XmlElement::toString( ) const -> std::string {
-    xmlBufferPtr buff = nullptr;
-    if ( ( buff = xmlBufferCreate( ) ) == nullptr ) {
-        // TODO:
-        std::cerr << "Could not allocate xml buffer" << std::endl;
-        return std::string{};
+    if ( node_ ) {
+        xmlBufferPtr buff = nullptr;
+        if ( ( buff = xmlBufferCreate( ) ) == nullptr ) {
+            // TODO:
+            std::cerr << "Could not allocate xml buffer" << std::endl;
+            return std::string{};
+        }
+        int flag = 0;
+        if ( ( flag = xmlNodeDump( buff, nullptr, node_, 0, 1 ) ) < 0 ) {
+            // TODO:
+            std::cerr << "Node could not be dumped" << std::endl;
+            return std::string{};
+        }
+        std::string ret{reinterpret_cast<const char *>( buff->content )};
+        xmlBufferFree( buff );
+        return ret;
     }
-    int flag = 0;
-    if ( ( flag = xmlNodeDump( buff, nullptr, node_, 0, 1 ) ) < 0 ) {
-        // TODO:
-        std::cerr << "Node could not be dumped" << std::endl;
-        return std::string{};
-    }
-    std::string ret{reinterpret_cast<const char *>( buff->content )};
-    xmlBufferFree( buff );
-    return ret;
+    return {};
 }
 
 // TODO: xmlNodes instantiation failure?
@@ -198,7 +213,7 @@ auto XmlElement::search( const std::string &needle,
 
 auto XmlElement::xpaths( ) const -> const std::vector<std::string> {
     if ( nullptr == node_ ) {
-        return std::vector<std::string>{};
+        return {};
     }
     std::vector<std::string> base;
     std::vector<std::string> fullPath;
@@ -230,7 +245,7 @@ auto XmlElement::xpaths( ) const -> const std::vector<std::string> {
 
 auto XmlElement::children( ) const -> const std::vector<XmlElement> {
     if ( node_->children == nullptr ) {
-        return std::vector<XmlElement>{};
+        return {};
     }
     std::vector<XmlElement> ret;
     for ( xmlNode *tmp = node_->children; tmp != nullptr; tmp = tmp->next ) {
@@ -239,6 +254,33 @@ auto XmlElement::children( ) const -> const std::vector<XmlElement> {
         }
     }
     return ret;
+}
+
+auto XmlElement::tags( ) const -> const std::pair<const std::string, const std::string> {
+    if ( !node_ ) {
+        return {};
+    }
+    auto nm = name( );
+    std::string attrRep;
+    if ( hasAttributes( ) ) {
+        std::ostringstream attrsOut;
+        const auto &attrs = attributes( );
+        for ( const auto &attr : attrs ) {
+            attrsOut << " " << attr.first << "='" << attr.second << "'"; // prepend space
+        }
+        attrRep = attrsOut.str( );
+    }
+    if ( empty( ) ) {
+        return std::make_pair( "<" + nm + attrRep + "/>", std::string{} );
+    }
+    return std::make_pair( "<" + nm + attrRep + ">", "<" + nm + ">" );
+}
+
+auto XmlElement::empty( ) const -> bool {
+    if ( node_ ) {
+        return ( node_->children != nullptr );
+    }
+    return false;
 }
 
 static auto replaceAndDestroy( xmlNode *old, xmlNode *nn ) -> void {
@@ -255,17 +297,20 @@ static auto xmlTreeMap( xmlNode *node, const std::function<void( xmlNode *, T * 
         return;
     }
     xmlNode *tmp = node;
+
     while ( true ) {
         f( tmp, arg );
         if ( tmp->children ) {
             tmp = tmp->children;
         } else {
             while ( !tmp->next ) {
-                if ( tmp == node ) {
+                if ( tmp == node || !tmp->parent ) {
                     return;
                 }
                 tmp = tmp->parent;
             }
+            if ( tmp == node ) // target nodes that have siblings
+                return;
             tmp = tmp->next;
         }
     }

@@ -3,11 +3,14 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <QMetaType>
 
 class QTreeWidgetItem;
 
 class XmlElement {
 public:
+    XmlElement() : node_{nullptr} {} // default constructor for QVariant
+
     XmlElement( xmlNode *node );
     explicit operator bool( ) const;
     auto name( ) const -> std::string;
@@ -37,9 +40,14 @@ public:
     auto search( const std::string &needle, const std::string& entityType ) const -> void;
     auto xpaths() const -> const std::vector<std::string>;
     auto children() const -> const std::vector<XmlElement>;
+    auto tags() const -> const std::pair<const std::string, const std::string>;
+    auto empty() const -> bool;
 
     auto get() const -> const xmlNode *{ return node_; }
 
 private:
     xmlNode *node_;
 };
+
+Q_DECLARE_METATYPE(XmlElement)
+
