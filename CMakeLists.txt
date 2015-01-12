@@ -62,6 +62,7 @@ add_library(gui_widgets
     ${QT_SRC}
     gui/xml_tree.cpp
     gui/xml_display.cpp
+    gui/mainwindow.cpp
 )
 qt5_use_modules(gui_widgets Widgets)
 qt5_use_modules(xml_lib Core)
