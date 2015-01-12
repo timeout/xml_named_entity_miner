@@ -30,7 +30,10 @@ set(CMAKE_REQUIRED_INCLUDES "")
 
 find_package(OpenGL REQUIRED)
 find_package(Qt5Widgets REQUIRED)
-qt5_wrap_cpp(QT_SRC gui/mainwindow.hpp gui/xml_tree.hpp)
+qt5_wrap_cpp(QT_SRC 
+    gui/mainwindow.hpp 
+    gui/xml_tree.hpp
+    gui/xml_display.hpp)
 include_directories(${QT_INCLUDES} ${OPENGL_INCLUDE_DIR})
 
 add_library(pathname_lib lib/pathname.cpp lib/pathname.hpp)
@@ -58,6 +61,7 @@ add_library(xml_lib
 add_library(gui_widgets 
     ${QT_SRC}
     gui/xml_tree.cpp
+    gui/xml_display.cpp
 )
 qt5_use_modules(gui_widgets Widgets)
 qt5_use_modules(xml_lib Core)
