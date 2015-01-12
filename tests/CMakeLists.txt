@@ -31,6 +31,7 @@ set(test_sources gtest_main.cpp
     # xpath_ctxt_test.cpp
     # xpath_query_test.cpp
     # xpath_result_set_test.cpp
+    xml_element_test.cpp
     )
 add_executable(run_tests.out ${test_sources})
 target_link_libraries(run_tests.out gtest_main 

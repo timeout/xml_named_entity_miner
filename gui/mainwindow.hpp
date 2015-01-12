@@ -8,6 +8,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QFileDialog>
+#include <QPoint>
 
 #include <string>
 #include <fstream>
@@ -21,6 +22,10 @@ public:
         createActions( );
         createMenus( );
         setCentralWidget( tr_ );
+
+        // context menu for tree view
+        connect( tr_, SIGNAL( customContextMenuRequested( const QPoint & )), this,
+                 SLOT( onCustomContextRequest( const QPoint & )) );
     }
 
 public slots:
@@ -28,15 +33,28 @@ public slots:
         const QString filename = QFileDialog::getOpenFileName(
             this, tr( "Open XML file" ), "/usr/local/home/joe",
             tr( "Xml Files (*.xml)" ) );
-        std::ifstream in{filename.toUtf8( ).constData( )};
-        xml_ = XmlDoc{in};
-        tr_->xml( xml_ );
+        if ( !filename.isEmpty( ) ) {
+            std::ifstream in{filename.toUtf8( ).constData( )};
+            xml_ = XmlDoc{in};
+            tr_->xml( xml_ );
+        }
+    }
+    void onCustomContextRequest( const QPoint &pos ) {
+        QModelIndex idx = tr_->indexAt( pos );
+        if ( idx.isValid( ) ) {
+            xmlTreeContextMenu_->exec( tr_->mapToGlobal( pos ) );
+        }
     }
 
 private:
     void createMenus( ) {
         QMenu *fileMenu = menuBar( )->addMenu( tr( "&File" ) );
         fileMenu->addAction( openAct_ );
+
+        xmlTreeContextMenu_ = new QMenu( this );
+        // TODO: create actions: select all, clear selections?
+        // stub
+        xmlTreeContextMenu_->addAction( openAct_ );
     }
 
     void createActions( ) {
@@ -49,5 +67,6 @@ private:
     XmlDoc xml_;
     QAction *openAct_;
     XmlTree *tr_;
+    QMenu *xmlTreeContextMenu_;
 };
 

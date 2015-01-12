@@ -60,6 +60,7 @@ add_library(gui_widgets
     gui/xml_tree.cpp
 )
 qt5_use_modules(gui_widgets Widgets)
+qt5_use_modules(xml_lib Core)
 
 target_link_libraries(dir_lib pathname_lib)
 target_link_libraries(xml_lib 
