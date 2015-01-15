@@ -43,23 +43,43 @@ auto XmlElement::attribute( const std::string &key, const std::string &value ) -
                     reinterpret_cast<const unsigned char *>( value.c_str( ) ) );
     }
 }
-auto XmlElement::attributes( ) const -> std::map<std::string, std::string> {
-    std::map<std::string, std::string> ret;
+// auto XmlElement::attributes( ) const -> std::map<std::string, std::string> {
+//     std::map<std::string, std::string> ret;
+//     if ( node_ && node_->properties ) {
+//         for ( xmlAttr *attr = node_->properties; nullptr != attr; attr = attr->next ) {
+//             // TODO: replace with XmlString
+//             xmlChar *valp = xmlGetProp( node_, attr->name );
+//             const std::string value = reinterpret_cast<const char *>( valp );
+//             xmlFree( valp );
+//             ret[reinterpret_cast<const char *>( attr->name )] = value;
+//         }
+//     }
+//     return ret;
+// }
+
+auto XmlElement::attributes( ) const -> std::vector<std::pair<std::string, std::string>> {
+    std::vector<std::pair<std::string, std::string>> ret;
     if ( node_ && node_->properties ) {
         for ( xmlAttr *attr = node_->properties; nullptr != attr; attr = attr->next ) {
             // TODO: replace with XmlString
             xmlChar *valp = xmlGetProp( node_, attr->name );
             const std::string value = reinterpret_cast<const char *>( valp );
             xmlFree( valp );
-            ret[reinterpret_cast<const char *>( attr->name )] = value;
+            ret.push_back(
+                std::make_pair( reinterpret_cast<const char *>( attr->name ), value ) );
         }
     }
     return ret;
 }
+
 auto XmlElement::attributes( const std::map<std::string, std::string> &attrs )
     -> std::map<std::string, std::string> {
     // get current properties
-    std::map<std::string, std::string> ret = this->attributes( );
+    std::map<std::string, std::string> ret; 
+    auto attrPairs = this->attributes( );
+    for (auto attr : attrPairs) {
+        ret[attr.first] = attr.second;
+    }
     // add properties
     for ( auto it = attrs.cbegin( ); it != attrs.end( ); ++it ) {
         this->attribute( it->first, it->second );
@@ -273,12 +293,45 @@ auto XmlElement::tags( ) const -> const std::pair<const std::string, const std::
     if ( empty( ) ) {
         return std::make_pair( "<" + nm + attrRep + "/>", std::string{} );
     }
-    return std::make_pair( "<" + nm + attrRep + ">", "<" + nm + ">" );
+    return std::make_pair( "<" + nm + attrRep + ">", "</" + nm + ">" );
+}
+
+auto XmlElement::tagsRegex( ) const
+    -> const std::pair<const std::string, const std::string> {
+    if ( !node_ ) {
+        return {};
+    }
+    auto nm = name( );
+    std::string attrRep;
+    if ( hasAttributes( ) ) {
+        std::ostringstream attrsOut;
+        attrsOut << "\\b";
+        const auto &attrs = attributes( );
+        for ( const auto &attr : attrs ) {
+            attrsOut << "\\s+\\b" << attr.first // key literal string
+                     << "\\b\\s*"       // word border plus 0 or more whitespace chars
+                     << "="             // literal char match on '='
+                     << "\\s*('|\")\\b" // 0 or more whitespace chars
+                                        // followed by either ' or "
+                     << attr.second     // value literal string
+                     << "\\b('|\")";    // word border, close quotes, 0 or more
+                                        // whitespace chars, prepend space
+        }
+        attrRep = attrsOut.str( );
+    }
+    if ( empty( ) ) {
+        return std::make_pair( "<" + nm + attrRep + "/>", std::string{} );
+    }
+    // return std::make_pair( "<" + nm + attrRep + ">", "</" + nm + ">" );
+    std::pair<std::string, std::string> ret( "<" + nm + attrRep + ">", "</" + nm + ">" );
+    std::cerr << "opening: " << ret.first << std::endl;
+    std::cerr << "closing: " << ret.second << std::endl;
+    return ret;
 }
 
 auto XmlElement::empty( ) const -> bool {
     if ( node_ ) {
-        return ( node_->children != nullptr );
+        return ( node_->children == nullptr );
     }
     return false;
 }

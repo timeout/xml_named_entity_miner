@@ -47,15 +47,12 @@ XmlTree::XmlTree( const XmlDoc &xml, QWidget *parent ) : QTreeWidget{parent} {
 void XmlTree::xml( const XmlDoc xml ) {
     xml_ = xml;
     clear( ); // public slot of QTreeWidget
-    // hack possible function is QAbstractItemView::update(const
-    //                                  QModelIndex& index);
 
     auto root = xml.getRootElement( );
     QTreeWidgetItem *rootItem = new QTreeWidgetItem;
     rootItem->setText( 0, QString::fromUtf8( root.tags( ).first.c_str( ) ) );
     // Using QMetaType
     rootItem->setData( 0, Qt::UserRole, QVariant::fromValue( root ) );
-    // rootItem->setData(0, Qt::UserRole, qVariantFromValue((void *) root.get()));
 
     std::queue<QTreeWidgetItem *> parentItemQu;
     parentItemQu.push( rootItem );
@@ -71,21 +68,15 @@ void XmlTree::xml( const XmlDoc xml ) {
 
         auto elementChildren = parentElement.children( );
         for ( auto childElement : elementChildren ) {
-            // Debug:
-            std::cerr << childElement.name( ) << std::endl;
-
             // create childItems
             QTreeWidgetItem *childItem = new QTreeWidgetItem( parentItem );
             childItem->setText(
-                0, QString::fromUtf8( childElement.tags( ).first.c_str( ) ) );
-            // associate element with item
+                0, QString::fromUtf8( childElement.tagsRegex( ).first.c_str( ) ) );
             childItem->setData( 0, Qt::UserRole, QVariant::fromValue( childElement ) );
-
             childItem->setCheckState( 0, Qt::Unchecked );
             childItem->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsEnabled );
-
+            // breadth first creation (Elements only)
             if ( childElement.hasChild( ) ) {
-                std::cerr << " -- has child(ren)" << std::endl;
                 parentElementQu.push( childElement );
                 parentItemQu.push( childItem );
             }

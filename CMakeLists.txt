@@ -33,7 +33,9 @@ find_package(Qt5Widgets REQUIRED)
 qt5_wrap_cpp(QT_SRC 
     gui/mainwindow.hpp 
     gui/xml_tree.hpp
-    gui/xml_display.hpp)
+    gui/xml_display.hpp
+    gui/xml_highlighter.hpp
+)
 include_directories(${QT_INCLUDES} ${OPENGL_INCLUDE_DIR})
 
 add_library(pathname_lib lib/pathname.cpp lib/pathname.hpp)
@@ -62,6 +64,7 @@ add_library(gui_widgets
     ${QT_SRC}
     gui/xml_tree.cpp
     gui/xml_display.cpp
+    gui/xml_highlighter.cpp
     gui/mainwindow.cpp
 )
 qt5_use_modules(gui_widgets Widgets)

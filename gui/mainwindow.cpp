@@ -1,7 +1,22 @@
 #include "mainwindow.hpp"
+#include "xml_display.hpp"
+#include "xml_tree.hpp"
+#include "xml_doc.hpp"
+
+#include <QWidget>
+#include <QMenuBar>
+#include <QMenu>
+#include <QAction>
+#include <QFileDialog>
+#include <QPoint>
+#include <QDockWidget>
+#include <QStatusBar>
+
+#include <string>
+#include <fstream>
 
 Mainwindow::Mainwindow( QWidget *parent )
-    : QMainWindow{parent}, xml_{}, xmlDisplay_{new XmlDisplay( this )},
+    : QMainWindow{parent}, xmlDisplay_{new XmlDisplay( this )},
       xmlNavigator_{new XmlTree( this )} {
 
     createActions( );
@@ -28,8 +43,10 @@ void Mainwindow::open( ) {
         this, tr( "Open XML file" ), "/usr/local/home/joe", tr( "Xml Files (*.xml)" ) );
     if ( !filename.isEmpty( ) ) {
         std::ifstream in{filename.toUtf8( ).constData( )};
-        xml_ = XmlDoc{in};
-        xmlNavigator_->xml( xml_ );
+        XmlDoc xml{in};
+        xmlNavigator_->xml( xml );
+        // xmlDisplay_->setPlainText( QString::fromUtf8( xml.toString( ).c_str( ) ) );
+        xmlDisplay_->setXml( xml );
     }
 }
 void Mainwindow::onCustomContextRequest( const QPoint &pos ) {

@@ -3,6 +3,7 @@
 #include "gtest/gtest.h"
 #include <iostream>
 #include <map>
+#include <vector>
 
 TEST( ElementTest, Name ) {
     // xmlNode is created and destroyed outside of class
@@ -63,8 +64,13 @@ TEST( ElementTest, GetAttributes ) {
     el.attributes( attrs );
     ASSERT_TRUE( el.hasAttributes( ) );
 
-    std::map<std::string, std::string> props = el.attributes( );
-    ASSERT_TRUE( props == attrs );
+    auto props = el.attributes( );
+    for ( auto attr : props ) {
+        auto key = attr.first;
+        auto value = attr.second;
+        auto look = attrs.find( key );
+        ASSERT_STREQ( look->second.c_str( ), value.c_str( ) );
+    }
 
     xmlFreeNode( n );
 }
@@ -99,8 +105,21 @@ TEST( ElementTest, SetChild ) {
     ASSERT_TRUE( el.hasChild( ) );
     ASSERT_STREQ( "child-test", ch.name( ).c_str( ) );
     ASSERT_TRUE( ch.hasAttributes( ) );
-    std::map<std::string, std::string> props = ch.attributes( );
-    ASSERT_TRUE( props == attrs );
+    auto props = ch.attributes( );
+    for ( auto attr : props ) {
+        auto key = attr.first;
+        auto value = attr.second;
+        auto look = attrs.find( key );
+        ASSERT_STREQ( look->second.c_str( ), value.c_str( ) );
+    }
+
+    for ( auto attr : props ) {
+        auto key = attr.first;
+        auto value = attr.second;
+        auto look = attrs.find( key );
+        ASSERT_STREQ( look->second.c_str( ), value.c_str( ) );
+    }
+
     xmlFreeNode( n );
 }
 
@@ -147,7 +166,15 @@ TEST( ElementTest, SetSibling ) {
                                              {"test-attr", "test-value"}};
     XmlElement sibling = ch.sibling( "sibling-test", attrs );
     ASSERT_TRUE( ch.hasSibling( ) );
-    ASSERT_EQ( attrs, sibling.attributes( ) );
+    // ASSERT_EQ( attrs, sibling.attributes( ) );
+    auto props = sibling.attributes( );
+    for ( auto attr : props ) {
+        auto key = attr.first;
+        auto value = attr.second;
+        auto look = attrs.find( key );
+        ASSERT_STREQ( look->second.c_str( ), value.c_str( ) );
+    }
+
     xmlFreeNode( n ); // only free's child nodes
 }
 
@@ -160,7 +187,15 @@ TEST( ElementTest, HasContent ) {
                                              {"test-attr", "test-value"}};
     XmlElement sibling = ch.sibling( "sibling-test", attrs );
     ASSERT_TRUE( ch.hasSibling( ) );
-    ASSERT_EQ( attrs, sibling.attributes( ) );
+    // ASSERT_EQ( attrs, sibling.attributes( ) );
+    auto props = sibling.attributes( );
+    for ( auto attr : props ) {
+        auto key = attr.first;
+        auto value = attr.second;
+        auto look = attrs.find( key );
+        ASSERT_STREQ( look->second.c_str( ), value.c_str( ) );
+    }
+
     ASSERT_FALSE( el.hasContent( ) );
     xmlFreeNode( n ); // only free's child nodes
 }

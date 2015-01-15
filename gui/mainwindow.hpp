@@ -1,20 +1,11 @@
 #pragma once
-#include "xml_display.hpp"
-#include "xml_tree.hpp"
-#include "xml_doc.hpp"
-
-#include <QWidget>
 #include <QMainWindow>
-#include <QMenuBar>
-#include <QMenu>
-#include <QAction>
-#include <QFileDialog>
-#include <QPoint>
-#include <QDockWidget>
-#include <QStatusBar>
 
-#include <string>
-#include <fstream>
+class QAction;
+class XmlTree;
+class XmlDisplay;
+class QMenu;
+class QPoint;
 
 class Mainwindow : public QMainWindow {
     Q_OBJECT
@@ -28,8 +19,8 @@ public slots:
 private:
     void createMenus( );
     void createActions( );
+    void loadXml(const QString& filename);
 
-    XmlDoc xml_;
     QAction *openAct_;
     XmlDisplay *xmlDisplay_;
     XmlTree *xmlNavigator_;
