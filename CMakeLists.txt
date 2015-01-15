@@ -7,6 +7,7 @@ set(CMAKE_CXX_FLAGS "-Wall -pedantic -std=c++11")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(sample_RESOURCES "${CMAKE_SOURCE_DIR}/sample.qrc")
 
 # set(ADDITIONAL_LIBS "")
 
@@ -35,7 +36,9 @@ qt5_wrap_cpp(QT_SRC
     gui/xml_tree.hpp
     gui/xml_display.hpp
     gui/xml_highlighter.hpp
+    gui/txt_selection_display.hpp
 )
+qt5_add_resources(RESOURCE_ADDED ${sample_RESOURCES})
 include_directories(${QT_INCLUDES} ${OPENGL_INCLUDE_DIR})
 
 add_library(pathname_lib lib/pathname.cpp lib/pathname.hpp)
@@ -62,10 +65,12 @@ add_library(xml_lib
 )
 add_library(gui_widgets 
     ${QT_SRC}
+    ${RESOURCE_ADDED}
     gui/xml_tree.cpp
     gui/xml_display.cpp
     gui/xml_highlighter.cpp
     gui/mainwindow.cpp
+    gui/txt_selection_display.cpp
 )
 qt5_use_modules(gui_widgets Widgets)
 qt5_use_modules(xml_lib Core)
