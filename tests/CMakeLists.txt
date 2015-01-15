@@ -18,6 +18,10 @@
 #     execute_process(COMMAND ${CMAKE_COMMAND} -E touch tests/dummy_directory/${f})
 # endforeach()
 
+# find_package(OpenGL REQUIRED)
+find_package(Qt5Core REQUIRED)
+# include_directories(${QT_INCLUDES} ${OPENGL_INCLUDE_DIR})
+
 include_directories(${gtest_SOURCE_DIR}/include)
 set(test_sources gtest_main.cpp
     test_helper.hpp
@@ -32,10 +36,13 @@ set(test_sources gtest_main.cpp
     # xpath_query_test.cpp
     # xpath_result_set_test.cpp
     xml_element_test.cpp
+    qregexp_test.cpp
     )
 add_executable(run_tests.out ${test_sources})
+qt5_use_modules(run_tests.out Core)
 target_link_libraries(run_tests.out gtest_main 
     pathname_lib 
     dir_lib
     xml_lib 
-    )
+
+)
