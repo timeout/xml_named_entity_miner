@@ -37,6 +37,7 @@ qt5_wrap_cpp(QT_SRC
     gui/xml_display.hpp
     gui/xml_highlighter.hpp
     gui/txt_selection_display.hpp
+    gui/element_selections.hpp
 )
 qt5_add_resources(RESOURCE_ADDED ${sample_RESOURCES})
 include_directories(${QT_INCLUDES} ${OPENGL_INCLUDE_DIR})
@@ -71,6 +72,7 @@ add_library(gui_widgets
     gui/xml_highlighter.cpp
     gui/mainwindow.cpp
     gui/txt_selection_display.cpp
+    gui/element_selections.cpp
 )
 qt5_use_modules(gui_widgets Widgets)
 qt5_use_modules(xml_lib Core)
