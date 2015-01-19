@@ -250,3 +250,60 @@ TEST( ElementTest, AddContent ) {
     ASSERT_FALSE( el.hasContent( ) );
     xmlFreeNode( n ); // only free's child nodes
 }
+
+TEST( ElementTest, Equality ) {
+    XmlElement nullEl;
+    ASSERT_TRUE( nullEl == XmlElement{} );
+
+    xmlNode *n =
+        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
+    XmlElement el1{n};
+    XmlElement ch1 = el1.child( "child" );
+    ASSERT_FALSE( el1 == ch1 );
+    ASSERT_FALSE( el1 == XmlElement{} );
+    ASSERT_TRUE( el1 != ch1 );
+    auto ch = el1.child( );
+    ASSERT_TRUE( ch == ch1 );
+    ASSERT_FALSE( ch != ch1 );
+    ASSERT_TRUE( ch != XmlElement{} );
+    xmlFreeNode( n );
+}
+
+TEST( ElementTest, StrictOrdering ) {
+    XmlElement nullEl;
+    ASSERT_FALSE( nullEl < XmlElement{} );
+    ASSERT_FALSE( nullEl > XmlElement{} );
+    xmlNode *n =
+        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
+    XmlElement el{n};
+    ASSERT_TRUE( el < nullEl );
+    auto ch = el.child( "child-node" );
+    ASSERT_TRUE( el < ch );
+    ASSERT_FALSE( el < el );
+    ASSERT_TRUE( ch > el );
+    auto sblg = el.child( "sibling-of-child" );
+    ASSERT_TRUE( el < sblg );
+    ASSERT_TRUE( sblg > el );
+    ASSERT_TRUE( ch < sblg );
+    ASSERT_TRUE( sblg > ch );
+    auto grch = ch.child( "child-of-child" );
+    ASSERT_TRUE( ch < grch );
+    ASSERT_TRUE( grch < sblg );
+    auto grch1 = sblg.child( "child-of-siblg" );
+    ASSERT_TRUE( grch < grch1 );
+    ASSERT_TRUE( grch1 > grch );
+    xmlFreeNode( n );
+}
+
+TEST( ElementTest, WeakOrdering ) {
+    XmlElement nullEl;
+    ASSERT_TRUE( nullEl <= XmlElement{} );
+    ASSERT_TRUE( nullEl >= XmlElement{} );
+
+    xmlNode *n =
+        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
+    XmlElement el{n};
+    ASSERT_TRUE( el >= el);
+    ASSERT_TRUE( el <= el);
+    xmlFreeNode( n );
+}
