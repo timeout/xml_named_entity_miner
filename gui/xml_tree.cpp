@@ -4,44 +4,15 @@
 #include <vector>
 #include <string>
 #include <QWidget>
+#include <QTreeWidgetItemIterator>
 #include <libxml/tree.h>
 #include <QDebug>
 #include <queue>
 
 XmlTree::XmlTree( QWidget *parent ) : QTreeWidget{parent} {
-    QTreeWidgetItem *topLevelItem = new QTreeWidgetItem;
-    topLevelItem->setText( 0, "root" );
-    addTopLevelItem( topLevelItem );
-    QTreeWidgetItem *childItem = new QTreeWidgetItem( topLevelItem );
-    childItem->setText( 0, "text" );
-    QTreeWidgetItem *child = new QTreeWidgetItem;
-    child->setText( 0, "another child" );
-    topLevelItem->addChild( child );
-
     setContextMenuPolicy( Qt::CustomContextMenu );
-    // connect( this, SIGNAL( itemSelectionChanged( ) ), this,
-    //          SLOT( onItemSelectionChanged( ) ) );
-
-    // checkbox
-    connect( this, SIGNAL( itemChanged( QTreeWidgetItem *, int )), this,
-             SLOT( onItemChanged( QTreeWidgetItem *, int )) );
-}
-
-XmlTree::XmlTree( const XmlDoc &xml, QWidget *parent ) : QTreeWidget{parent} {
-    auto root = xml.getRootElement( );
-    auto xpaths = root.children( );
-
-    // top item
-    QTreeWidgetItem *rootItem = new QTreeWidgetItem;
-    rootItem->setText( 0, QString::fromUtf8( root.name( ).c_str( ) ) );
-    addTopLevelItem( rootItem );
-
-    // add children
-    auto childNodes = root.children( );
-    for ( auto el : childNodes ) {
-        QTreeWidgetItem *child = new QTreeWidgetItem( rootItem );
-        child->setText( 0, QString::fromUtf8( el.name( ).c_str( ) ) );
-    }
+    connect( this, SIGNAL( clicked( const QModelIndex & )),
+             SLOT( itemClicked( const QModelIndex & )) );
 }
 
 void XmlTree::xml( const XmlDoc xml ) {
@@ -88,22 +59,73 @@ void XmlTree::xml( const XmlDoc xml ) {
 const XmlDoc &XmlTree::xml( ) const { return xml_; }
 
 void XmlTree::onItemSelectionChanged( ) { qDebug( ) << "item selection changed\n"; }
-void XmlTree::onItemChanged( QTreeWidgetItem *item, int column ) {
-    if ( item->checkState( column ) == Qt::Unchecked ) {
-        qDebug( ) << item->text( 0 ) << "un-checked\n";
-    }
-    if ( item->checkState( column ) == Qt::Checked ) {
-        qDebug( ) << item->text( 0 ) << "checked\n";
-        QVariant xmlElementVar = item->data( 0, Qt::UserRole );
-        XmlElement targetElement = xmlElementVar.value<XmlElement>( );
 
-        // Debug:
-        qDebug( ) << "targetElement: [ "
-                  << QString::fromUtf8( targetElement.name( ).c_str( ) ) << " ]\n";
-        if ( targetElement.hasContent( ) ) {
-            qDebug( ) << QString::fromUtf8( targetElement.content( ).c_str( ) ) << "\n";
-        } else {
-            qDebug() << "Element has no content\n";
+void XmlTree::itemClicked( const QModelIndex &idx ) {
+    QTreeWidgetItem *target = itemFromIndex( idx );
+    Qt::CheckState checkedState = target->checkState( 0 );
+    switch ( checkedState ) {
+    case Qt::Checked:
+        checkSubtree( target );
+        break;
+    case Qt::Unchecked:
+        uncheckSubtree( target );
+        break;
+    default:
+        return;
+    }
+}
+
+void XmlTree::checkSubtree( QTreeWidgetItem *target ) {
+    qDebug( ) << "checking subtree...\n";
+    if ( target->isDisabled( ) == true ) {
+        return;
+    }
+    std::queue<QTreeWidgetItem *> parents;
+    parents.push( target );
+    while ( !parents.empty( ) ) {
+        auto parent = parents.front( );
+        parents.pop( );
+        auto child = parent->child( 0 );
+        while ( child ) {
+            if ( child->child( 0 ) ) {
+                parents.push( child );
+            }
+            if ( child->checkState( 0 ) == Qt::Checked &&
+                 child->isDisabled( ) == false ) {
+                // deselect item
+                qDebug( ) << "deselcting: " << child->text( 0 ) << "\n";
+                QVariant childVar = child->data( 0, Qt::UserRole );
+                XmlElement childElement = childVar.value<XmlElement>( );
+                emit xmlItemDeselected( childElement );
+            }
+            child->setCheckState( 0, Qt::Checked );
+            child->setDisabled( true );
+            child = parent->child( parent->indexOfChild( child ) + 1 );
         }
     }
+    QVariant targetVar = target->data( 0, Qt::UserRole );
+    XmlElement targetElement = targetVar.value<XmlElement>( );
+    emit xmlItemSelected( targetElement );
+}
+
+void XmlTree::uncheckSubtree( QTreeWidgetItem *target ) {
+    qDebug( ) << "unchecking subtree...\n";
+    std::queue<QTreeWidgetItem *> parents;
+    parents.push( target );
+    while ( !parents.empty( ) ) {
+        auto parent = parents.front( );
+        parents.pop( );
+        auto child = parent->child( 0 );
+        while ( child ) {
+            if ( child->child( 0 ) ) {
+                parents.push( child );
+            }
+            child->setDisabled( false );
+            child->setCheckState( 0, Qt::Unchecked );
+            child = parent->child( parent->indexOfChild( child ) + 1 );
+        }
+    }
+    QVariant targetVar = target->data( 0, Qt::UserRole );
+    XmlElement targetElement = targetVar.value<XmlElement>( );
+    emit xmlItemDeselected( targetElement );
 }
