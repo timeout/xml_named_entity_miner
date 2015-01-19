@@ -37,6 +37,13 @@ public:
     // auto markupEntity(const std::string &entity) -> void;
     auto toString( ) const -> std::string;
 
+    auto operator==(const XmlElement& lhs) const -> bool;
+    auto operator!=(const XmlElement& lhs) const -> bool;
+    auto operator<(const XmlElement& lhs) const -> bool;
+    auto operator>(const XmlElement& lhs) const -> bool;
+    auto operator<=(const XmlElement& lhs) const -> bool;
+    auto operator>=(const XmlElement& lhs) const -> bool;
+    
     // dev
     auto search( const std::string &needle, const std::string &entityType ) const -> void;
     auto xpaths( ) const -> const std::vector<std::string>;

@@ -75,9 +75,9 @@ auto XmlElement::attributes( ) const -> std::vector<std::pair<std::string, std::
 auto XmlElement::attributes( const std::map<std::string, std::string> &attrs )
     -> std::map<std::string, std::string> {
     // get current properties
-    std::map<std::string, std::string> ret; 
+    std::map<std::string, std::string> ret;
     auto attrPairs = this->attributes( );
-    for (auto attr : attrPairs) {
+    for ( auto attr : attrPairs ) {
         ret[attr.first] = attr.second;
     }
     // add properties
@@ -188,6 +188,59 @@ auto XmlElement::toString( ) const -> std::string {
     return {};
 }
 
+auto XmlElement::operator==( const XmlElement &lhs ) const -> bool {
+    return node_ == lhs.node_;
+}
+auto XmlElement::operator!=( const XmlElement &lhs ) const -> bool {
+    return !( *this == lhs );
+}
+auto XmlElement::operator<( const XmlElement &lhs ) const -> bool {
+    // in terms of in-order traversal
+    if ( *this == lhs ) {
+        return false;
+    }
+    if ( node_ == nullptr && lhs.node_ ) {
+        return false;
+    }
+    if ( lhs.node_ == nullptr && node_ ) {
+        return true;
+    }
+    const xmlNode *tmp = node_;
+    while ( true ) {
+        if ( tmp->type == XML_ELEMENT_NODE && tmp == lhs.node_ ) {
+            return true;
+        }
+        if ( tmp->children ) {
+            tmp = tmp->children;
+        } else {
+            while ( !tmp->next ) {
+                if ( !tmp->parent ) {
+                    return false;
+                }
+                tmp = tmp->parent;
+            }
+            tmp = tmp->next;
+        }
+    }
+}
+auto XmlElement::operator>( const XmlElement &lhs ) const -> bool {
+    if ( *this == lhs ) {
+        return false;
+    }
+    return !( *this < lhs );
+}
+auto XmlElement::operator<=( const XmlElement &lhs ) const -> bool {
+    if ( *this == lhs ) {
+        return true;
+    }
+    return ( *this < lhs );
+}
+auto XmlElement::operator>=( const XmlElement &lhs ) const -> bool {
+    if ( *this == lhs ) {
+        return true;
+    }
+    return !( *this > lhs );
+}
 // TODO: xmlNodes instantiation failure?
 auto XmlElement::search( const std::string &needle,
                          const std::string &entityType ) const -> void {
@@ -322,10 +375,7 @@ auto XmlElement::tagsRegex( ) const
     if ( empty( ) ) {
         return std::make_pair( "<" + nm + attrRep + "/>", std::string{} );
     }
-    // return std::make_pair( "<" + nm + attrRep + ">", "</" + nm + ">" );
     std::pair<std::string, std::string> ret( "<" + nm + attrRep + ">", "</" + nm + ">" );
-    std::cerr << "opening: " << ret.first << std::endl;
-    std::cerr << "closing: " << ret.second << std::endl;
     return ret;
 }
 
