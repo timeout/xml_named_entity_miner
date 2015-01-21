@@ -26,6 +26,7 @@ include_directories(${gtest_SOURCE_DIR}/include)
 set(test_sources gtest_main.cpp
     test_helper.hpp
     test_helper.cpp
+    synonyms_test.cpp
     pathname_test.cpp
     dir_test.cpp
     xml_doc_test.cpp
@@ -44,5 +45,5 @@ target_link_libraries(run_tests.out gtest_main
     pathname_lib 
     dir_lib
     xml_lib 
-
+    syn_lib
 )
