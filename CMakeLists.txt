@@ -38,12 +38,14 @@ qt5_wrap_cpp(QT_SRC
     gui/xml_highlighter.hpp
     gui/txt_selection_display.hpp
     gui/element_selections.hpp
+    gui/entity_tree.hpp
 )
 qt5_add_resources(RESOURCE_ADDED ${sample_RESOURCES})
 include_directories(${QT_INCLUDES} ${OPENGL_INCLUDE_DIR})
 
 add_library(pathname_lib lib/pathname.cpp lib/pathname.hpp)
 add_library(dir_lib lib/dir.cpp lib/dir.hpp lib/singleton.hpp)
+add_library(syn_lib lib/synonyms.hpp lib/synonyms.cpp)
 add_library(xml_lib 
     lib/xml_parser_ctxt.hpp 
     lib/libxml2_error_handlers.cpp
@@ -73,6 +75,7 @@ add_library(gui_widgets
     gui/mainwindow.cpp
     gui/txt_selection_display.cpp
     gui/element_selections.cpp
+    gui/entity_tree.cpp
 )
 qt5_use_modules(gui_widgets Widgets)
 qt5_use_modules(xml_lib Core)
@@ -86,6 +89,7 @@ target_link_libraries(xml_lib
 )
 target_link_libraries(gui_widgets
     xml_lib
+    syn_lib
 )
 
 include_directories(lib)
