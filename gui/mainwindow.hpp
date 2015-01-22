@@ -3,6 +3,7 @@
 
 class QAction;
 class XmlTree;
+class EntityTree;
 class XmlDisplay;
 class QMenu;
 class QPoint;
@@ -47,5 +48,6 @@ private:
 
     // docking
     XmlTree *xmlNavigator_;
+    EntityTree *entityNavigator_;
 };
 

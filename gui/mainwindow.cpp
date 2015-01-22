@@ -2,6 +2,7 @@
 #include "xml_display.hpp"
 #include "txt_selection_display.hpp"
 #include "xml_tree.hpp"
+#include "entity_tree.hpp"
 #include "xml_doc.hpp"
 #include "element_selections.hpp"
 
@@ -23,7 +24,8 @@
 Mainwindow::Mainwindow( QWidget *parent )
     : QMainWindow{parent}, xmlDisplay_{new XmlDisplay( this )},
       txtSelectionDisplay_{new TxtSelectionDisplay( this )},
-      xmlNavigator_{new XmlTree( this )}, selections_{new ElementSelections( this )} {
+      selections_{new ElementSelections( this )}, xmlNavigator_{new XmlTree( this )},
+      entityNavigator_{new EntityTree( this )} {
 
     // init
     createActions( );
@@ -46,11 +48,24 @@ Mainwindow::Mainwindow( QWidget *parent )
 
     // docks
     // left dock
-    QDockWidget *dockWidget = new QDockWidget( tr( "Dock Widget" ), this );
-    dockWidget->setAllowedAreas( Qt::LeftDockWidgetArea );
-    dockWidget->setWidget( xmlNavigator_ );
-    dockWidget->setFeatures( QDockWidget::DockWidgetVerticalTitleBar );
-    addDockWidget( Qt::LeftDockWidgetArea, dockWidget );
+    QDockWidget *xmlNavDock = new QDockWidget( tr( "Xml Navigator" ), this );
+    xmlNavDock->setAllowedAreas( Qt::LeftDockWidgetArea );
+    xmlNavDock->setWidget( xmlNavigator_ );
+    xmlNavDock->setFeatures( QDockWidget::DockWidgetVerticalTitleBar );
+    addDockWidget( Qt::LeftDockWidgetArea, xmlNavDock );
+
+    QDockWidget *entityNavDock = new QDockWidget( tr( "Entity Navigator" ), this );
+    entityNavDock->setAllowedAreas( Qt::RightDockWidgetArea );
+    entityNavDock->setWidget( entityNavigator_ );
+    entityNavDock->setFeatures( QDockWidget::DockWidgetVerticalTitleBar );
+    addDockWidget( Qt::RightDockWidgetArea, entityNavDock );
+
+    // ==debug
+    entityNavigator_->insertEntry( QString{"first entry"} );
+    entityNavigator_->insertEntry( QString{"second entry"} );
+    entityNavigator_->insertEntry( QString{"first entry"} );
+    entityNavigator_->insertEntry( QString{"third entry"} );
+    entityNavigator_->insertEntry( QString{"fourth entry"} );
 
     // central widget
     tabWidget_ = new QTabWidget;
