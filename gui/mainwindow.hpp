@@ -22,19 +22,25 @@ public slots:
     void onCustomContextRequest( const QPoint &pos );
     void onNextSelectionTriggered( );
     void onPreviousSelectionTriggered( );
+    void openRecentFile( );
 
 private:
     void createMenus( );
     void createActions( );
+    void loadFile( const QString &fileName );
+    void updateRecentFileActions( );
+    void setCurrentFile( const QString &fileName );
+    QString strippedName( const QString &fullFileName );
     void loadXml( const QString &filename );
 
     // actions
-    QAction *openAct_;
+    QAction *openAct_, *exitAct_;
 
     QAction *nextSelectionAct_, *previousSelectionAct_;
 
     // menu
     QMenu *xmlTreeContextMenu_;
+    QMenu *recentFilesMenu_;
 
     // toolbar
     QToolBar *fileToolBar_, *documentToolBar_;
@@ -49,5 +55,9 @@ private:
     // docking
     XmlTree *xmlNavigator_;
     EntityTree *entityNavigator_;
+
+    enum { MaxRecentFiles = 5 };
+    QAction *recentFileActs[MaxRecentFiles];
+    QString curFile_;
 };
 

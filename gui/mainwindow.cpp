@@ -17,6 +17,13 @@
 #include <QTabWidget>
 #include <QToolBar>
 #include <QIcon>
+#include <QSettings>
+#include <QMessageBox>
+#include <QApplication>
+#include <QStringList>
+
+#include <QString>
+#include <QDebug>
 
 #include <string>
 #include <fstream>
@@ -38,6 +45,7 @@ Mainwindow::Mainwindow( QWidget *parent )
     fileToolBar_->setMovable( false );
     fileToolBar_->setAllowedAreas( Qt::TopToolBarArea );
     fileToolBar_->addAction( openAct_ );
+    fileToolBar_->addAction( exitAct_ );
     fileToolBar_->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
     documentToolBar_ = addToolBar( "DocumentToolBar" );
     documentToolBar_->setMovable( false );
@@ -96,11 +104,13 @@ void Mainwindow::open( ) {
     const QString filename = QFileDialog::getOpenFileName(
         this, tr( "Open XML file" ), "/usr/local/home/joe", tr( "Xml Files (*.xml)" ) );
     if ( !filename.isEmpty( ) ) {
-        std::ifstream in{filename.toUtf8( ).constData( )};
-        XmlDoc xml{in};
-        xmlNavigator_->xml( xml );
+        loadFile( filename );
+        //
+        // std::ifstream in{filename.toUtf8( ).constData( )};
+        // XmlDoc xml{in};
+        // xmlNavigator_->xml( xml );
         // xmlDisplay_->setPlainText( QString::fromUtf8( xml.toString( ).c_str( ) ) );
-        xmlDisplay_->setXml( xml );
+        // xmlDisplay_->setXml( xml );
     }
 }
 
@@ -111,13 +121,71 @@ void Mainwindow::onCustomContextRequest( const QPoint &pos ) {
     }
 }
 
+void Mainwindow::loadFile( const QString &fileName ) {
+    QFile file( fileName );
+    std::ifstream in{fileName.toStdString( )};
+    if ( !in.is_open( ) ) {
+        QMessageBox::warning( this, tr( "Recent Files" ),
+                              tr( "Cannot read file %1:\n%2." ).arg( fileName ).arg(
+                                  file.errorString( ) ) );
+        return;
+    }
+    // TODO: refactor clear selections
+    selections_->clear( );
+
+    XmlDoc xml{in}; // TODO: error checking
+    QApplication::setOverrideCursor( Qt::WaitCursor );
+    xmlNavigator_->xml( xml );
+    xmlDisplay_->setPlainText( QString::fromUtf8( xml.toString( ).c_str( ) ) );
+    xmlDisplay_->setXml( xml );
+    QApplication::restoreOverrideCursor( );
+
+    setCurrentFile( fileName );
+    statusBar( )->showMessage( tr( "File loaded" ), 2000 );
+}
+
+void Mainwindow::setCurrentFile( const QString &fileName ) {
+    curFile_ = fileName;
+    setWindowFilePath( curFile_ );
+
+    QSettings settings;
+    QStringList files = settings.value( "recentFileList" ).toStringList( );
+    files.removeAll( fileName );
+    files.prepend( fileName );
+    // foreach( const QString& file, files ) { qDebug( ) << "file: " << file << "\n"; }
+    while ( files.size( ) > MaxRecentFiles ) {
+        files.removeLast( );
+    }
+
+    settings.setValue( "recentFileList", files );
+
+    foreach ( QWidget *widget, QApplication::topLevelWidgets( ) ) {
+        Mainwindow *mainWin = qobject_cast<Mainwindow *>( widget );
+        if ( mainWin )
+            mainWin->updateRecentFileActions( );
+    }
+}
+
 void Mainwindow::onNextSelectionTriggered( ) {}
 void Mainwindow::onPreviousSelectionTriggered( ) {}
+void Mainwindow::openRecentFile( ) {
+    QAction *action = qobject_cast<QAction *>( sender( ) );
+    if ( action ) {
+        loadFile( action->data( ).toString( ) );
+    }
+}
 
 // private member functions
 void Mainwindow::createMenus( ) {
+
     QMenu *fileMenu = menuBar( )->addMenu( tr( "&File" ) );
     fileMenu->addAction( openAct_ );
+    recentFilesMenu_ = fileMenu->addMenu( QIcon::fromTheme( "application-menu" ),
+                                          tr( "Recent &Files" ) );
+    for ( int i = 0; i < MaxRecentFiles; ++i )
+        recentFilesMenu_->addAction( recentFileActs[i] );
+    fileMenu->addAction( exitAct_ );
+    updateRecentFileActions( );
 
     xmlTreeContextMenu_ = new QMenu( this );
     // TODO: create actions: select all, clear selections?
@@ -132,6 +200,19 @@ void Mainwindow::createActions( ) {
     openAct_->setStatusTip( tr( "Open an existing file" ) );
     openAct_->setIcon( QIcon::fromTheme( "document-open" ) );
     connect( openAct_, SIGNAL( triggered( ) ), this, SLOT( open( ) ) );
+    exitAct_ = new QAction( tr( "E&xit" ), this );
+    exitAct_->setShortcuts( QKeySequence::Quit );
+    exitAct_->setStatusTip( tr( "Exit the application" ) );
+    exitAct_->setIcon( QIcon::fromTheme( "application-exit" ) );
+    connect( exitAct_, SIGNAL( triggered( ) ), this, SLOT( close( ) ) );
+
+    for ( int i = 0; i < MaxRecentFiles; ++i ) {
+        recentFileActs[i] = new QAction( this );
+        // recentFileActs[i]->setVisible( false );
+        recentFileActs[i]->setVisible( true );
+        connect( recentFileActs[i], SIGNAL( triggered( ) ), this,
+                 SLOT( openRecentFile( ) ) );
+    }
 
     // document actions
     nextSelectionAct_ = new QAction{tr( "Next Selection" ), this};
@@ -144,5 +225,27 @@ void Mainwindow::createActions( ) {
     previousSelectionAct_->setIcon( QIcon::fromTheme( "arrow-left" ) );
     connect( previousSelectionAct_, SIGNAL( triggered( ) ), selections_,
              SLOT( previous( ) ) );
+}
+
+void Mainwindow::updateRecentFileActions( ) {
+    QSettings settings;
+    QStringList files = settings.value( "recentFileList" ).toStringList( );
+
+    int numRecentFiles = qMin( files.size( ), ( int )MaxRecentFiles );
+
+    for ( int i = 0; i < numRecentFiles; ++i ) {
+        QString text = tr( "&%1 %2" ).arg( i + 1 ).arg( strippedName( files[i] ) );
+        recentFileActs[i]->setText( text );
+        recentFileActs[i]->setData( files[i] );
+        recentFileActs[i]->setVisible( true );
+    }
+    for ( int j = numRecentFiles; j < MaxRecentFiles; ++j )
+        recentFileActs[j]->setVisible( false );
+
+    //  separatorAct->setVisible(numRecentFiles > 0);
+}
+
+QString Mainwindow::strippedName( const QString &fullFileName ) {
+    return QFileInfo( fullFileName ).fileName( );
 }
 

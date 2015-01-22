@@ -37,3 +37,4 @@ void XmlDisplay::setXml( const XmlDoc &xml ) {
     // set plain text
     setPlainText( QString::fromUtf8( xml.toString( ).c_str( ) ) );
 }
+
