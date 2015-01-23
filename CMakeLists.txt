@@ -31,7 +31,7 @@ set(CMAKE_REQUIRED_INCLUDES "")
 
 find_package(OpenGL REQUIRED)
 find_package(Qt5Widgets REQUIRED)
-qt5_wrap_cpp(QT_SRC 
+qt5_wrap_cpp(QT_GUI_src 
     gui/mainwindow.hpp 
     gui/xml_tree.hpp
     gui/xml_display.hpp
@@ -40,12 +40,15 @@ qt5_wrap_cpp(QT_SRC
     gui/element_selections.hpp
     gui/entity_tree.hpp
 )
+qt5_wrap_cpp(QT_SYN_LIB_src
+    lib/synonyms.hpp
+)
 qt5_add_resources(RESOURCE_ADDED ${sample_RESOURCES})
 include_directories(${QT_INCLUDES} ${OPENGL_INCLUDE_DIR})
 
 add_library(pathname_lib lib/pathname.cpp lib/pathname.hpp)
 add_library(dir_lib lib/dir.cpp lib/dir.hpp lib/singleton.hpp)
-add_library(syn_lib lib/synonyms.hpp lib/synonyms.cpp)
+add_library(syn_lib ${QT_SYN_LIB_src} lib/synonyms.cpp)
 add_library(xml_lib 
     lib/xml_parser_ctxt.hpp 
     lib/libxml2_error_handlers.cpp
@@ -67,7 +70,7 @@ add_library(xml_lib
     lib/xml_element.cpp
 )
 add_library(gui_widgets 
-    ${QT_SRC}
+    ${QT_GUI_src}
     ${RESOURCE_ADDED}
     gui/xml_tree.cpp
     gui/xml_display.cpp
