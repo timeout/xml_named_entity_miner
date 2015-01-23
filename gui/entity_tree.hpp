@@ -9,12 +9,12 @@ class EntityTree : public QTreeWidget {
     Q_OBJECT
 public:
     EntityTree( QWidget *parent = nullptr );
-    void dictionary( const Dictionary &dictionary );
-    void thesaurus( const Thesaurus &thesaurus );
+    // void dictionary( const Dictionary &dictionary );
+    // void thesaurus( const Thesaurus &thesaurus );
 
 public slots:
-    void insertEntry( const QString &entry );
-    void dictionary( );
+    // void insertEntry( const QString &entry );
+    // void dictionary( );
 
 signals:
     void dictionaryRequested(const Dictionary& dictionary);
@@ -22,8 +22,8 @@ signals:
 private:
     void dropEvent( QDropEvent *event );
 
-    Dictionary dictionary_;
-    Thesaurus thesaurus_;
+    // Dictionary dictionary_;
+    // Thesaurus thesaurus_;
 
     QPoint startPos_;
 };

@@ -135,7 +135,8 @@ void Mainwindow::loadFile( const QString &fileName ) {
 
     XmlDoc xml{in}; // TODO: error checking
     QApplication::setOverrideCursor( Qt::WaitCursor );
-    xmlNavigator_->xml( xml );
+    // TODO:
+    // xmlNavigator_->xml( xml );
     xmlDisplay_->setPlainText( QString::fromUtf8( xml.toString( ).c_str( ) ) );
     xmlDisplay_->setXml( xml );
     QApplication::restoreOverrideCursor( );

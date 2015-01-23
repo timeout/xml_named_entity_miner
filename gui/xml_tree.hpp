@@ -6,7 +6,7 @@ class XmlTree : public QTreeWidget {
     Q_OBJECT
 public:
     XmlTree( QWidget *parent = nullptr );
-    void xml( const XmlDoc xml );
+    // void xml( const XmlDoc xml );
     const XmlDoc &xml( ) const;
 
 public slots:

@@ -16,18 +16,18 @@ void TxtSelectionDisplay::setXmlTxt( const XmlElement &element ) {
     setPlainText( QString::fromUtf8( txt.c_str( ) ) );
 }
 
-void TxtSelectionDisplay::scan( const Dictionary &dictionary ) {
-    std::cerr << "scanning\ndictionary size: " << dictionary.size( ) << std::endl;
-    for ( auto entry : dictionary.get( ) ) {
-        const QString qentry{QString::fromUtf8( entry.first.c_str( ) )};
-        const QList<QTextEdit::ExtraSelection> selections{findAll( qentry )};
-        if ( !selections.empty( ) ) {
-            extraSelections_ << selections;
-            std::cerr << "entry found: " << entry.first << std::endl;
-            emit entrySelected( qentry );
-        }
-    }
-}
+// void TxtSelectionDisplay::scan( const Dictionary &dictionary ) {
+//     std::cerr << "scanning\ndictionary size: " << dictionary.size( ) << std::endl;
+//     for ( auto entry : dictionary.get( ) ) {
+//         const QString qentry{QString::fromUtf8( entry.first.c_str( ) )};
+//         const QList<QTextEdit::ExtraSelection> selections{findAll( qentry )};
+//         if ( !selections.empty( ) ) {
+//             extraSelections_ << selections;
+//             std::cerr << "entry found: " << entry.first << std::endl;
+//             emit entrySelected( qentry );
+//         }
+//     }
+// }
 
 void TxtSelectionDisplay::mousePressEvent( QMouseEvent *event ) {
     if ( event->button( ) == Qt::LeftButton ) {

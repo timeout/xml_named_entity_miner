@@ -15,7 +15,7 @@ protected:
 
 public slots:
     void setXmlTxt( const XmlElement &element );
-    void scan( const Dictionary &dictionary );
+    // void scan( const Dictionary &dictionary );
 
 signals:
     void entrySelected( const QString &entry );
