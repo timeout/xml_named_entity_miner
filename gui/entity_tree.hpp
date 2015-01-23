@@ -3,6 +3,8 @@
 #include "synonyms.hpp"
 #include <QPoint>
 
+class Dictionary;
+
 class EntityTree : public QTreeWidget {
     Q_OBJECT
 public:
@@ -12,6 +14,10 @@ public:
 
 public slots:
     void insertEntry( const QString &entry );
+    void dictionary( );
+
+signals:
+    void dictionaryRequested(const Dictionary& dictionary);
 
 private:
     void dropEvent( QDropEvent *event );

@@ -1,16 +1,32 @@
 #include "txt_selection_display.hpp"
 #include "xml_element.hpp"
+#include "synonyms.hpp"
 #include <QString>
 #include <QPalette>
 #include <QGuiApplication>
 
 #include <iostream>
 
-TxtSelectionDisplay::TxtSelectionDisplay( QWidget *parent ) : QPlainTextEdit( parent ) {}
+TxtSelectionDisplay::TxtSelectionDisplay( QWidget *parent ) : QPlainTextEdit( parent ) {
+    setReadOnly( true );
+}
 
 void TxtSelectionDisplay::setXmlTxt( const XmlElement &element ) {
     auto txt = element.content( );
     setPlainText( QString::fromUtf8( txt.c_str( ) ) );
+}
+
+void TxtSelectionDisplay::scan( const Dictionary &dictionary ) {
+    std::cerr << "scanning\ndictionary size: " << dictionary.size( ) << std::endl;
+    for ( auto entry : dictionary.get( ) ) {
+        const QString qentry{QString::fromUtf8( entry.first.c_str( ) )};
+        const QList<QTextEdit::ExtraSelection> selections{findAll( qentry )};
+        if ( !selections.empty( ) ) {
+            extraSelections_ << selections;
+            std::cerr << "entry found: " << entry.first << std::endl;
+            emit entrySelected( qentry );
+        }
+    }
 }
 
 void TxtSelectionDisplay::mousePressEvent( QMouseEvent *event ) {
@@ -56,6 +72,8 @@ void TxtSelectionDisplay::cursorSelection( ) {
     // QPlainTextEdit#setExtraSelections()
     extraSelections_ << findAll( textSelection );
     setExtraSelections( extraSelections_ );
+
+    emit entrySelected( textSelection );
 }
 
 const QList<QTextEdit::ExtraSelection>
@@ -72,5 +90,4 @@ TxtSelectionDisplay::findAll( const QString &textSelection ) {
     }
     return ret;
 }
-
 

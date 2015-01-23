@@ -1,4 +1,5 @@
 #include "entity_tree.hpp"
+#include "synonyms.hpp"
 #include <QTreeWidgetItem>
 #include <QTreeWidgetItemIterator>
 #include <QMouseEvent>
@@ -87,6 +88,12 @@ void EntityTree::insertEntry( const QString &entry ) {
         item->setData( 1, Qt::DisplayRole, QVariant{count} );
         addTopLevelItem( item );
     }
+}
+
+void EntityTree::dictionary( ) {
+    qDebug( ) << "dictionary requested ...";
+    emit dictionaryRequested( dictionary_ );
+    qDebug( ) << "and emitted\n";
 }
 
 void EntityTree::dropEvent( QDropEvent *event ) {

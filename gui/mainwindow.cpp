@@ -5,6 +5,7 @@
 #include "entity_tree.hpp"
 #include "xml_doc.hpp"
 #include "element_selections.hpp"
+#include "synonyms.hpp"
 
 #include <QWidget>
 #include <QMenuBar>
@@ -68,13 +69,6 @@ Mainwindow::Mainwindow( QWidget *parent )
     entityNavDock->setFeatures( QDockWidget::DockWidgetVerticalTitleBar );
     addDockWidget( Qt::RightDockWidgetArea, entityNavDock );
 
-    // ==debug
-    entityNavigator_->insertEntry( QString{"first entry"} );
-    entityNavigator_->insertEntry( QString{"second entry"} );
-    entityNavigator_->insertEntry( QString{"first entry"} );
-    entityNavigator_->insertEntry( QString{"third entry"} );
-    entityNavigator_->insertEntry( QString{"fourth entry"} );
-
     // central widget
     tabWidget_ = new QTabWidget;
     tabWidget_->addTab( xmlDisplay_, tr( "&Overview" ) );
@@ -97,6 +91,12 @@ Mainwindow::Mainwindow( QWidget *parent )
              txtSelectionDisplay_, SLOT( setXmlTxt( const XmlElement & )) );
     connect( selections_, SIGNAL( currentXmlElementInvalid( ) ), txtSelectionDisplay_,
              SLOT( clear( ) ) );
+    connect( txtSelectionDisplay_, SIGNAL( entrySelected( const QString & )),
+             entityNavigator_, SLOT( insertEntry( const QString & )) );
+    connect( txtSelectionDisplay_, SIGNAL( textChanged( ) ), entityNavigator_,
+             SLOT( dictionary( ) ) );
+    connect( entityNavigator_, SIGNAL( dictionaryRequested( const Dictionary & )),
+             txtSelectionDisplay_, SLOT( scan( const Dictionary & )) );
 }
 
 // public slots

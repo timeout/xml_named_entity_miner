@@ -5,8 +5,6 @@
 #include <map>
 #include <QMetaType>
 
-class QTreeWidgetItem;
-
 class XmlElement {
 public:
     XmlElement( ) : node_{nullptr} {} // default constructor for QVariant

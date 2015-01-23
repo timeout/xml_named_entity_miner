@@ -79,6 +79,7 @@ add_library(gui_widgets
 )
 qt5_use_modules(gui_widgets Widgets)
 qt5_use_modules(xml_lib Core)
+qt5_use_modules(syn_lib Core)
 
 target_link_libraries(dir_lib pathname_lib)
 target_link_libraries(xml_lib 

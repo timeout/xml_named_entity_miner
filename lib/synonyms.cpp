@@ -28,6 +28,9 @@ auto Dictionary::exists( const std::string &word ) const -> bool {
 auto Dictionary::size( ) const -> std::map<std::string, size_t>::size_type {
     return words_.size( );
 }
+auto Dictionary::get( ) const -> const std::map<std::string, std::size_t> & {
+    return words_;
+}
 
 auto Thesaurus::insert( const std::string &word, const std::string &canonical ) -> void {
     canon_[word] = canonical;

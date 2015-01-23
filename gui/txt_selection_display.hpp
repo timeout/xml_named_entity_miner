@@ -2,6 +2,7 @@
 #include <QPlainTextEdit>
 
 class XmlElement;
+class Dictionary;
 
 class TxtSelectionDisplay : public QPlainTextEdit {
     Q_OBJECT
@@ -14,6 +15,10 @@ protected:
 
 public slots:
     void setXmlTxt( const XmlElement &element );
+    void scan( const Dictionary &dictionary );
+
+signals:
+    void entrySelected( const QString &entry );
 
 private:
     void cursorSelection( );
