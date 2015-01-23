@@ -1,73 +1,30 @@
 #include "synonyms.hpp"
+#include <QDebug>
+#include <QList>
 
-static std::string nullStr;
+Dictionary::Dictionary( QObject *parent ) : QObject{parent} {}
+auto Dictionary::insert( const QString &word ) -> std::size_t { return ++words_[word]; }
+auto Dictionary::remove( const QString &word ) -> void { words_.remove( word ); }
+auto Dictionary::exists( const QString &word ) const -> bool {
+    return words_.contains( word );
+}
+auto Dictionary::count( const QString &word ) const -> std::size_t {
+    return words_.value( word );
+}
+auto Dictionary::size( ) const -> std::size_t { return words_.size( ); }
 
-auto Dictionary::insert( const std::string &word ) -> std::size_t {
-    return ++words_[word];
+Thesaurus::Thesaurus( QObject *parent ) : QObject{parent} {}
+auto Thesaurus::insert( const QString &word, const QString &canonical ) -> void {
+    canon_.insert( word, canonical );
+    synonyms_.insert( canonical, word );
 }
-auto Dictionary::remove( const std::string &word ) -> void {
-    auto search = words_.find( word );
-    if ( search != std::end( words_ ) ) {
-        words_.erase( search );
-    }
+auto Thesaurus::remove( const QString &word ) -> void {
+    synonyms_.remove( canonical( word ), word );
+    canon_.remove( word );
 }
-auto Dictionary::count( const std::string &word ) const -> std::size_t {
-    auto search = words_.find( word );
-    if ( search != std::end( words_ ) ) {
-        return search->second;
-    }
-    return 0;
+auto Thesaurus::canonical( const QString &word ) const -> const QString {
+    return canon_.value( word );
 }
-auto Dictionary::exists( const std::string &word ) const -> bool {
-    auto search = words_.find( word );
-    if ( search != std::end( words_ ) ) {
-        return true;
-    }
-    return false;
+auto Thesaurus::synonyms( const QString &canonical ) const -> const QList<QString> {
+    return synonyms_.values( canonical );
 }
-auto Dictionary::size( ) const -> std::map<std::string, size_t>::size_type {
-    return words_.size( );
-}
-auto Dictionary::get( ) const -> const std::map<std::string, std::size_t> & {
-    return words_;
-}
-
-auto Thesaurus::insert( const std::string &word, const std::string &canonical ) -> void {
-    canon_[word] = canonical;
-    synonyms_.insert( std::make_pair( canonical, word ) );
-}
-auto Thesaurus::remove( const std::string &word ) -> void {
-    auto search = canon_.find( word );
-    if ( search != std::end( canon_ ) ) {
-        auto canonical = search->second;
-        auto range = synonyms_.equal_range( canonical );
-        if ( range.first != range.second ) {
-            for ( auto i = range.first; i != range.second; ++i ) {
-                if ( i->second == word ) {
-                    synonyms_.erase( i );
-                    break;
-                }
-            }
-        }
-        canon_.erase( search );
-    }
-}
-auto Thesaurus::canonical( const std::string &word ) const -> const std::string & {
-    auto search = canon_.find( word );
-    if ( search != std::end( canon_ ) ) {
-        return search->second;
-    }
-    return nullStr;
-}
-auto Thesaurus::synonyms(
-    const std::string &canonical ) const -> const std::vector<std::string> {
-    std::vector<std::string> ret;
-    auto range = synonyms_.equal_range( canonical );
-    if ( range.first != range.second ) {
-        for ( auto i = range.first; i != range.second; ++i ) {
-            ret.push_back( i->second );
-        }
-    }
-    return ret;
-}
-

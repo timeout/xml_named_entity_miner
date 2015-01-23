@@ -1,6 +1,10 @@
 #include "synonyms.hpp"
+#include <QString>
+#include <QList>
 #include "gtest/gtest.h"
 #include <limits.h>
+
+#include <QDebug>
 
 TEST( SynonymsTest, DictionaryCtor ) {
     Dictionary dict;
@@ -50,18 +54,22 @@ TEST( SynonymsTest, ExistsTest ) {
 
 TEST( SynonymsTest, Thesaurus ) {
     Thesaurus thes;
-    thes.insert( "equal", "identical" );
-    thes.insert( "equivalent", "identical" );
-    ASSERT_STREQ( "identical", thes.canonical( "equivalent" ).c_str( ) );
-    ASSERT_STREQ( "", thes.canonical( "no entry" ).c_str( ) );
+    thes.insert( QString{"equal"}, QString{"identical"} );
+    thes.insert( QString{"equivalent"}, QString{"identical"} );
+    ASSERT_STREQ( "identical", thes.canonical( "equivalent" ).toStdString( ).c_str( ) );
+    ASSERT_STREQ( "identical", thes.canonical( "equal" ).toStdString( ).c_str( ) );
+    ASSERT_STREQ( "", thes.canonical( "no entry" ).toStdString( ).c_str( ) );
 
     auto synonyms = thes.synonyms( thes.canonical( "equal" ) );
-    const std::vector<std::string> control = {"equal", "equivalent"};
+    QList<QString> control;
+    control << "equivalent"
+            << "equal";
     ASSERT_EQ( control, synonyms );
 
+    // thes has identical => equivalent, identical => equal
     thes.remove( "equivalent" );
     synonyms = thes.synonyms( thes.canonical( "equal" ) );
-    const std::vector<std::string> control2 = {"equal"};
+    const QList<QString> control2 = {"equal"};
     ASSERT_EQ( control2, synonyms );
 }
 
