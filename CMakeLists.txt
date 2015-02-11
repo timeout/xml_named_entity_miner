@@ -49,6 +49,7 @@ include_directories(${QT_INCLUDES} ${OPENGL_INCLUDE_DIR})
 add_library(pathname_lib lib/pathname.cpp lib/pathname.hpp)
 add_library(dir_lib lib/dir.cpp lib/dir.hpp lib/singleton.hpp)
 add_library(syn_lib ${QT_SYN_LIB_src} lib/synonyms.cpp)
+add_library(utils_lib lib/utils.hpp lib/utils.cpp)
 add_library(xml_lib 
     lib/xml_parser_ctxt.hpp 
     lib/libxml2_error_handlers.cpp
@@ -94,6 +95,7 @@ target_link_libraries(xml_lib
 target_link_libraries(gui_widgets
     xml_lib
     syn_lib
+    utils_lib
 )
 
 include_directories(lib)

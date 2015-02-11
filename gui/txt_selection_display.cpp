@@ -1,6 +1,7 @@
 #include "txt_selection_display.hpp"
 #include "xml_element.hpp"
 #include "synonyms.hpp"
+#include "utils.hpp"
 #include <QString>
 #include <QPalette>
 #include <QGuiApplication>
@@ -13,6 +14,7 @@ TxtSelectionDisplay::TxtSelectionDisplay( QWidget *parent ) : QPlainTextEdit( pa
 
 void TxtSelectionDisplay::setXmlTxt( const XmlElement &element ) {
     auto txt = element.content( );
+    txt = Utils::trim( txt );
     setPlainText( QString::fromUtf8( txt.c_str( ) ) );
 }
 
