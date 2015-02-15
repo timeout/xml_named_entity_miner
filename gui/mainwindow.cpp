@@ -22,6 +22,8 @@
 #include <QMessageBox>
 #include <QApplication>
 #include <QStringList>
+#include <QToolButton>
+#include <QLabel>
 
 #include <QString>
 #include <QDebug>
@@ -32,8 +34,8 @@
 Mainwindow::Mainwindow( QWidget *parent )
     : QMainWindow{parent}, xmlDisplay_{new XmlDisplay( this )},
       txtSelectionDisplay_{new TxtSelectionDisplay( this )},
-      selections_{new ElementSelections( this )}, xmlFileOutline_{new XmlFileOutline( this )},
-      ontology_{new Ontology( this )} {
+      selections_{new ElementSelections( this )},
+      xmlFileOutline_{new XmlFileOutline( this )}, ontology_{new Ontology( this )} {
 
     // init
     createActions( );
@@ -64,10 +66,24 @@ Mainwindow::Mainwindow( QWidget *parent )
     addDockWidget( Qt::LeftDockWidgetArea, xmlNavDock );
 
     // right dock
+    tabOntologies_ = new QTabWidget;
+    QToolButton *tb = new QToolButton( );
+    tb->setText( "+" );
+    tb->setAutoRaise( true );
+    tb->setToolTip( tr( "Click to add a new Ontology" ) );
+
+    connect( tb, SIGNAL( clicked( ) ), this, SLOT( getOntologyDialog( ) ) );
+
+    tabOntologies_->addTab( new QLabel( "You can add tabs by pressing <b>\"+\"</b>" ),
+                            QString{} );
+    tabOntologies_->setTabEnabled( 0, false );
+    tabOntologies_->tabBar( )->setTabButton( 0, QTabBar::RightSide, tb );
+    tabOntologies_->setTabPosition( QTabWidget::West );
+
     QDockWidget *entityNavDock = new QDockWidget( tr( "Ontology" ), this );
     entityNavDock->setAllowedAreas( Qt::RightDockWidgetArea );
-    entityNavDock->setWidget( ontology_ );
-    entityNavDock->setFeatures( QDockWidget::DockWidgetVerticalTitleBar );
+    entityNavDock->setWidget( tabOntologies_ );
+    entityNavDock->setFeatures( QDockWidget::NoDockWidgetFeatures );
     addDockWidget( Qt::RightDockWidgetArea, entityNavDock );
 
     // central widget
@@ -86,14 +102,14 @@ Mainwindow::Mainwindow( QWidget *parent )
 
     connect( xmlFileOutline_, SIGNAL( xmlItemSelected( const XmlElement & )), selections_,
              SLOT( addXmlElement( const XmlElement & )) );
-    connect( xmlFileOutline_, SIGNAL( xmlItemDeselected( const XmlElement & )), selections_,
-             SLOT( removeXmlElement( const XmlElement & )) );
+    connect( xmlFileOutline_, SIGNAL( xmlItemDeselected( const XmlElement & )),
+             selections_, SLOT( removeXmlElement( const XmlElement & )) );
     connect( selections_, SIGNAL( currentXmlElement( const XmlElement & )),
              txtSelectionDisplay_, SLOT( setXmlTxt( const XmlElement & )) );
     connect( selections_, SIGNAL( currentXmlElementInvalid( ) ), txtSelectionDisplay_,
              SLOT( clear( ) ) );
-    connect( txtSelectionDisplay_, SIGNAL( entrySelected( const QString & )),
-             ontology_, SLOT( insertEntry( const QString & )) );
+    connect( txtSelectionDisplay_, SIGNAL( entrySelected( const QString & )), ontology_,
+             SLOT( insertEntry( const QString & )) );
     connect( txtSelectionDisplay_, SIGNAL( textChanged( ) ), ontology_,
              SLOT( dictionary( ) ) );
     connect( ontology_, SIGNAL( dictionaryRequested( const Dictionary & )),
@@ -176,6 +192,8 @@ void Mainwindow::openRecentFile( ) {
         loadFile( action->data( ).toString( ) );
     }
 }
+
+void Mainwindow::getOntologyDialog( ) {}
 
 // private member functions
 void Mainwindow::createMenus( ) {

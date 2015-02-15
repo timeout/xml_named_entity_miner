@@ -23,6 +23,7 @@ public slots:
     void onNextSelectionTriggered( );
     void onPreviousSelectionTriggered( );
     void openRecentFile( );
+    void getOntologyDialog( );
 
 private:
     void createMenus( );
@@ -54,7 +55,7 @@ private:
 
     // docking
     XmlFileOutline *xmlFileOutline_;
-
+    QTabWidget *tabOntologies_;
     Ontology *ontology_;
 
     enum { MaxRecentFiles = 5 };
