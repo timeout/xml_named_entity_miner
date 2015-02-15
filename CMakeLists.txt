@@ -38,7 +38,7 @@ qt5_wrap_cpp(QT_GUI_src
     gui/xml_highlighter.hpp
     gui/txt_selection_display.hpp
     gui/element_selections.hpp
-    gui/entity_tree.hpp
+    gui/ontology.hpp
 )
 qt5_wrap_cpp(QT_SYN_LIB_src
     lib/synonyms.hpp
@@ -79,7 +79,7 @@ add_library(gui_widgets
     gui/mainwindow.cpp
     gui/txt_selection_display.cpp
     gui/element_selections.cpp
-    gui/entity_tree.cpp
+    gui/ontology.cpp
 )
 qt5_use_modules(gui_widgets Widgets)
 qt5_use_modules(xml_lib Core)

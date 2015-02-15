@@ -2,7 +2,7 @@
 #include "xml_display.hpp"
 #include "txt_selection_display.hpp"
 #include "xml_file_outline.hpp"
-#include "entity_tree.hpp"
+#include "ontology.hpp"
 #include "xml_doc.hpp"
 #include "element_selections.hpp"
 #include "synonyms.hpp"
@@ -33,7 +33,7 @@ Mainwindow::Mainwindow( QWidget *parent )
     : QMainWindow{parent}, xmlDisplay_{new XmlDisplay( this )},
       txtSelectionDisplay_{new TxtSelectionDisplay( this )},
       selections_{new ElementSelections( this )}, xmlFileOutline_{new XmlFileOutline( this )},
-      entityNavigator_{new EntityTree( this )} {
+      ontology_{new Ontology( this )} {
 
     // init
     createActions( );
@@ -66,7 +66,7 @@ Mainwindow::Mainwindow( QWidget *parent )
     // right dock
     QDockWidget *entityNavDock = new QDockWidget( tr( "Ontology" ), this );
     entityNavDock->setAllowedAreas( Qt::RightDockWidgetArea );
-    entityNavDock->setWidget( entityNavigator_ );
+    entityNavDock->setWidget( ontology_ );
     entityNavDock->setFeatures( QDockWidget::DockWidgetVerticalTitleBar );
     addDockWidget( Qt::RightDockWidgetArea, entityNavDock );
 
@@ -93,10 +93,10 @@ Mainwindow::Mainwindow( QWidget *parent )
     connect( selections_, SIGNAL( currentXmlElementInvalid( ) ), txtSelectionDisplay_,
              SLOT( clear( ) ) );
     connect( txtSelectionDisplay_, SIGNAL( entrySelected( const QString & )),
-             entityNavigator_, SLOT( insertEntry( const QString & )) );
-    connect( txtSelectionDisplay_, SIGNAL( textChanged( ) ), entityNavigator_,
+             ontology_, SLOT( insertEntry( const QString & )) );
+    connect( txtSelectionDisplay_, SIGNAL( textChanged( ) ), ontology_,
              SLOT( dictionary( ) ) );
-    connect( entityNavigator_, SIGNAL( dictionaryRequested( const Dictionary & )),
+    connect( ontology_, SIGNAL( dictionaryRequested( const Dictionary & )),
              txtSelectionDisplay_, SLOT( scan( const Dictionary & )) );
 }
 

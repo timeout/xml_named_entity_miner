@@ -3,7 +3,7 @@
 
 class QAction;
 class XmlFileOutline;
-class EntityTree;
+class Ontology;
 class XmlDisplay;
 class QMenu;
 class QPoint;
@@ -55,7 +55,7 @@ private:
     // docking
     XmlFileOutline *xmlFileOutline_;
 
-    EntityTree *entityNavigator_;
+    Ontology *ontology_;
 
     enum { MaxRecentFiles = 5 };
     QAction *recentFileActs[MaxRecentFiles];

@@ -5,10 +5,10 @@
 
 class Dictionary;
 
-class EntityTree : public QTreeWidget {
+class Ontology : public QTreeWidget {
     Q_OBJECT
 public:
-    EntityTree( QWidget *parent = nullptr );
+    Ontology( QWidget *parent = nullptr );
     // void dictionary( const Dictionary &dictionary );
     // void thesaurus( const Thesaurus &thesaurus );
 

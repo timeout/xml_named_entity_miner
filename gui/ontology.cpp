@@ -1,4 +1,4 @@
-#include "entity_tree.hpp"
+#include "ontology.hpp"
 #include "synonyms.hpp"
 #include <QTreeWidgetItem>
 #include <QTreeWidgetItemIterator>
@@ -13,7 +13,7 @@
 
 static QTreeWidgetItem *findItem( QTreeWidget *tw, const QString &name );
 
-EntityTree::EntityTree( QWidget *parent ) : QTreeWidget{parent} {
+Ontology::Ontology( QWidget *parent ) : QTreeWidget{parent} {
     setColumnCount( 2 );
 
     setSelectionMode( QAbstractItemView::SingleSelection );
@@ -22,9 +22,9 @@ EntityTree::EntityTree( QWidget *parent ) : QTreeWidget{parent} {
     setDropIndicatorShown( true );
     setDragDropMode( QAbstractItemView::InternalMove );
 }
-// void EntityTree::dictionary( const Dictionary &dictionary ) { dictionary_ = dictionary; }
-// void EntityTree::thesaurus( const Thesaurus &thesaurus ) { thesaurus_ = thesaurus; }
-// void EntityTree::insertEntry( const QString &entry ) {
+// void Ontology::dictionary( const Dictionary &dictionary ) { dictionary_ = dictionary; }
+// void Ontology::thesaurus( const Thesaurus &thesaurus ) { thesaurus_ = thesaurus; }
+// void Ontology::insertEntry( const QString &entry ) {
 //     const std::string &entry_ = entry.toStdString( );
 //     if ( dictionary_.exists( entry_ ) ) {
 //         std::string canonical = thesaurus_.canonical( entry_ );
@@ -90,15 +90,15 @@ EntityTree::EntityTree( QWidget *parent ) : QTreeWidget{parent} {
 //     }
 // }
 // 
-// void EntityTree::dictionary( ) {
+// void Ontology::dictionary( ) {
 //     qDebug( ) << "dictionary requested ...";
 //     emit dictionaryRequested( dictionary_ );
 //     qDebug( ) << "and emitted\n";
 // }
 
-void EntityTree::dropEvent( QDropEvent *event ) {
+void Ontology::dropEvent( QDropEvent *event ) {
     QTreeWidgetItem *movedItem =
-        qobject_cast<EntityTree *>( event->source( ) )->currentItem( );
+        qobject_cast<Ontology *>( event->source( ) )->currentItem( );
     QModelIndex droppedIndex = indexAt( event->pos( ) );
     QTreeWidgetItem *item = itemFromIndex( indexAt( event->pos( ) ) );
     if ( !droppedIndex.isValid( ) ) {
