@@ -1,7 +1,7 @@
 #include "mainwindow.hpp"
 #include "xml_display.hpp"
 #include "txt_selection_display.hpp"
-#include "xml_tree.hpp"
+#include "xml_file_outline.hpp"
 #include "entity_tree.hpp"
 #include "xml_doc.hpp"
 #include "element_selections.hpp"
@@ -32,7 +32,7 @@
 Mainwindow::Mainwindow( QWidget *parent )
     : QMainWindow{parent}, xmlDisplay_{new XmlDisplay( this )},
       txtSelectionDisplay_{new TxtSelectionDisplay( this )},
-      selections_{new ElementSelections( this )}, xmlNavigator_{new XmlTree( this )},
+      selections_{new ElementSelections( this )}, xmlFileOutline_{new XmlFileOutline( this )},
       entityNavigator_{new EntityTree( this )} {
 
     // init
@@ -59,7 +59,7 @@ Mainwindow::Mainwindow( QWidget *parent )
     // left dock
     QDockWidget *xmlNavDock = new QDockWidget( tr( "Xml File Outline" ), this );
     xmlNavDock->setAllowedAreas( Qt::LeftDockWidgetArea );
-    xmlNavDock->setWidget( xmlNavigator_ );
+    xmlNavDock->setWidget( xmlFileOutline_ );
     xmlNavDock->setFeatures( QDockWidget::DockWidgetVerticalTitleBar );
     addDockWidget( Qt::LeftDockWidgetArea, xmlNavDock );
 
@@ -81,12 +81,12 @@ Mainwindow::Mainwindow( QWidget *parent )
     statusBar( )->showMessage( tr( "Ready" ) );
 
     // context menu for tree view
-    connect( xmlNavigator_, SIGNAL( customContextMenuRequested( const QPoint & )), this,
+    connect( xmlFileOutline_, SIGNAL( customContextMenuRequested( const QPoint & )), this,
              SLOT( onCustomContextRequest( const QPoint & )) );
 
-    connect( xmlNavigator_, SIGNAL( xmlItemSelected( const XmlElement & )), selections_,
+    connect( xmlFileOutline_, SIGNAL( xmlItemSelected( const XmlElement & )), selections_,
              SLOT( addXmlElement( const XmlElement & )) );
-    connect( xmlNavigator_, SIGNAL( xmlItemDeselected( const XmlElement & )), selections_,
+    connect( xmlFileOutline_, SIGNAL( xmlItemDeselected( const XmlElement & )), selections_,
              SLOT( removeXmlElement( const XmlElement & )) );
     connect( selections_, SIGNAL( currentXmlElement( const XmlElement & )),
              txtSelectionDisplay_, SLOT( setXmlTxt( const XmlElement & )) );
@@ -109,16 +109,16 @@ void Mainwindow::open( ) {
         //
         // std::ifstream in{filename.toUtf8( ).constData( )};
         // XmlDoc xml{in};
-        // xmlNavigator_->xml( xml );
+        // xmlFileOutline_->xml( xml );
         // xmlDisplay_->setPlainText( QString::fromUtf8( xml.toString( ).c_str( ) ) );
         // xmlDisplay_->setXml( xml );
     }
 }
 
 void Mainwindow::onCustomContextRequest( const QPoint &pos ) {
-    QModelIndex idx = xmlNavigator_->indexAt( pos );
+    QModelIndex idx = xmlFileOutline_->indexAt( pos );
     if ( idx.isValid( ) ) {
-        xmlTreeContextMenu_->exec( xmlNavigator_->mapToGlobal( pos ) );
+        xmlTreeContextMenu_->exec( xmlFileOutline_->mapToGlobal( pos ) );
     }
 }
 
@@ -137,7 +137,7 @@ void Mainwindow::loadFile( const QString &fileName ) {
     XmlDoc xml{in}; // TODO: error checking
     QApplication::setOverrideCursor( Qt::WaitCursor );
     // TODO:
-    // xmlNavigator_->xml( xml );
+    // xmlFileOutline_->xml( xml );
     xmlDisplay_->setPlainText( QString::fromUtf8( xml.toString( ).c_str( ) ) );
     xmlDisplay_->setXml( xml );
     QApplication::restoreOverrideCursor( );

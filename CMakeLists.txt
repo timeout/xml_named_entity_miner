@@ -33,7 +33,7 @@ find_package(OpenGL REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 qt5_wrap_cpp(QT_GUI_src 
     gui/mainwindow.hpp 
-    gui/xml_tree.hpp
+    gui/xml_file_outline.hpp
     gui/xml_display.hpp
     gui/xml_highlighter.hpp
     gui/txt_selection_display.hpp
@@ -73,7 +73,7 @@ add_library(xml_lib
 add_library(gui_widgets 
     ${QT_GUI_src}
     ${RESOURCE_ADDED}
-    gui/xml_tree.cpp
+    gui/xml_file_outline.cpp
     gui/xml_display.cpp
     gui/xml_highlighter.cpp
     gui/mainwindow.cpp

@@ -2,7 +2,7 @@
 #include <QMainWindow>
 
 class QAction;
-class XmlTree;
+class XmlFileOutline;
 class EntityTree;
 class XmlDisplay;
 class QMenu;
@@ -53,7 +53,8 @@ private:
     ElementSelections *selections_;
 
     // docking
-    XmlTree *xmlNavigator_;
+    XmlFileOutline *xmlFileOutline_;
+
     EntityTree *entityNavigator_;
 
     enum { MaxRecentFiles = 5 };

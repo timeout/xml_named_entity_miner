@@ -2,10 +2,10 @@
 #include "xml_doc.hpp"
 #include <QTreeWidget>
 
-class XmlTree : public QTreeWidget {
+class XmlFileOutline : public QTreeWidget {
     Q_OBJECT
 public:
-    XmlTree( QWidget *parent = nullptr );
+    XmlFileOutline( QWidget *parent = nullptr );
     // void xml( const XmlDoc xml );
     const XmlDoc &xml( ) const;
 

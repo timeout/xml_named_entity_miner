@@ -1,4 +1,4 @@
-#include "xml_tree.hpp"
+#include "xml_file_outline.hpp"
 #include "xml_doc.hpp"
 #include "xml_element.hpp"
 #include <vector>
@@ -9,58 +9,17 @@
 #include <QDebug>
 #include <queue>
 
-XmlTree::XmlTree( QWidget *parent ) : QTreeWidget{parent} {
+XmlFileOutline::XmlFileOutline( QWidget *parent ) : QTreeWidget{parent} {
     setContextMenuPolicy( Qt::CustomContextMenu );
     connect( this, SIGNAL( clicked( const QModelIndex & )),
              SLOT( itemClicked( const QModelIndex & )) );
 }
 
-// void XmlTree::xml( const XmlDoc xml ) {
-//     xml_ = xml;
-//     clear( ); // public slot of QTreeWidget
-// 
-//     auto root = xml.getRootElement( );
-//     QTreeWidgetItem *rootItem = new QTreeWidgetItem;
-//     rootItem->setText( 0, QString::fromUtf8( root.tags( ).first.c_str( ) ) );
-//     // Using QMetaType
-//     rootItem->setData( 0, Qt::UserRole, QVariant::fromValue( root ) );
-// 
-//     std::queue<QTreeWidgetItem *> parentItemQu;
-//     parentItemQu.push( rootItem );
-// 
-//     std::queue<XmlElement> parentElementQu;
-//     parentElementQu.push( root );
-// 
-//     while ( !parentElementQu.empty( ) && !parentItemQu.empty( ) ) {
-//         auto parentElement = parentElementQu.front( );
-//         parentElementQu.pop( );
-//         auto parentItem = parentItemQu.front( );
-//         parentItemQu.pop( );
-// 
-//         auto elementChildren = parentElement.children( );
-//         for ( auto childElement : elementChildren ) {
-//             // create childItems
-//             QTreeWidgetItem *childItem = new QTreeWidgetItem( parentItem );
-//             childItem->setText(
-//                 0, QString::fromUtf8( childElement.tagsRegex( ).first.c_str( ) ) );
-//             childItem->setData( 0, Qt::UserRole, QVariant::fromValue( childElement ) );
-//             childItem->setCheckState( 0, Qt::Unchecked );
-//             childItem->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsEnabled );
-//             // breadth first creation (Elements only)
-//             if ( childElement.hasChild( ) ) {
-//                 parentElementQu.push( childElement );
-//                 parentItemQu.push( childItem );
-//             }
-//         }
-//     }
-// 
-//     addTopLevelItem( rootItem );
-// }
-const XmlDoc &XmlTree::xml( ) const { return xml_; }
+const XmlDoc &XmlFileOutline::xml( ) const { return xml_; }
 
-void XmlTree::onItemSelectionChanged( ) { qDebug( ) << "item selection changed\n"; }
+void XmlFileOutline::onItemSelectionChanged( ) { qDebug( ) << "item selection changed\n"; }
 
-void XmlTree::itemClicked( const QModelIndex &idx ) {
+void XmlFileOutline::itemClicked( const QModelIndex &idx ) {
     QTreeWidgetItem *target = itemFromIndex( idx );
     Qt::CheckState checkedState = target->checkState( 0 );
     switch ( checkedState ) {
@@ -75,7 +34,7 @@ void XmlTree::itemClicked( const QModelIndex &idx ) {
     }
 }
 
-void XmlTree::checkSubtree( QTreeWidgetItem *target ) {
+void XmlFileOutline::checkSubtree( QTreeWidgetItem *target ) {
     qDebug( ) << "checking subtree...\n";
     if ( target->isDisabled( ) == true ) {
         return;
@@ -108,7 +67,7 @@ void XmlTree::checkSubtree( QTreeWidgetItem *target ) {
     emit xmlItemSelected( targetElement );
 }
 
-void XmlTree::uncheckSubtree( QTreeWidgetItem *target ) {
+void XmlFileOutline::uncheckSubtree( QTreeWidgetItem *target ) {
     qDebug( ) << "unchecking subtree...\n";
     std::queue<QTreeWidgetItem *> parents;
     parents.push( target );
