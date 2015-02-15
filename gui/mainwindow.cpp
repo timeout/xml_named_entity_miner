@@ -57,13 +57,14 @@ Mainwindow::Mainwindow( QWidget *parent )
 
     // docks
     // left dock
-    QDockWidget *xmlNavDock = new QDockWidget( tr( "Xml Navigator" ), this );
+    QDockWidget *xmlNavDock = new QDockWidget( tr( "Xml File Outline" ), this );
     xmlNavDock->setAllowedAreas( Qt::LeftDockWidgetArea );
     xmlNavDock->setWidget( xmlNavigator_ );
     xmlNavDock->setFeatures( QDockWidget::DockWidgetVerticalTitleBar );
     addDockWidget( Qt::LeftDockWidgetArea, xmlNavDock );
 
-    QDockWidget *entityNavDock = new QDockWidget( tr( "Entity Navigator" ), this );
+    // right dock
+    QDockWidget *entityNavDock = new QDockWidget( tr( "Ontology" ), this );
     entityNavDock->setAllowedAreas( Qt::RightDockWidgetArea );
     entityNavDock->setWidget( entityNavigator_ );
     entityNavDock->setFeatures( QDockWidget::DockWidgetVerticalTitleBar );
