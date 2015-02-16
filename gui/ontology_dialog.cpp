@@ -1,4 +1,5 @@
 #include "ontology_dialog.hpp"
+#include "line_edit.hpp"
 #include <QLabel>
 #include <QComboBox>
 #include <QPushButton>
@@ -11,52 +12,8 @@
 #include <QColorDialog>
 #include <QSettings>
 #include <QStringList>
-#include <QStandardItem>
-#include <QStandardItemModel>
-
-#include <QDebug>
 
 static QPixmap pixmap( const QColor &color, int width );
-
-OntologyDialogLineEdit::OntologyDialogLineEdit( QWidget *parent )
-    : QLineEdit{parent}, activePalette_{palette( )},
-      inactivePalette_{QGuiApplication::palette( )}, edited_{false} {
-    inactivePalette_.setColor(
-        QPalette::Active, QPalette::Text,
-        inactivePalette_.color( QPalette::Disabled, QPalette::WindowText ) );
-    inactivePalette_.setColor(
-        QPalette::Inactive, QPalette::Text,
-        inactivePalette_.color( QPalette::Disabled, QPalette::WindowText ) );
-    setPalette( inactivePalette_ );
-    connect( this, SIGNAL( keyPressed( bool )), SLOT( clearDefaultEntry( bool )) );
-    connect( this, SIGNAL( mousePressed( bool )), SLOT( clearDefaultEntry( bool )) );
-}
-
-void OntologyDialogLineEdit::clearDefaultEntry( bool ) {
-    clear( );
-    setPalette( activePalette_ );
-}
-
-void OntologyDialogLineEdit::focusInEvent( QFocusEvent *event ) {
-    QLineEdit::focusInEvent( event );
-    emit( focussed( true ) );
-}
-
-void OntologyDialogLineEdit::keyPressEvent( QKeyEvent *event ) {
-    QLineEdit::keyPressEvent( event );
-    if ( !edited_ ) {
-        emit( keyPressed( true ) );
-    }
-    edited_ = true;
-}
-
-void OntologyDialogLineEdit::mousePressEvent( QMouseEvent *event ) {
-    QLineEdit::mousePressEvent( event );
-    if ( !edited_ ) {
-        emit( mousePressed( true ) );
-    }
-    edited_ = true;
-}
 
 OntologyDialog::OntologyDialog( QWidget *parent )
     : QDialog{parent}, configGroupBox_{new QGroupBox{tr( "New Ontology:" )}},
@@ -69,7 +26,7 @@ OntologyDialog::OntologyDialog( QWidget *parent )
     label_->setSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed );
 
     // comboBox
-    ontologyName_->setLineEdit( new OntologyDialogLineEdit );
+    ontologyName_->setLineEdit( new LineEdit );
     ontologyName_->setMaxCount( 5 );
     ontologyName_->setEditable( true );
     ontologyName_->setInsertPolicy( QComboBox::InsertAtTop );

@@ -1,37 +1,12 @@
 #pragma once
 #include <QDialog>
 #include <QColor>
-#include <QLineEdit>
 
 class QLabel;
 class QComboBox;
 class QPushButton;
 class QDialogButtonBox;
 class QGroupBox;
-
-class OntologyDialogLineEdit : public QLineEdit {
-    Q_OBJECT
-public:
-    OntologyDialogLineEdit( QWidget *parent = nullptr );
-
-public slots:
-    void clearDefaultEntry( bool );
-
-signals:
-    void focussed( bool hasFocus );
-    void keyPressed( bool wasPressed );
-    void mousePressed( bool wasPressed );
-
-protected:
-    virtual void focusInEvent( QFocusEvent *event );
-    virtual void keyPressEvent( QKeyEvent *event );
-    virtual void mousePressEvent( QMouseEvent *event );
-
-private:
-    QPalette activePalette_;
-    QPalette inactivePalette_;
-    bool edited_;
-};
 
 class OntologyDialog : public QDialog {
     Q_OBJECT
