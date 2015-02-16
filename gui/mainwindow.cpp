@@ -7,6 +7,7 @@
 #include "element_selections.hpp"
 #include "synonyms.hpp"
 #include "ontology_dialog.hpp"
+#include "xpath_query_widget.hpp"
 
 #include <QWidget>
 #include <QMenuBar>
@@ -25,6 +26,7 @@
 #include <QStringList>
 #include <QToolButton>
 #include <QLabel>
+#include <QGridLayout>
 
 #include <QString>
 #include <QDebug>
@@ -36,7 +38,8 @@ Mainwindow::Mainwindow( QWidget *parent )
     : QMainWindow{parent}, xmlDisplay_{new XmlDisplay( this )},
       txtSelectionDisplay_{new TxtSelectionDisplay( this )},
       selections_{new ElementSelections( this )},
-      xmlFileOutline_{new XmlFileOutline( this )}, ontology_{new Ontology( this )} {
+      xmlFileOutline_{new XmlFileOutline( this )},
+      xPathQueryWidget_{new XPathQueryWidget}, ontology_{new Ontology( this )} {
 
     // init
     createActions( );
@@ -60,9 +63,20 @@ Mainwindow::Mainwindow( QWidget *parent )
 
     // docks
     // left dock
+
+    QWidget *leftDockWidget = new QWidget;
+    QGridLayout *leftDockLayout = new QGridLayout;
+    leftDockLayout->addWidget( xmlFileOutline_, 0, 0 );
+    leftDockLayout->addWidget( xPathQueryWidget_, 1, 0 );
+    leftDockLayout->setRowStretch( 0, 3 );
+    leftDockLayout->setRowStretch( 1, 1 );
+    leftDockLayout->setContentsMargins( 0, 0, 0, 0 );
+
+    leftDockWidget->setLayout( leftDockLayout );
+
     QDockWidget *xmlNavDock = new QDockWidget( tr( "Xml File Outline" ), this );
     xmlNavDock->setAllowedAreas( Qt::LeftDockWidgetArea );
-    xmlNavDock->setWidget( xmlFileOutline_ );
+    xmlNavDock->setWidget( leftDockWidget );
     xmlNavDock->setFeatures( QDockWidget::DockWidgetVerticalTitleBar );
     addDockWidget( Qt::LeftDockWidgetArea, xmlNavDock );
 

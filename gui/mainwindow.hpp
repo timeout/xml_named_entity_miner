@@ -11,6 +11,7 @@ class QTabWidget;
 class TxtSelectionDisplay;
 class QToolBar;
 class ElementSelections;
+class XPathQueryWidget;
 
 class Mainwindow : public QMainWindow {
     Q_OBJECT
@@ -55,6 +56,7 @@ private:
 
     // docking
     XmlFileOutline *xmlFileOutline_;
+    XPathQueryWidget *xPathQueryWidget_;
     QTabWidget *tabOntologies_;
     Ontology *ontology_;
 

@@ -40,6 +40,7 @@ qt5_wrap_cpp(QT_GUI_src
     gui/element_selections.hpp
     gui/ontology.hpp
     gui/ontology_dialog.hpp
+    gui/xpath_query_widget.hpp
 )
 qt5_wrap_cpp(QT_SYN_LIB_src
     lib/synonyms.hpp
@@ -82,6 +83,7 @@ add_library(gui_widgets
     gui/element_selections.cpp
     gui/ontology.cpp
     gui/ontology_dialog.cpp
+    gui/xpath_query_widget.cpp
 )
 qt5_use_modules(gui_widgets Widgets)
 qt5_use_modules(xml_lib Core)
