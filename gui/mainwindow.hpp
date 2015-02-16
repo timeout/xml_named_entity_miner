@@ -23,7 +23,7 @@ public slots:
     void onNextSelectionTriggered( );
     void onPreviousSelectionTriggered( );
     void openRecentFile( );
-    void getOntologyDialog( );
+    void setNewOntology();
 
 private:
     void createMenus( );

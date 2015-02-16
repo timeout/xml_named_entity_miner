@@ -6,6 +6,7 @@
 #include "xml_doc.hpp"
 #include "element_selections.hpp"
 #include "synonyms.hpp"
+#include "ontology_dialog.hpp"
 
 #include <QWidget>
 #include <QMenuBar>
@@ -72,7 +73,7 @@ Mainwindow::Mainwindow( QWidget *parent )
     tb->setAutoRaise( true );
     tb->setToolTip( tr( "Click to add a new Ontology" ) );
 
-    connect( tb, SIGNAL( clicked( ) ), this, SLOT( getOntologyDialog( ) ) );
+    connect( tb, SIGNAL( clicked( ) ), this, SLOT( setNewOntology( ) ) );
 
     tabOntologies_->addTab( new QLabel( "You can add tabs by pressing <b>\"+\"</b>" ),
                             QString{} );
@@ -174,7 +175,6 @@ void Mainwindow::setCurrentFile( const QString &fileName ) {
     while ( files.size( ) > MaxRecentFiles ) {
         files.removeLast( );
     }
-
     settings.setValue( "recentFileList", files );
 
     foreach ( QWidget *widget, QApplication::topLevelWidgets( ) ) {
@@ -193,7 +193,13 @@ void Mainwindow::openRecentFile( ) {
     }
 }
 
-void Mainwindow::getOntologyDialog( ) {}
+void Mainwindow::setNewOntology( ) {
+    OntologyDialog dialog{this};
+    if ( dialog.exec( ) ) {
+        qDebug( ) << "new ontology name: " << dialog.name( ) << "\n";
+        qDebug( ) << "new ontology color: " << dialog.color( ) << "\n";
+    }
+}
 
 // private member functions
 void Mainwindow::createMenus( ) {
