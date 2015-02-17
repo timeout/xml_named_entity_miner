@@ -8,6 +8,7 @@
 #include "synonyms.hpp"
 #include "ontology_dialog.hpp"
 #include "xpath_query_widget.hpp"
+#include "xml_task_dialog.hpp"
 
 #include <QWidget>
 #include <QMenuBar>
@@ -27,12 +28,14 @@
 #include <QToolButton>
 #include <QLabel>
 #include <QGridLayout>
+#include <QErrorMessage>
 
 #include <QString>
 #include <QDebug>
 
 #include <string>
 #include <fstream>
+#include <sstream>
 
 Mainwindow::Mainwindow( QWidget *parent )
     : QMainWindow{parent}, xmlDisplay_{new XmlDisplay( this )},
@@ -63,7 +66,6 @@ Mainwindow::Mainwindow( QWidget *parent )
 
     // docks
     // left dock
-
     QWidget *leftDockWidget = new QWidget;
     QGridLayout *leftDockLayout = new QGridLayout;
     leftDockLayout->addWidget( xmlFileOutline_, 0, 0 );
@@ -165,16 +167,33 @@ void Mainwindow::loadFile( const QString &fileName ) {
     // TODO: refactor clear selections
     selections_->clear( );
 
-    XmlDoc xml{in}; // TODO: error checking
-    QApplication::setOverrideCursor( Qt::WaitCursor );
-    // TODO:
-    // xmlFileOutline_->xml( xml );
-    xmlDisplay_->setPlainText( QString::fromUtf8( xml.toString( ).c_str( ) ) );
-    xmlDisplay_->setXml( xml );
-    QApplication::restoreOverrideCursor( );
+    xml_ = XmlDoc{in}; // TODO: error checking
+    if ( xml_ ) {
+        QApplication::setOverrideCursor( Qt::WaitCursor );
+        // TODO:
+        // xmlFileOutline_->xml( xml );
+        xmlDisplay_->setPlainText( QString::fromUtf8( xml_.toString( ).c_str( ) ) );
+        xmlDisplay_->setXml( xml_ );
+        QApplication::restoreOverrideCursor( );
 
-    setCurrentFile( fileName );
-    statusBar( )->showMessage( tr( "File loaded" ), 2000 );
+        setCurrentFile( fileName );
+        statusBar( )->showMessage( tr( "File loaded" ), 2000 );
+    } else {
+        QString msg;
+        if ( xml_.errorHandler( ).hasErrors( ) ) {
+            std::ostringstream errors;
+            errors << xml_.errorHandler( );
+            std::cerr << "Error handler: " << xml_.errorHandler( ) << std::endl;
+            msg = QString::fromStdString( errors.str( ) );
+        }
+        QErrorMessage *errorMessage = new QErrorMessage{this};
+        errorMessage->setWindowTitle( "Could not open XML" );
+        if ( !msg.isEmpty( ) ) {
+            errorMessage->showMessage( msg );
+            qDebug( ) << msg;
+        }
+        qDebug( ) << "Could not open xml\n";
+    }
 }
 
 void Mainwindow::setCurrentFile( const QString &fileName ) {
@@ -215,6 +234,22 @@ void Mainwindow::setNewOntology( ) {
     }
 }
 
+void Mainwindow::validateDialog( ) {
+    if ( xml_ ) {
+        qDebug( ) << "starting the validation dialog...\n";
+        // XmlTaskDialog dialog{xml_, XmlTask::SchemaValidation, this};
+        XmlSchemaDialog dialog{xml_, this};
+        dialog.exec( );
+    }
+}
+
+void Mainwindow::transformDialog( ) {
+    if ( xml_ ) {
+        // XmlTaskDialog dialog{xml_, XmlTask::StylesheetTransformation, this};
+        XsltDialog dialog{xml_, this};
+        dialog.exec( );
+    }
+}
 // private member functions
 void Mainwindow::createMenus( ) {
 
@@ -226,6 +261,14 @@ void Mainwindow::createMenus( ) {
         recentFilesMenu_->addAction( recentFileActs[i] );
     fileMenu->addAction( exitAct_ );
     updateRecentFileActions( );
+
+    QMenu *toolMenu = menuBar( )->addMenu( tr( "&Tools" ) );
+    toolMenu->addAction( validateAct_ );
+    toolMenu->addAction( transformAct_ );
+
+    QMenu *viewMenu = menuBar( )->addMenu( tr( "&View" ) );
+    viewMenu->addAction( nextSelectionAct_ );
+    viewMenu->addAction( previousSelectionAct_ );
 
     xmlTreeContextMenu_ = new QMenu( this );
     // TODO: create actions: select all, clear selections?
@@ -265,6 +308,19 @@ void Mainwindow::createActions( ) {
     previousSelectionAct_->setIcon( QIcon::fromTheme( "arrow-left" ) );
     connect( previousSelectionAct_, SIGNAL( triggered( ) ), selections_,
              SLOT( previous( ) ) );
+
+    // tools
+    validateAct_ = new QAction{tr( "Xml Schema Validate" ), this};
+    validateAct_->setStatusTip(
+        tr( "Validated the current XML file using an XML Schema" ) );
+    validateAct_->setIcon( QIcon::fromTheme( "dialog-yes" ) );
+    connect( validateAct_, SIGNAL( triggered( ) ), this, SLOT( validateDialog( ) ) );
+
+    transformAct_ = new QAction{tr( "XSLT Transformation" ), this};
+    transformAct_->setStatusTip(
+        tr( "Transform the current XML file using an XSLT stylesheet" ) );
+    transformAct_->setIcon( QIcon::fromTheme( "document-export" ) );
+    connect( transformAct_, SIGNAL( triggered( ) ), this, SLOT( transformDialog( ) ) );
 }
 
 void Mainwindow::updateRecentFileActions( ) {

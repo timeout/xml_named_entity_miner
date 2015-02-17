@@ -39,8 +39,10 @@ qt5_wrap_cpp(QT_GUI_src
     gui/txt_selection_display.hpp
     gui/element_selections.hpp
     gui/ontology.hpp
+    gui/line_edit.hpp
     gui/ontology_dialog.hpp
     gui/xpath_query_widget.hpp
+    gui/xml_task_dialog.hpp
 )
 qt5_wrap_cpp(QT_SYN_LIB_src
     lib/synonyms.hpp
@@ -82,8 +84,10 @@ add_library(gui_widgets
     gui/txt_selection_display.cpp
     gui/element_selections.cpp
     gui/ontology.cpp
+    gui/line_edit.cpp
     gui/ontology_dialog.cpp
     gui/xpath_query_widget.cpp
+    gui/xml_task_dialog.cpp
 )
 qt5_use_modules(gui_widgets Widgets)
 qt5_use_modules(xml_lib Core)

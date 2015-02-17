@@ -1,5 +1,6 @@
 #pragma once
 #include <QMainWindow>
+#include "xml_doc.hpp"
 
 class QAction;
 class XmlFileOutline;
@@ -24,7 +25,9 @@ public slots:
     void onNextSelectionTriggered( );
     void onPreviousSelectionTriggered( );
     void openRecentFile( );
-    void setNewOntology();
+    void setNewOntology( );
+    void validateDialog( );
+    void transformDialog( );
 
 private:
     void createMenus( );
@@ -39,6 +42,7 @@ private:
     QAction *openAct_, *exitAct_;
 
     QAction *nextSelectionAct_, *previousSelectionAct_;
+    QAction *validateAct_, *transformAct_;
 
     // menu
     QMenu *xmlTreeContextMenu_;
@@ -63,5 +67,7 @@ private:
     enum { MaxRecentFiles = 5 };
     QAction *recentFileActs[MaxRecentFiles];
     QString curFile_;
+
+    XmlDoc xml_;
 };
 
