@@ -16,7 +16,7 @@
 static QPixmap pixmap( const QColor &color, int width );
 
 OntologyDialog::OntologyDialog( QWidget *parent )
-    : QDialog{parent}, configGroupBox_{new QGroupBox{tr( "New Ontology:" )}},
+    : QDialog{parent}, configGroupBox_{new QGroupBox{tr( "New Ontology" )}},
       label_{new QLabel{tr( "&Name:" )}}, ontologyName_{new QComboBox},
       chooseColor_{new QPushButton},
       buttonBox_{new QDialogButtonBox( QDialogButtonBox::Ok | QDialogButtonBox::Cancel )},
