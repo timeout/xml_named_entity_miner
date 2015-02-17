@@ -6,6 +6,7 @@
 #include <libxslt/xsltInternals.h>
 #include <libxslt/transform.h>
 #include <libexslt/exslt.h>
+#include <libxml/tree.h>
 
 #include <memory>
 
@@ -20,9 +21,8 @@ class XsltDoc {
 public:
     XsltDoc( ) : stylesheet_{nullptr} {}
     /* /!\ xsltStylesheet takes ownership of xmlDoc /!\ */
-    XsltDoc( XmlDoc &xml )
-        // : stylesheet_{xsltParseStylesheetDoc( xml.xmlDoc_.release( ) )} {}
-        : stylesheet_{xsltParseStylesheetDoc( xml.get( ) )} {}
+    XsltDoc( const XmlDoc &xml )
+        : stylesheet_{xsltParseStylesheetDoc( xmlCopyDoc( xml.get( ), true ) )} {}
     XsltDoc( const XsltDoc &stylesheet ) : stylesheet_{xsltNewStylesheet( )} {
         *stylesheet_ = *stylesheet.stylesheet_;
     }
@@ -44,8 +44,8 @@ public:
     }
     auto transform( const XmlDoc &xml ) const -> XmlDoc {
         XmlDoc res;
-        res.xmlDoc_.reset(
-            xsltApplyStylesheet( stylesheet_.get( ), xml.get( ), nullptr ) );
+        res.xmlDoc_.reset( xsltApplyStylesheet( stylesheet_.get( ), xml.get( ), nullptr ),
+                           FreeXmlDoc( ) );
         return res;
     }
 

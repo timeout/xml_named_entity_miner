@@ -165,22 +165,85 @@ const std::string menu_xml{
     </food>
 </menu>)"};
 
+const std::string bilanz_xsl_stylesheet {
+R"ASDF(<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- transforms the xml derived from the bilanz html articles
+		 which is too flat to be really useful -->
+
+<xsl:stylesheet version="1.0" 
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	<xsl:output method="xml" indent="yes" encoding="UTF-8"/>
+	<xsl:strip-space elements="*"/>
+
+	<xsl:template match="/">
+		<xsl:apply-templates select="article" />
+	</xsl:template>
+
+	<xsl:template match="article">
+		<article>
+			<title><xsl:value-of select="@id"/></title>
+			<section>
+				<xsl:if test="not(local-name(child::node()[1])=subheading)">
+					<subheading></subheading>
+				</xsl:if>
+				<xsl:apply-templates select="paragraph"/>
+			</section>
+			<xsl:apply-templates select="subheading"/>
+		</article>
+	</xsl:template>
+
+	<xsl:template match="subheading">
+		<xsl:variable name="pos"
+			select="count(preceding-sibling::subheading)"/>
+		<section>
+			<xsl:copy-of select="."/>
+			<xsl:apply-templates select="following-sibling::paragraph">
+				<xsl:with-param name="slot" select="$pos"/>
+			</xsl:apply-templates>
+		</section>
+	</xsl:template>
+
+	<xsl:template match="paragraph">
+		<xsl:param name="slot"/>
+		<xsl:choose>
+			<xsl:when test="count(preceding-sibling::node()[self::subheading]) = 0">
+				<paragraph>
+					<xsl:value-of select="descendant-or-self::node()"/>
+				</paragraph>
+			</xsl:when>
+			<xsl:when test="count(preceding-sibling::subheading) = $slot + 1">
+				<paragraph>
+					<xsl:value-of select="descendant-or-self::node()"/>
+				</paragraph>
+			</xsl:when>
+			<xsl:otherwise/>
+		</xsl:choose>
+	</xsl:template>
+
+</xsl:stylesheet>)ASDF"};
+
+
+
 XmlCreator::XmlCreator( ) {
     std::istringstream books_is{books_xml};
     books_xml_ = XmlDoc{books_is};
 
     std::istringstream menu_is{menu_xml};
     menu_xml_ = XmlDoc{menu_is};
+
+    std::istringstream stylesheet_is{bilanz_xsl_stylesheet};
+    bilanz_xsl_ = XmlDoc{stylesheet_is};
 }
 
 XPathCtxtCreator::XPathCtxtCreator( ) {
     XmlCreator xmlCreator;
-    books_xpctx_ = XPathCtxt{xmlCreator.booksXml()};
-    menu_xpctx_ = XPathCtxt{xmlCreator.menuXml()};
+    books_xpctx_ = XPathCtxt{xmlCreator.booksXml( )};
+    menu_xpctx_ = XPathCtxt{xmlCreator.menuXml( )};
 }
 
 XPathQueryCreator::XPathQueryCreator( ) {
     XPathCtxtCreator xpcCreator;
-    books_query_ = XPathQuery{xpcCreator.booksCtxt()};
-    menu_query_ = XPathQuery{xpcCreator.menuCtxt()};
+    books_query_ = XPathQuery{xpcCreator.booksCtxt( )};
+    menu_query_ = XPathQuery{xpcCreator.menuCtxt( )};
 }

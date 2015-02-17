@@ -1,3 +1,5 @@
+#pragma once
+
 #include "xml_doc.hpp"
 #include "xpath_ctxt.hpp"
 #include "xpath_query.hpp"
@@ -8,9 +10,10 @@ public:
 
     auto booksXml( ) const -> const XmlDoc & { return books_xml_; }
     auto menuXml( ) const -> const XmlDoc & { return menu_xml_; }
+    auto stylesheet( ) const -> const XmlDoc { return bilanz_xsl_; }
 
 private:
-    XmlDoc books_xml_, menu_xml_;
+    XmlDoc books_xml_, menu_xml_, bilanz_xsl_;
 };
 
 class XPathCtxtCreator {
