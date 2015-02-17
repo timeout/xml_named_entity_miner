@@ -26,6 +26,7 @@ include_directories(${gtest_SOURCE_DIR}/include)
 set(test_sources gtest_main.cpp
     test_helper.hpp
     test_helper.cpp
+    xslt_doc_test.cpp
     synonyms_test.cpp
     pathname_test.cpp
     dir_test.cpp
