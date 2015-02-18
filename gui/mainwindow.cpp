@@ -171,7 +171,8 @@ void Mainwindow::loadFile( const QString &fileName ) {
     if ( xml_ ) {
         QApplication::setOverrideCursor( Qt::WaitCursor );
         // TODO:
-        // xmlFileOutline_->xml( xml );
+        xmlFileOutline_->xml( xml_ );
+
         xmlDisplay_->setPlainText( QString::fromUtf8( xml_.toString( ).c_str( ) ) );
         xmlDisplay_->setXml( xml_ );
         QApplication::restoreOverrideCursor( );
