@@ -1,8 +1,20 @@
 #pragma once
 #include <QPlainTextEdit>
+#include <QSyntaxHighlighter>
 
 class XmlElement;
 class Dictionary;
+class QTextDocument;
+
+class Highlighter : public QSyntaxHighlighter {
+    Q_OBJECT
+public:
+    Highlighter( QTextDocument *parent = nullptr );
+
+protected:
+    void highlightBlock( const QString &text ) override;
+};
+
 
 class TxtSelectionDisplay : public QPlainTextEdit {
     Q_OBJECT
@@ -15,7 +27,7 @@ protected:
 
 public slots:
     void setXmlTxt( const XmlElement &element );
-    // void scan( const Dictionary &dictionary );
+// void scan( const Dictionary &dictionary );
 
 signals:
     void entrySelected( const QString &entry );
@@ -28,4 +40,6 @@ private:
         QTextCursor begin_, end_;
     } cursorSelection_;
     QList<QTextEdit::ExtraSelection> extraSelections_;
+
+    Highlighter *highlighter_;
 };

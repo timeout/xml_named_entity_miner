@@ -8,8 +8,13 @@
 
 #include <iostream>
 
+Highlighter::Highlighter( QTextDocument *parent ) : QSyntaxHighlighter{parent} {}
+
+void Highlighter::highlightBlock( const QString &text ) {}
+
 TxtSelectionDisplay::TxtSelectionDisplay( QWidget *parent ) : QPlainTextEdit( parent ) {
     setReadOnly( true );
+    highlighter_ = new Highlighter( document( ) );
 }
 
 void TxtSelectionDisplay::setXmlTxt( const XmlElement &element ) {
