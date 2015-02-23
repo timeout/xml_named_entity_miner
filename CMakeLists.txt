@@ -132,6 +132,7 @@ target_link_libraries(GUI2_library
 
 include_directories(lib)
 # include_directories(gui)
+include_directories(gui2)
 
 add_subdirectory(gtest-1.7.0)
 add_subdirectory(tests)
@@ -139,7 +140,7 @@ add_subdirectory(tests)
 add_executable(program.out main.cpp)
 target_link_libraries(program.out 
     xml_lib
-    ${GUI2_library}
+    GUI2_library
 #     gui_widgets
 #     syn_lib
 )
