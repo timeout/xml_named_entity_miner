@@ -1,0 +1,235 @@
+#include "mainwindow.hpp"
+#include "xml_doc.hpp"
+
+#include <fstream>
+#include <sstream>
+
+#include <QAction>
+#include <QApplication>
+#include <QCloseEvent>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QIcon>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QSettings>
+#include <QStatusBar>
+#include <QString>
+#include <QToolBar>
+
+static auto strippedName( const QString &fullFileName ) -> QString;
+
+struct MainWindow::Impl {
+    Impl( );
+    auto updateRecentFileActions( ) -> void;
+    auto configureActions( ) -> void;
+    auto configureMenu( ) -> void;
+    auto configureFileToolBar( ) -> void;
+
+    QAction *openAct_;
+    QAction *exitAct_;
+    QAction *recentFileActs_[MaxRecentFiles];
+
+    QMenu *fileMenu_;
+    QToolBar *fileToolBar_;
+
+    QString curFile_;
+    XmlDoc xml_;
+};
+
+MainWindow::Impl::Impl( )
+    : openAct_{nullptr}
+    , exitAct_{nullptr}
+    , recentFileActs_{nullptr}
+    , fileMenu_{nullptr}
+    , fileToolBar_{nullptr} {}
+
+auto MainWindow::Impl::updateRecentFileActions( ) -> void {
+    QSettings settings;
+    QStringList files = settings.value( "recentFileList" ).toStringList( );
+
+    int numRecentFiles = qMin( files.size( ), ( int )MaxRecentFiles );
+
+    for ( int i = 0; i < numRecentFiles; ++i ) {
+        QString text = tr( "&%1 %2" ).arg( i + 1 ).arg( strippedName( files[i] ) );
+        recentFileActs_[i]->setText( text );
+        recentFileActs_[i]->setData( files[i] );
+        recentFileActs_[i]->setVisible( true );
+    }
+    for ( int j = numRecentFiles; j < MaxRecentFiles; ++j )
+        recentFileActs_[j]->setVisible( false );
+}
+
+auto MainWindow::Impl::configureFileToolBar( ) -> void {
+    fileToolBar_->setObjectName( "FileToolBar" );
+    fileToolBar_->setMovable( false );
+    fileToolBar_->setAllowedAreas( Qt::TopToolBarArea );
+    fileToolBar_->addAction( openAct_ );
+    fileToolBar_->addAction( exitAct_ );
+    fileToolBar_->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+}
+
+auto MainWindow::Impl::configureActions( ) -> void {
+    openAct_->setShortcuts( QKeySequence::Open );
+    openAct_->setStatusTip( tr( "Open an existing file" ) );
+    openAct_->setIcon( QIcon::fromTheme( "document-open" ) );
+    exitAct_->setShortcuts( QKeySequence::Quit );
+    exitAct_->setStatusTip( tr( "Exit the application" ) );
+    exitAct_->setIcon( QIcon::fromTheme( "application-exit" ) );
+}
+
+auto MainWindow::Impl::configureMenu( ) -> void {
+    fileMenu_->addAction( openAct_ );
+    QMenu *recentFilesMenu = fileMenu_->addMenu( QIcon::fromTheme( "application-menu" ),
+                                                 tr( "Recent &Files" ) );
+    for ( int i = 0; i < MaxRecentFiles; ++i )
+        recentFilesMenu->addAction( recentFileActs_[i] );
+    fileMenu_->addAction( exitAct_ );
+    updateRecentFileActions( );
+}
+
+// -- end Impl
+
+MainWindow::MainWindow( ) : QMainWindow{}, impl_{new Impl} {
+    readSettings( );
+    initActions( );
+    initMenus( );
+    initToolBar( );
+    initConnections( );
+}
+
+MainWindow::~MainWindow( ) = default;
+
+auto MainWindow::closeEvent( QCloseEvent *event ) -> void {
+    if ( maybeSave( ) ) {
+        writeSettings( );
+        event->accept( );
+    } else {
+        event->ignore( );
+    }
+}
+
+auto MainWindow::open( ) -> void {
+    const QString filename = QFileDialog::getOpenFileName(
+        this, tr( "Open XML file" ), "/usr/local/home/joe", tr( "Xml Files (*.xml)" ) );
+    if ( !filename.isEmpty( ) ) {
+        loadFile( filename );
+    }
+}
+
+auto MainWindow::openRecentFile( ) -> void {
+    QAction *action = qobject_cast<QAction *>( sender( ) );
+    if ( action ) {
+        loadFile( action->data( ).toString( ) );
+    }
+}
+
+auto MainWindow::readSettings( ) -> void {
+    QSettings settings;
+    settings.beginGroup( "MainWindow" );
+    resize( settings.value( "size", QSize( 400, 400 ) ).toSize( ) );
+    move( settings.value( "pos", QPoint( 200, 200 ) ).toPoint( ) );
+    restoreState( settings.value( "windowState" ).toByteArray( ) );
+    settings.endGroup( );
+}
+
+auto MainWindow::writeSettings( ) -> void {
+    QSettings settings;
+    settings.beginGroup( "MainWindow" );
+    settings.setValue( "size", size( ) );
+    settings.setValue( "pos", pos( ) );
+    settings.setValue( "windowState", saveState( ) );
+    settings.endGroup( );
+}
+
+auto MainWindow::initActions( ) -> void {
+    impl_->openAct_ = new QAction{tr( "&Open" ), this};
+    impl_->exitAct_ = new QAction{tr( "E&xit" ), this};
+    for ( int i = 0; i < MaxRecentFiles; ++i ) {
+        impl_->recentFileActs_[i] = new QAction{this};
+        impl_->recentFileActs_[i]->setVisible( true );
+        connect( impl_->recentFileActs_[i], &QAction::triggered, this,
+                 &MainWindow::openRecentFile );
+    }
+    impl_->configureActions( );
+}
+
+auto MainWindow::initMenus( ) -> void {
+    impl_->fileMenu_ = menuBar( )->addMenu( tr( "&File" ) );
+    impl_->configureMenu( );
+}
+
+auto MainWindow::initToolBar( ) -> void {
+    impl_->fileToolBar_ = addToolBar( "ApplicationToolBar" );
+    impl_->configureFileToolBar( );
+}
+
+auto MainWindow::initConnections( ) -> void {
+    connect( impl_->openAct_, &QAction::triggered, this, &MainWindow::open );
+    connect( impl_->exitAct_, &QAction::triggered, this, &MainWindow::close );
+}
+
+auto MainWindow::maybeSave( ) const -> bool { return true; }
+
+auto MainWindow::loadFile( const QString &fileName ) -> void {
+    std::ifstream in{fileName.toStdString( )};
+    if ( in.fail( ) ) {
+        QString error = QString::fromStdString( strerror( errno ) );
+        QMessageBox::warning(
+            this, tr( "Recent Files" ),
+            tr( "Cannot read file %1:\n%2." ).arg( fileName ).arg( error ) );
+        return;
+    }
+
+    impl_->xml_ = XmlDoc{in};
+    XmlDoc &xml = impl_->xml_;
+    if ( xml ) {
+        // xml open and exists
+        QApplication::setOverrideCursor( Qt::WaitCursor );
+        // do stuff with the xml file
+        // TODO:
+        QApplication::restoreOverrideCursor( );
+
+        setCurrentFile( fileName );
+        statusBar( )->showMessage( tr( "File loaded" ), 2000 );
+    } else {
+        QString msg;
+        if ( xml.errorHandler( ).hasErrors( ) ) {
+            std::ostringstream errors;
+            errors << xml.errorHandler( );
+            std::cerr << "Error handler: " << xml.errorHandler( ) << std::endl;
+            msg = QString::fromStdString( errors.str( ) );
+        } else {
+            msg = "Could not create XML document";
+        }
+        QMessageBox::warning(
+            this, tr( "Could not open XML" ),
+            tr( "Could not open XML file %1:\n%2" ).arg( fileName ).arg( msg ) );
+    }
+}
+
+auto MainWindow::setCurrentFile( const QString &fileName ) -> void {
+    impl_->curFile_ = fileName;
+    setWindowFilePath( impl_->curFile_ );
+
+    QSettings settings;
+    QStringList files = settings.value( "recentFileList" ).toStringList( );
+    files.removeAll( fileName );
+    files.prepend( fileName );
+    while ( files.size( ) > MaxRecentFiles ) {
+        files.removeLast( );
+    }
+    settings.setValue( "recentFileList", files );
+
+    foreach ( QWidget *widget, QApplication::topLevelWidgets( ) ) {
+        MainWindow *mainWin = qobject_cast<MainWindow *>( widget );
+        if ( mainWin )
+            mainWin->impl_->updateRecentFileActions( );
+    }
+}
+
+auto strippedName( const QString &fullFileName ) -> QString {
+    return QFileInfo( fullFileName ).fileName( );
+}
+
