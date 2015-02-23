@@ -15,7 +15,7 @@ void StackedTextDisplay::clear( ) {
 
 void StackedTextDisplay::insertDisplay( int index, const QString &text ) {
     TextDisplay *display = new TextDisplay( text );
-    connect( display, &TextDisplay::entrySelected, &StackedTextDisplay::addDisplayIndex);
+    // connect( display, &TextDisplay::entrySelected, &StackedTextDisplay::addDisplayIndex);
     insertWidget( index, display );
 }
 

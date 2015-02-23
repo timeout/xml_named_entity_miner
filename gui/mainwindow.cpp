@@ -375,8 +375,8 @@ int Mainwindow::createNewOntologyViewTab( const QString &name, const QColor &col
     tabOntologies_->tabBar( )->setTabTextColor( idx, color );
     tabOntologies_->setCurrentIndex( idx );
 
-    connect( stackedTextDisplay_, &StackedTextDisplay::entrySelected, ontologyView,
-             &OntologyView::insertEntry );
+    // connect( stackedTextDisplay_, &StackedTextDisplay::entrySelected, ontologyView,
+    //          &OntologyView::insertEntry );
     connect( ontologyView, SIGNAL( synonymCreated( const QString &, const QString & )),
              ontologies_, SLOT( insertThesaurus( const QString &, const QString & )) );
     connect( ontologyView, SIGNAL( removeSynonym( const QString & )), ontologies_,
