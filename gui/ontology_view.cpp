@@ -1,4 +1,4 @@
-#include "ontology.hpp"
+#include "ontology_view.hpp"
 #include "synonyms.hpp"
 #include <QTreeWidgetItem>
 #include <QTreeWidgetItemIterator>
@@ -7,13 +7,16 @@
 #include <QApplication>
 #include <QMimeData>
 #include <QDrag>
+#include <QMenu>
+#include <QAction>
 
 #include <iostream>
 #include <QDebug>
 
 static QTreeWidgetItem *findItem( QTreeWidget *tw, const QString &name );
 
-Ontology::Ontology( QWidget *parent ) : QTreeWidget{parent} {
+OntologyView::OntologyView( QWidget *parent )
+    : QTreeWidget{parent}, selectedItem_{nullptr} {
     setColumnCount( 2 );
 
     setSelectionMode( QAbstractItemView::SingleSelection );
@@ -21,111 +24,89 @@ Ontology::Ontology( QWidget *parent ) : QTreeWidget{parent} {
     viewport( )->setAcceptDrops( true );
     setDropIndicatorShown( true );
     setDragDropMode( QAbstractItemView::InternalMove );
-}
-// void Ontology::dictionary( const Dictionary &dictionary ) { dictionary_ = dictionary; }
-// void Ontology::thesaurus( const Thesaurus &thesaurus ) { thesaurus_ = thesaurus; }
-// void Ontology::insertEntry( const QString &entry ) {
-//     const std::string &entry_ = entry.toStdString( );
-//     if ( dictionary_.exists( entry_ ) ) {
-//         std::string canonical = thesaurus_.canonical( entry_ );
-//         if ( canonical.empty( ) ) { // has no synonym
-//             // add under root if not already added
-//             int count = dictionary_.insert( entry_ );
-//             QTreeWidgetItem *search = findItem( this, entry );
-//             if ( !search ) {
-//                 QTreeWidgetItem *item = new QTreeWidgetItem;
-//                 item->setText( 0, entry );
-//                 item->setData( 1, Qt::DisplayRole, QVariant{count} );
-//                 item->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable |
-//                                 Qt::ItemIsDragEnabled );
-//                 addTopLevelItem( item );
-//             } else {
-//                 // update count
-//                 search->setData( 1, Qt::DisplayRole, QVariant{count} );
-//                 emit itemChanged( search, 1 );
-//             }
-//         } else { // has synonym
-//                  // add as child of canonical item, add canonical item if not
-//                  // already added and all synonyms collapsed
-//             const QString text = QString::fromUtf8( canonical.c_str( ) );
-//             QTreeWidgetItem *search = findItem( this, text );
-//             if ( !search ) {
-//                 QTreeWidgetItem *canonicalItem = new QTreeWidgetItem;
-//                 canonicalItem->setText( 0, text );
-//                 auto synonyms = thesaurus_.synonyms( canonical );
-//                 int canonicalCount = 0;
-//                 for ( auto synonym : synonyms ) {
-//                     int count = dictionary_.count( synonym );
-//                     QTreeWidgetItem *item = new QTreeWidgetItem( canonicalItem );
-//                     item->setText( 0, QString::fromUtf8( synonym.c_str( ) ) );
-//                     item->setData( 1, Qt::DisplayRole, QVariant{count} );
-//                     item->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable |
-//                                     Qt::ItemIsDragEnabled );
-//                     canonicalCount += count;
-//                 }
-//             } else {
-//                 for ( int i = 0; i < search->childCount( ); ++i ) {
-//                     if ( search->child( i )->text( 0 ) == entry ) {
-//                         // update item's count
-//                         int count = dictionary_.insert( entry_ );
-//                         search->child( i )
-//                             ->setData( 1, Qt::DisplayRole, QVariant{count} );
-//                         emit itemChanged( search->child( i ), 1 );
-// 
-//                         // update canonicalItem's count
-//                         auto synonyms = thesaurus_.synonyms( canonical );
-//                         int canonicalCount = search->data( 1, Qt::DisplayRole ).toInt( );
-//                         search->setData( 1, Qt::DisplayRole, QVariant{++canonicalCount} );
-//                     }
-//                 }
-//             }
-//         }
-//     } else {
-//         // add under root
-//         int count = dictionary_.insert( entry_ );
-//         QTreeWidgetItem *item = new QTreeWidgetItem;
-//         item->setText( 0, entry );
-//         item->setData( 1, Qt::DisplayRole, QVariant{count} );
-//         addTopLevelItem( item );
-//     }
-// }
-// 
-// void Ontology::dictionary( ) {
-//     qDebug( ) << "dictionary requested ...";
-//     emit dictionaryRequested( dictionary_ );
-//     qDebug( ) << "and emitted\n";
-// }
 
-void Ontology::dropEvent( QDropEvent *event ) {
+    removeEntryAction_ = new QAction{tr( "&Delete" ), this};
+    removeEntryAction_->setShortcut( QKeySequence::Delete );
+    removeEntryAction_->setIcon( QIcon::fromTheme( "remove" ) );
+    connect( removeEntryAction_, SIGNAL( triggered( ) ), SLOT( removeEntry( ) ) );
+
+    ontologyViewContextMenu_ = new QMenu{this};
+    ontologyViewContextMenu_->addAction( removeEntryAction_ );
+
+    connect( this, SIGNAL( customContextMenuRequested( const QPoint & )),
+             SLOT( contextMenuRequest( const QPoint & )) );
+}
+void OntologyView::insertEntry( const QString &entry, int count ) {
+    std::cerr << "entry: " << entry.toStdString( ) << std::endl;
+
+    QTreeWidgetItem *item = new QTreeWidgetItem;
+    item->setText( 0, entry );
+    item->setData( 1, Qt::DisplayRole, QVariant{count} );
+    item->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled |
+                    Qt::ItemIsDropEnabled );
+    addTopLevelItem( item );
+}
+
+void OntologyView::contextMenuRequest( const QPoint &pos ) {
+    QModelIndex idx = indexAt( pos );
+    if ( idx.isValid( ) ) {
+        selectedItem_ = itemFromIndex( idx );
+        qDebug( ) << "selected item: " << selectedItem_->text( 0 );
+        ontologyViewContextMenu_->exec( mapToGlobal( pos ) );
+    }
+}
+
+void OntologyView::removeEntry( ) {
+    qDebug( ) << "removing entry: " << selectedItem_->text( 0 );
+    const QString entry = selectedItem_->text( 0 );
+    if ( selectedItem_->parent( ) ) {
+        QTreeWidgetItem *parent = selectedItem_->parent( );
+        parent->removeChild( selectedItem_ );
+    } else {
+        delete selectedItem_;
+    }
+    selectedItem_ = nullptr;
+    emit removeEntry( entry );
+}
+
+void OntologyView::dropEvent( QDropEvent *event ) {
+    // there are 3 possibilities,
+    // 1 create a synonym
+    // 2 remove a synonym
+    // 3 move to another synonym
     QTreeWidgetItem *movedItem =
-        qobject_cast<Ontology *>( event->source( ) )->currentItem( );
+        qobject_cast<OntologyView *>( event->source( ) )->currentItem( );
     QModelIndex droppedIndex = indexAt( event->pos( ) );
-    QTreeWidgetItem *item = itemFromIndex( indexAt( event->pos( ) ) );
+    std::cerr << "item dropped at index: " << droppedIndex.row( ) << std::endl;
     if ( !droppedIndex.isValid( ) ) {
         return;
     }
 
+    QTreeWidgetItem *item = itemFromIndex( indexAt( event->pos( ) ) );
     if ( item->parent( ) ) {
         std::cerr << "item: " << item->text( 0 ).toStdString( ) << " has a parent"
                   << std::endl;
         return;
     }
     if ( movedItem->childCount( ) ) {
+        std::cerr << "moved item: " << movedItem->text( 0 ).toStdString( )
+                  << " has children" << std::endl;
         return;
     }
 
-    // update thesaurus
-    // std::string word = movedItem->text( 0 ).toStdString( );
-    // std::string canonical = item->text( 0 ).toStdString( );
+    std::cerr << "adding child: " << movedItem->text( 0 ).toStdString( )
+              << " to parent: " << item->text( 0 ).toStdString( ) << std::endl;
 
-    // std::cerr << "word: " << word << ", canonical: " << canonical << std::endl;
-    // thesaurus_.insert( word, canonical );
+    if ( movedItem->parent( ) ) {
+        emit removeSynonym( movedItem->text( 0 ) );
+    }
 
-    // update item
-    int itemCount = item->data( 1, Qt::DisplayRole ).toInt( );
     int movedItemCount = movedItem->data( 1, Qt::DisplayRole ).toInt( );
-    item->setData( 1, Qt::DisplayRole, QVariant{itemCount + movedItemCount} );
+    // item->setData( 1, Qt::DisplayRole, QVariant{itemCount + movedItemCount} );
+    item->addChild( movedItem );
     emit itemChanged( item, 1 );
+
+    emit synonymCreated( movedItem->text( 0 ), item->text( 0 ) );
 
     QTreeWidget::dropEvent( event );
 }

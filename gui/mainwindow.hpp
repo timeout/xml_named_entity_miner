@@ -1,15 +1,16 @@
 #pragma once
 #include <QMainWindow>
 #include "xml_doc.hpp"
+#include "synonyms.hpp"
 
 class QAction;
 class XmlFileOutline;
-class Ontology;
 class XmlDisplay;
 class QMenu;
 class QPoint;
 class QTabWidget;
-class TxtSelectionDisplay;
+class StackedTextDisplay;
+// class TxtSelectionDisplay;
 class QToolBar;
 class ElementSelections;
 class XPathQueryWidget;
@@ -28,6 +29,9 @@ public slots:
     void setNewOntology( );
     void validateDialog( );
     void transformDialog( );
+    void closeTab( int idx );
+    void addEntryToCurrentTab( const QString &entry, int count );
+    void generateInitialSelection( const XmlElement &element );
 
 private:
     void createMenus( );
@@ -36,7 +40,9 @@ private:
     void updateRecentFileActions( );
     void setCurrentFile( const QString &fileName );
     QString strippedName( const QString &fullFileName );
-    void loadXml( const QString &filename );
+    // void loadXml( const QString &filename );
+    int createNewOntologyViewTab( const QString &name, const QColor &color );
+    void deleteOntologyViewTab( int index );
 
     // actions
     QAction *openAct_, *exitAct_;
@@ -54,20 +60,21 @@ private:
     // central widget(s)
     QTabWidget *tabWidget_;
     XmlDisplay *xmlDisplay_;
-    TxtSelectionDisplay *txtSelectionDisplay_;
-
-    ElementSelections *selections_;
+    StackedTextDisplay *stackedTextDisplay_;
+    // TxtSelectionDisplay *txtSelectionDisplay_;
 
     // docking
     XmlFileOutline *xmlFileOutline_;
     XPathQueryWidget *xPathQueryWidget_;
     QTabWidget *tabOntologies_;
-    Ontology *ontology_;
+    // Ontology *ontology_;
 
     enum { MaxRecentFiles = 5 };
     QAction *recentFileActs[MaxRecentFiles];
     QString curFile_;
 
+    Ontologies *ontologies_;
+    ElementSelections *selections_;
     XmlDoc xml_;
 };
 

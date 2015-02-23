@@ -1,8 +1,8 @@
 #include "mainwindow.hpp"
 #include "xml_display.hpp"
-#include "txt_selection_display.hpp"
+#include "stacked_text_display.hpp"
 #include "xml_file_outline.hpp"
-#include "ontology.hpp"
+#include "ontology_view.hpp"
 #include "xml_doc.hpp"
 #include "element_selections.hpp"
 #include "synonyms.hpp"
@@ -39,10 +39,9 @@
 
 Mainwindow::Mainwindow( QWidget *parent )
     : QMainWindow{parent}, xmlDisplay_{new XmlDisplay( this )},
-      txtSelectionDisplay_{new TxtSelectionDisplay( this )},
-      selections_{new ElementSelections( this )},
-      xmlFileOutline_{new XmlFileOutline( this )},
-      xPathQueryWidget_{new XPathQueryWidget}, ontology_{new Ontology( this )} {
+      stackedTextDisplay_{new StackedTextDisplay{this}},
+      xmlFileOutline_{new XmlFileOutline{this}}, xPathQueryWidget_{new XPathQueryWidget},
+      ontologies_{new Ontologies{this}}, selections_{new ElementSelections{this}} {
 
     // init
     createActions( );
@@ -84,18 +83,25 @@ Mainwindow::Mainwindow( QWidget *parent )
 
     // right dock
     tabOntologies_ = new QTabWidget;
+    tabOntologies_->setTabsClosable( true );
     QToolButton *tb = new QToolButton( );
     tb->setText( "+" );
     tb->setAutoRaise( true );
     tb->setToolTip( tr( "Click to add a new Ontology" ) );
 
+    // ontology dialog
     connect( tb, SIGNAL( clicked( ) ), this, SLOT( setNewOntology( ) ) );
+    connect( ontologies_, SIGNAL( noOntologySet( ) ), this, SLOT( setNewOntology( ) ) );
 
     tabOntologies_->addTab( new QLabel( "You can add tabs by pressing <b>\"+\"</b>" ),
                             QString{} );
     tabOntologies_->setTabEnabled( 0, false );
     tabOntologies_->tabBar( )->setTabButton( 0, QTabBar::RightSide, tb );
     tabOntologies_->setTabPosition( QTabWidget::West );
+
+    connect( tabOntologies_, SIGNAL( tabCloseRequested( int )), SLOT( closeTab( int )) );
+    connect( tabOntologies_, SIGNAL( currentChanged( int )), ontologies_,
+             SLOT( setCurrentIndex( int )) );
 
     QDockWidget *entityNavDock = new QDockWidget( tr( "Ontology" ), this );
     entityNavDock->setAllowedAreas( Qt::RightDockWidgetArea );
@@ -106,7 +112,7 @@ Mainwindow::Mainwindow( QWidget *parent )
     // central widget
     tabWidget_ = new QTabWidget;
     tabWidget_->addTab( xmlDisplay_, tr( "&Overview" ) );
-    tabWidget_->addTab( txtSelectionDisplay_, tr( "&Selection" ) );
+    tabWidget_->addTab( stackedTextDisplay_, tr( "&Selection" ) );
     tabWidget_->setTabPosition( QTabWidget::South );
     setCentralWidget( tabWidget_ );
 
@@ -117,20 +123,26 @@ Mainwindow::Mainwindow( QWidget *parent )
     connect( xmlFileOutline_, SIGNAL( customContextMenuRequested( const QPoint & )), this,
              SLOT( onCustomContextRequest( const QPoint & )) );
 
-    connect( xmlFileOutline_, SIGNAL( xmlItemSelected( const XmlElement & )), selections_,
-             SLOT( addXmlElement( const XmlElement & )) );
-    connect( xmlFileOutline_, SIGNAL( xmlItemDeselected( const XmlElement & )),
-             selections_, SLOT( removeXmlElement( const XmlElement & )) );
-    connect( selections_, SIGNAL( currentXmlElement( const XmlElement & )),
-             txtSelectionDisplay_, SLOT( setXmlTxt( const XmlElement & )) );
-    connect( selections_, SIGNAL( currentXmlElementInvalid( ) ), txtSelectionDisplay_,
+    connect( xmlFileOutline_, SIGNAL( xmlItemSelected( const XmlElement & )),
+             SLOT( generateInitialSelection( const XmlElement & )) );
+    connect( selections_, SIGNAL( selectionAdded( int, const QString & )),
+             stackedTextDisplay_, SLOT( insertDisplay( int, const QString & )) );
+    connect( selections_, SIGNAL( selectionRemoved( int )), stackedTextDisplay_,
+             SLOT( removeDisplay( int )) );
+    connect( selections_, SIGNAL( currentIndexChanged( int )), stackedTextDisplay_,
+             SLOT( setCurrentIndex( int )) );
+    connect( selections_, SIGNAL( clearSelections( ) ), stackedTextDisplay_,
              SLOT( clear( ) ) );
-    connect( txtSelectionDisplay_, SIGNAL( entrySelected( const QString & )), ontology_,
-             SLOT( insertEntry( const QString & )) );
-    connect( txtSelectionDisplay_, SIGNAL( textChanged( ) ), ontology_,
-             SLOT( dictionary( ) ) );
-    connect( ontology_, SIGNAL( dictionaryRequested( const Dictionary & )),
-             txtSelectionDisplay_, SLOT( scan( const Dictionary & )) );
+    connect( selections_, SIGNAL( keywordAdded( int, int, const QString & )),
+             stackedTextDisplay_,
+             SLOT( insertHighlightRule( int, int, const QString & )) );
+    // connect( xmlFileOutline_, SIGNAL( xmlItemSelected( const XmlElement & )),
+    // selections_,
+    //          SLOT( addXmlElement( const XmlElement & )) );
+    connect( xmlFileOutline_, SIGNAL( xmlItemDeselected( const XmlElement & )),
+             selections_, SLOT( removeSelection( const XmlElement & )) );
+    connect( ontologies_, SIGNAL( entryAddedToDictionary( const QString &, int )),
+             SLOT( addEntryToCurrentTab( const QString &, int )) );
 }
 
 // public slots
@@ -139,12 +151,6 @@ void Mainwindow::open( ) {
         this, tr( "Open XML file" ), "/usr/local/home/joe", tr( "Xml Files (*.xml)" ) );
     if ( !filename.isEmpty( ) ) {
         loadFile( filename );
-        //
-        // std::ifstream in{filename.toUtf8( ).constData( )};
-        // XmlDoc xml{in};
-        // xmlFileOutline_->xml( xml );
-        // xmlDisplay_->setPlainText( QString::fromUtf8( xml.toString( ).c_str( ) ) );
-        // xmlDisplay_->setXml( xml );
     }
 }
 
@@ -205,7 +211,6 @@ void Mainwindow::setCurrentFile( const QString &fileName ) {
     QStringList files = settings.value( "recentFileList" ).toStringList( );
     files.removeAll( fileName );
     files.prepend( fileName );
-    // foreach( const QString& file, files ) { qDebug( ) << "file: " << file << "\n"; }
     while ( files.size( ) > MaxRecentFiles ) {
         files.removeLast( );
     }
@@ -230,15 +235,26 @@ void Mainwindow::openRecentFile( ) {
 void Mainwindow::setNewOntology( ) {
     OntologyDialog dialog{this};
     if ( dialog.exec( ) ) {
-        qDebug( ) << "new ontology name: " << dialog.name( ) << "\n";
-        qDebug( ) << "new ontology color: " << dialog.color( ) << "\n";
+        QString name = dialog.name( );
+        QColor color = dialog.color( );
+
+        // TODO: debug
+        qDebug( ) << "new ontology name: " << name << "\n";
+        qDebug( ) << "new ontology color: " << color << "\n";
+
+        // create ontology view
+        qDebug( ) << "creating new ontology view...";
+        auto idx = createNewOntologyViewTab( name, color );
+
+        // create new ontology
+        qDebug( ) << "creating new ontology...";
+        ontologies_->addOntology( );
     }
 }
 
 void Mainwindow::validateDialog( ) {
     if ( xml_ ) {
         qDebug( ) << "starting the validation dialog...\n";
-        // XmlTaskDialog dialog{xml_, XmlTask::SchemaValidation, this};
         XmlSchemaDialog dialog{xml_, this};
         dialog.exec( );
     }
@@ -246,11 +262,19 @@ void Mainwindow::validateDialog( ) {
 
 void Mainwindow::transformDialog( ) {
     if ( xml_ ) {
-        // XmlTaskDialog dialog{xml_, XmlTask::StylesheetTransformation, this};
         XsltDialog dialog{xml_, this};
         dialog.exec( );
     }
 }
+
+void Mainwindow::closeTab( int idx ) {
+    // remove tab
+    deleteOntologyViewTab( idx );
+
+    // remove ontology
+    ontologies_->removeOntology( idx );
+}
+
 // private member functions
 void Mainwindow::createMenus( ) {
 
@@ -271,7 +295,7 @@ void Mainwindow::createMenus( ) {
     viewMenu->addAction( nextSelectionAct_ );
     viewMenu->addAction( previousSelectionAct_ );
 
-    xmlTreeContextMenu_ = new QMenu( this );
+    xmlTreeContextMenu_ = new QMenu{this};
     // TODO: create actions: select all, clear selections?
     // stub
     xmlTreeContextMenu_->addAction( openAct_ );
@@ -292,7 +316,6 @@ void Mainwindow::createActions( ) {
 
     for ( int i = 0; i < MaxRecentFiles; ++i ) {
         recentFileActs[i] = new QAction( this );
-        // recentFileActs[i]->setVisible( false );
         recentFileActs[i]->setVisible( true );
         connect( recentFileActs[i], SIGNAL( triggered( ) ), this,
                  SLOT( openRecentFile( ) ) );
@@ -338,11 +361,44 @@ void Mainwindow::updateRecentFileActions( ) {
     }
     for ( int j = numRecentFiles; j < MaxRecentFiles; ++j )
         recentFileActs[j]->setVisible( false );
-
-    //  separatorAct->setVisible(numRecentFiles > 0);
 }
 
 QString Mainwindow::strippedName( const QString &fullFileName ) {
     return QFileInfo( fullFileName ).fileName( );
 }
 
+int Mainwindow::createNewOntologyViewTab( const QString &name, const QColor &color ) {
+    OntologyView *ontologyView = new OntologyView;
+    ontologyView->setContextMenuPolicy( Qt::CustomContextMenu );
+    auto idx =
+        tabOntologies_->insertTab( tabOntologies_->count( ) - 1, ontologyView, name );
+    tabOntologies_->tabBar( )->setTabTextColor( idx, color );
+    tabOntologies_->setCurrentIndex( idx );
+
+    connect( stackedTextDisplay_, &StackedTextDisplay::entrySelected, ontologyView,
+             &OntologyView::insertEntry );
+    connect( ontologyView, SIGNAL( synonymCreated( const QString &, const QString & )),
+             ontologies_, SLOT( insertThesaurus( const QString &, const QString & )) );
+    connect( ontologyView, SIGNAL( removeSynonym( const QString & )), ontologies_,
+             SLOT( removeThesaurus( const QString & )) );
+    connect( ontologyView, SIGNAL( removeEntry( const QString & )), ontologies_,
+             SLOT( removeDictionary( const QString & )) );
+    return idx;
+}
+
+void Mainwindow::deleteOntologyViewTab( int index ) {
+    QWidget *widget = tabOntologies_->widget( index );
+    tabOntologies_->removeTab( index );
+    delete widget;
+}
+
+void Mainwindow::addEntryToCurrentTab( const QString &entry, int count ) {
+    OntologyView *currentView =
+        reinterpret_cast<OntologyView *>( tabOntologies_->currentWidget( ) );
+    currentView->insertEntry( entry, count );
+}
+
+void Mainwindow::generateInitialSelection( const XmlElement &element ) {
+    auto selection = ontologies_->generateSelection( element );
+    selections_->addSelection( selection );
+}

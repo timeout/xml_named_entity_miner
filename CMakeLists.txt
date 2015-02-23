@@ -36,9 +36,14 @@ qt5_wrap_cpp(QT_GUI_src
     gui/xml_file_outline.hpp
     gui/xml_display.hpp
     gui/xml_highlighter.hpp
-    gui/txt_selection_display.hpp
+    gui/stacked_text_display.hpp
+    gui/text_display.hpp
+    gui/text_display_highlighter.hpp
+
+    # gui/txt_selection_display.hpp
+
     gui/element_selections.hpp
-    gui/ontology.hpp
+    gui/ontology_view.hpp
     gui/line_edit.hpp
     gui/ontology_dialog.hpp
     gui/xpath_query_widget.hpp
@@ -81,9 +86,15 @@ add_library(gui_widgets
     gui/xml_display.cpp
     gui/xml_highlighter.cpp
     gui/mainwindow.cpp
-    gui/txt_selection_display.cpp
+
+    gui/stacked_text_display.cpp
+    gui/text_display.cpp
+    gui/text_display_highlighter.cpp
+
+    # gui/txt_selection_display.cpp
+
     gui/element_selections.cpp
-    gui/ontology.cpp
+    gui/ontology_view.cpp
     gui/line_edit.cpp
     gui/ontology_dialog.cpp
     gui/xpath_query_widget.cpp
@@ -96,6 +107,7 @@ qt5_use_modules(syn_lib Core)
 target_link_libraries(dir_lib pathname_lib)
 target_link_libraries(xml_lib 
     pathname_lib
+    utils_lib
     ${LIBXML2_LIBRARIES} 
     ${LIBXSLT_LIBRARIES}
     ${LIBXSLT_EXSLT_LIBRARIES} 
@@ -116,6 +128,7 @@ add_executable(program.out main.cpp)
 target_link_libraries(program.out 
     xml_lib
     gui_widgets
+    syn_lib
 )
 qt5_use_modules(program.out Widgets)
 

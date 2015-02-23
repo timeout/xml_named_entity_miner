@@ -4,27 +4,30 @@
 #include <QPoint>
 
 class Dictionary;
+class QMenu;
+class QAction;
 
-class Ontology : public QTreeWidget {
+class OntologyView : public QTreeWidget {
     Q_OBJECT
 public:
-    Ontology( QWidget *parent = nullptr );
-    // void dictionary( const Dictionary &dictionary );
-    // void thesaurus( const Thesaurus &thesaurus );
+    OntologyView( QWidget *parent = nullptr );
 
 public slots:
-    // void insertEntry( const QString &entry );
-    // void dictionary( );
+    void insertEntry( const QString &entry, int count );
+    void contextMenuRequest( const QPoint &pos );
+    void removeEntry( );
 
 signals:
-    void dictionaryRequested(const Dictionary& dictionary);
+    void dictionaryRequested( const Dictionary &dictionary );
+    void synonymCreated( const QString &entry, const QString &canonical );
+    void removeSynonym( const QString &entry );
+    void removeEntry( const QString &entry );
 
 private:
     void dropEvent( QDropEvent *event );
 
-    // Dictionary dictionary_;
-    // Thesaurus thesaurus_;
-
-    QPoint startPos_;
+    QMenu *ontologyViewContextMenu_;
+    QAction *removeEntryAction_;
+    QTreeWidgetItem *selectedItem_;
 };
 
