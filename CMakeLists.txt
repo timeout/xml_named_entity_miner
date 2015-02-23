@@ -31,33 +31,36 @@ set(CMAKE_REQUIRED_INCLUDES "")
 
 find_package(OpenGL REQUIRED)
 find_package(Qt5Widgets REQUIRED)
-qt5_wrap_cpp(QT_GUI_src 
-    gui/mainwindow.hpp 
-    gui/xml_file_outline.hpp
-    gui/xml_display.hpp
-    gui/xml_highlighter.hpp
-    gui/stacked_text_display.hpp
-    gui/text_display.hpp
-    gui/text_display_highlighter.hpp
-
-    # gui/txt_selection_display.hpp
-
-    gui/element_selections.hpp
-    gui/ontology_view.hpp
-    gui/line_edit.hpp
-    gui/ontology_dialog.hpp
-    gui/xpath_query_widget.hpp
-    gui/xml_task_dialog.hpp
+# qt5_wrap_cpp(QT_GUI_src 
+#     gui/mainwindow.hpp 
+#     gui/xml_file_outline.hpp
+#     gui/xml_display.hpp
+#     gui/xml_highlighter.hpp
+#     gui/stacked_text_display.hpp
+#     gui/text_display.hpp
+#     gui/text_display_highlighter.hpp
+# 
+#     # gui/txt_selection_display.hpp
+# 
+#     gui/element_selections.hpp
+#     gui/ontology_view.hpp
+#     gui/line_edit.hpp
+#     gui/ontology_dialog.hpp
+#     gui/xpath_query_widget.hpp
+#     gui/xml_task_dialog.hpp
+# )
+qt5_wrap_cpp( GUI2_headers
+    gui2/mainwindow.hpp
 )
-qt5_wrap_cpp(QT_SYN_LIB_src
-    lib/synonyms.hpp
-)
+# qt5_wrap_cpp(QT_SYN_LIB_src
+#     lib/synonyms.hpp
+# )
 qt5_add_resources(RESOURCE_ADDED ${sample_RESOURCES})
 include_directories(${QT_INCLUDES} ${OPENGL_INCLUDE_DIR})
 
 add_library(pathname_lib lib/pathname.cpp lib/pathname.hpp)
 add_library(dir_lib lib/dir.cpp lib/dir.hpp lib/singleton.hpp)
-add_library(syn_lib ${QT_SYN_LIB_src} lib/synonyms.cpp)
+# add_library(syn_lib ${QT_SYN_LIB_src} lib/synonyms.cpp)
 add_library(utils_lib lib/utils.hpp lib/utils.cpp)
 add_library(xml_lib 
     lib/xml_parser_ctxt.hpp 
@@ -79,30 +82,35 @@ add_library(xml_lib
     lib/xml_element.hpp
     lib/xml_element.cpp
 )
-add_library(gui_widgets 
-    ${QT_GUI_src}
-    ${RESOURCE_ADDED}
-    gui/xml_file_outline.cpp
-    gui/xml_display.cpp
-    gui/xml_highlighter.cpp
-    gui/mainwindow.cpp
-
-    gui/stacked_text_display.cpp
-    gui/text_display.cpp
-    gui/text_display_highlighter.cpp
-
-    # gui/txt_selection_display.cpp
-
-    gui/element_selections.cpp
-    gui/ontology_view.cpp
-    gui/line_edit.cpp
-    gui/ontology_dialog.cpp
-    gui/xpath_query_widget.cpp
-    gui/xml_task_dialog.cpp
+add_library( GUI2_library
+    ${GUI2_headers}
+    gui2/mainwindow.cpp
 )
-qt5_use_modules(gui_widgets Widgets)
+# add_library(gui_widgets 
+#     ${QT_GUI_src}
+#     ${RESOURCE_ADDED}
+#     gui/xml_file_outline.cpp
+#     gui/xml_display.cpp
+#     gui/xml_highlighter.cpp
+#     gui/mainwindow.cpp
+# 
+#     gui/stacked_text_display.cpp
+#     gui/text_display.cpp
+#     gui/text_display_highlighter.cpp
+# 
+#     # gui/txt_selection_display.cpp
+# 
+#     gui/element_selections.cpp
+#     gui/ontology_view.cpp
+#     gui/line_edit.cpp
+#     gui/ontology_dialog.cpp
+#     gui/xpath_query_widget.cpp
+#     gui/xml_task_dialog.cpp
+# )
+# qt5_use_modules(gui_widgets Widgets)
+qt5_use_modules(GUI2_library Widgets)
 qt5_use_modules(xml_lib Core)
-qt5_use_modules(syn_lib Core)
+# qt5_use_modules(syn_lib Core)
 
 target_link_libraries(dir_lib pathname_lib)
 target_link_libraries(xml_lib 
@@ -112,14 +120,18 @@ target_link_libraries(xml_lib
     ${LIBXSLT_LIBRARIES}
     ${LIBXSLT_EXSLT_LIBRARIES} 
 )
-target_link_libraries(gui_widgets
+target_link_libraries(GUI2_library
     xml_lib
-    syn_lib
     utils_lib
 )
+# target_link_libraries(gui_widgets
+#     xml_lib
+#     syn_lib
+#     utils_lib
+# )
 
 include_directories(lib)
-include_directories(gui)
+# include_directories(gui)
 
 add_subdirectory(gtest-1.7.0)
 add_subdirectory(tests)
@@ -127,8 +139,9 @@ add_subdirectory(tests)
 add_executable(program.out main.cpp)
 target_link_libraries(program.out 
     xml_lib
-    gui_widgets
-    syn_lib
+    ${GUI2_library}
+#     gui_widgets
+#     syn_lib
 )
 qt5_use_modules(program.out Widgets)
 

@@ -27,10 +27,10 @@ set(test_sources gtest_main.cpp
     test_helper.hpp
     test_helper.cpp
     xslt_doc_test.cpp
-    synonyms_test.cpp
-    pathname_test.cpp
-    dir_test.cpp
-    xml_doc_test.cpp
+    # synonyms_test.cpp
+    # pathname_test.cpp
+    # dir_test.cpp
+    # xml_doc_test.cpp
     # xml_schema_parser_test.cpp
     # xml_schema_test.cpp
     # xml_schema_validator_test.cpp
@@ -46,5 +46,5 @@ target_link_libraries(run_tests.out gtest_main
     pathname_lib 
     dir_lib
     xml_lib 
-    syn_lib
+#     syn_lib
 )
