@@ -1,6 +1,7 @@
 #pragma once
-
+#include <libxml/xpath.h>
 #include "xpath_ctxt.hpp"
+#include <memory>
 
 class FreeXPathQuery {
 public:

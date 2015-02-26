@@ -1,4 +1,6 @@
 #include "xpath_query.hpp"
+#include "xpath_expression.hpp"
+#include <sstream>
 
 auto FreeXPathQuery::operator( )( xmlXPathObject *queryObject ) const -> void {
     xmlXPathFreeObject( queryObject );
@@ -11,6 +13,9 @@ XPathQuery::XPathQuery( const XPathQuery &query ) : queryCtxt_{query.queryCtxt_}
         query_.reset( xmlXPathObjectCopy( query.query_.get( ) ) );
     } else {
         query_.reset( nullptr );
+    }
+    if ( queryCtxt_.errorHandler( ).hasErrors( ) ) {
+        std::cerr << "errors!" << std::endl;
     }
 }
 XPathQuery::XPathQuery( XPathQuery &&query )
@@ -39,7 +44,17 @@ auto XPathQuery::query( const std::string &xpath ) -> void {
         if ( query_ ) {
             query_.reset( xmlXPathEvalExpression( expr, queryCtxt_.xpathCtxt_.get( ) ) );
         } else {
-            XPathQueryT tmp{xmlXPathEvalExpression( expr, queryCtxt_.xpathCtxt_.get( ) )};
+            // xmlXPathCompExprPtr exprPtr = xmlXPathCtxtCompile(
+            //     queryCtxt_.xpathCtxt_.get( ),
+            //     reinterpret_cast<const unsigned char *>( xpath.c_str( ) ) );
+            XPathExpression expr{queryCtxt_.xpathCtxt_.get( ), xpath};
+            if ( !expr ) {
+                std::ostringstream errorStr;
+                errorStr << "Invalid expression: " << xpath << std::endl;
+                queryCtxt_.errorHandler( ).message( errorStr.str( ) );
+            }
+            XPathQueryT tmp{
+                xmlXPathCompiledEval( expr.get( ), queryCtxt_.xpathCtxt_.get( ) )};
             query_ = std::move( tmp );
         }
     }
