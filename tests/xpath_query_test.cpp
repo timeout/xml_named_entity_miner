@@ -338,4 +338,20 @@ TEST_F( XPathQueryTest, QueryCopyMoveAssignment ) {
     ASSERT_EQ( false, testBool_f<XPathQuery>( booksQuery ) );
 }
 
-TEST_F( XPathQueryTest, OperatorIn ) {}
+TEST_F( XPathQueryTest, Queries ) {
+    XPathQuery booksQuery{xpcBooks()};
+    booksQuery.query( "//" );
+    ASSERT_EQ( false, testBool_f<XPathQuery>( booksQuery ) );
+
+    booksQuery.query("//*");
+    ASSERT_EQ( true, testBool_f<XPathQuery>( booksQuery ) );
+
+    booksQuery.query("//author");
+    ASSERT_EQ( true, testBool_f<XPathQuery>( booksQuery ) );
+
+    booksQuery.query("/");
+    ASSERT_EQ( true, testBool_f<XPathQuery>( booksQuery ) );
+
+    booksQuery.query("\\");
+    ASSERT_EQ( false, testBool_f<XPathQuery>( booksQuery ) );
+}

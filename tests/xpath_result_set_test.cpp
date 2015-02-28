@@ -7,6 +7,8 @@
 
 #include "test_helper.hpp"
 
+#include <iostream>
+
 class XPathResultSetTest : public testing::Test {
 protected:
     auto queryBooks( ) const -> const XPathQuery & { return queryCreator_.booksQuery( ); }
@@ -75,7 +77,7 @@ TEST_F( XPathResultSetTest, CopyMoveCtor ) {
     XPathResultSet mvCpNullResultSet{cp_f<XPathResultSet>( nullResultSet )};
     EXPECT_EQ( 0, mvCpNullResultSet.size( ) );
 
-    XPathQuery menuQuery{queryMenu()};
+    XPathQuery menuQuery{queryMenu( )};
     menuQuery.query( "//calories" );
     XPathResultSet menuResultSet{menuQuery};
     ASSERT_EQ( 5, menuResultSet.size( ) );
@@ -83,7 +85,7 @@ TEST_F( XPathResultSetTest, CopyMoveCtor ) {
     XPathResultSet mvCpMenuResultSet{cp_f<XPathResultSet>( menuResultSet )};
     EXPECT_EQ( 5, mvCpMenuResultSet.size( ) );
 
-    XPathQuery booksQuery{queryBooks()};
+    XPathQuery booksQuery{queryBooks( )};
     booksQuery.query( "//bad/query" );
     XPathResultSet booksResultSet{booksQuery};
     ASSERT_EQ( 0, booksResultSet.size( ) );
@@ -108,7 +110,7 @@ TEST_F( XPathResultSetTest, CopyAssignment ) {
     ASSERT_EQ( 0, nullResultSet.size( ) );
 
     // assign to null
-    XPathQuery menuQuery{queryMenu()};
+    XPathQuery menuQuery{queryMenu( )};
     menuQuery.query( "//calories" );
     XPathResultSet menuResultSet{menuQuery};
     ASSERT_EQ( 5, menuResultSet.size( ) );
@@ -120,7 +122,7 @@ TEST_F( XPathResultSetTest, CopyAssignment ) {
     EXPECT_EQ( 5, cpNullResultSet1.size( ) );
     EXPECT_EQ( 5, menuResultSet.size( ) );
 
-    XPathQuery booksQuery{queryBooks()};
+    XPathQuery booksQuery{queryBooks( )};
     booksQuery.query( "//bad/query" );
     XPathResultSet booksResultSet{booksQuery};
     ASSERT_EQ( 0, booksResultSet.size( ) );
@@ -140,13 +142,13 @@ TEST_F( XPathResultSetTest, CopyAssignment ) {
 
     // assign
     // booksQuery.query( "//title" );
-    XPathQuery booksQuery1{queryBooks()};
+    XPathQuery booksQuery1{queryBooks( )};
     booksQuery1.query( "//title" );
     XPathResultSet booksResultSet1{booksQuery1};
     ASSERT_EQ( 12, booksResultSet1.size( ) );
     ASSERT_EQ( 5, menuResultSet.size( ) );
 
-    XPathQuery menuQuery1{queryMenu()};
+    XPathQuery menuQuery1{queryMenu( )};
     menuQuery1.query( "//calories" );
     XPathResultSet menuResultSet1{menuQuery1};
     ASSERT_EQ( 5, menuResultSet1.size( ) );
@@ -172,7 +174,7 @@ TEST_F( XPathResultSetTest, CopyMoveAssignment ) {
     ASSERT_EQ( 0, nullResultSet.size( ) );
 
     // assign to null
-    XPathQuery menuQuery{queryMenu()};
+    XPathQuery menuQuery{queryMenu( )};
     menuQuery.query( "//calories" );
     XPathResultSet menuResultSet{menuQuery};
     ASSERT_EQ( 5, menuResultSet.size( ) );
@@ -184,7 +186,7 @@ TEST_F( XPathResultSetTest, CopyMoveAssignment ) {
     EXPECT_EQ( 5, cpNullResultSet1.size( ) );
     EXPECT_EQ( 5, menuResultSet.size( ) );
 
-    XPathQuery booksQuery{queryBooks()};
+    XPathQuery booksQuery{queryBooks( )};
     booksQuery.query( "//bad/query" );
     XPathResultSet booksResultSet{booksQuery};
     ASSERT_EQ( 0, booksResultSet.size( ) );
@@ -203,13 +205,13 @@ TEST_F( XPathResultSetTest, CopyMoveAssignment ) {
     EXPECT_EQ( 0, nullResultSet.size( ) );
 
     // assign
-    XPathQuery booksQuery1{queryBooks()};
+    XPathQuery booksQuery1{queryBooks( )};
     booksQuery1.query( "//title" );
     XPathResultSet booksResultSet1{booksQuery1};
     ASSERT_EQ( 12, booksResultSet1.size( ) );
     ASSERT_EQ( 5, menuResultSet.size( ) );
 
-    XPathQuery menuQuery1{queryMenu()};
+    XPathQuery menuQuery1{queryMenu( )};
     menuQuery1.query( "//calories" );
     XPathResultSet menuResultSet1{menuQuery1};
     ASSERT_EQ( 5, menuResultSet1.size( ) );
@@ -219,3 +221,33 @@ TEST_F( XPathResultSetTest, CopyMoveAssignment ) {
     EXPECT_EQ( 12, booksResultSet1.size( ) );
 }
 
+TEST_F( XPathResultSetTest, IteratorTest ) {
+    XPathQuery menuQuery{queryMenu( )};
+    menuQuery.query( "//calories" );
+    XPathResultSet menuResultSet{menuQuery};
+    auto iter = menuResultSet.begin( );
+    for ( ; iter != menuResultSet.end( ); ++iter ) {
+        std::cerr << ( *iter ).content( ) << std::endl;
+    }
+    // auto el = menuResultSet[0];
+    // std::cerr << el.content( ) << std::endl;
+
+    XPathQuery menuQuery1{queryMenu( )};
+    menuQuery1.query( "//description" );
+    XPathResultSet menuResultSet1{menuQuery1};
+    for ( auto it = menuResultSet1.begin( ); it != menuResultSet1.end( ); ++it ) {
+        std::cerr << ( *it ).content( ) << std::endl;
+    }
+
+    XPathQuery menuQuery2{queryMenu( )};
+    menuQuery2.query( "//bad_query" );
+    XPathResultSet menuResultSet2{menuQuery2};
+    for ( auto it = menuResultSet2.begin( ); it != menuResultSet2.end( ); ++it ) {
+        std::cerr << "result: '" << ( *it ).content( ) << "'" << std::endl;
+    }
+    iter = menuResultSet.begin( );
+    std::cerr << "accessing iterator[ 2 ]: " << iter[2].content( ) << std::endl;
+    std::cerr << "decrement iterator: " << ( *--iter ).content( ) << std::endl;
+    std::cerr << "decrement iterator: " << ( *--iter ).content( ) << std::endl;
+    std::cerr << "post decrement iterator: " << ( *iter-- ).content( ) << std::endl;
+}
