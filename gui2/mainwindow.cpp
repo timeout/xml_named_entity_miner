@@ -1,5 +1,8 @@
 #include "mainwindow.hpp"
 #include "xml_doc.hpp"
+#include "xml_display.hpp"
+#include "stacked_text_display.hpp"
+#include "xml_file_explorer.hpp"
 
 #include <fstream>
 #include <sstream>
@@ -7,6 +10,7 @@
 #include <QAction>
 #include <QApplication>
 #include <QCloseEvent>
+#include <QDockWidget>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QIcon>
@@ -16,6 +20,7 @@
 #include <QSettings>
 #include <QStatusBar>
 #include <QString>
+#include <QTabWidget>
 #include <QToolBar>
 
 static auto strippedName( const QString &fullFileName ) -> QString;
@@ -91,11 +96,18 @@ auto MainWindow::Impl::configureMenu( ) -> void {
 
 // -- end Impl
 
-MainWindow::MainWindow( ) : QMainWindow{}, impl_{new Impl} {
+MainWindow::MainWindow( )
+    : QMainWindow{}
+    , impl_{new Impl}
+    , xmlDisplay_{new XmlDisplay{this}}
+    , stackedTextDisplay_{new StackedTextDisplay{this}}
+    , xmlFileExplorer_{new XmlFileExplorer{this}} {
     readSettings( );
     initActions( );
     initMenus( );
     initToolBar( );
+    initCentralWidget( );
+    initFileExplorer( ); // left dock widget
     initConnections( );
 }
 
@@ -165,6 +177,23 @@ auto MainWindow::initToolBar( ) -> void {
     impl_->configureFileToolBar( );
 }
 
+auto MainWindow::initCentralWidget( ) -> void {
+    QTabWidget *tabWidget = new QTabWidget;
+    tabWidget->addTab( xmlDisplay_, tr( "Overview" ) );
+    tabWidget->addTab( stackedTextDisplay_, tr( "Selection" ) );
+    tabWidget->setTabPosition( QTabWidget::South );
+    setCentralWidget( tabWidget );
+}
+
+auto MainWindow::initFileExplorer( ) -> void {
+    QDockWidget *leftDock = new QDockWidget( tr( "Xml File Explorer" ), this );
+    leftDock->setObjectName( "LeftDock" );
+    leftDock->setWidget( xmlFileExplorer_ );
+    leftDock->setAllowedAreas( Qt::LeftDockWidgetArea );
+    leftDock->setFeatures( QDockWidget::DockWidgetVerticalTitleBar );
+    addDockWidget( Qt::LeftDockWidgetArea, leftDock );
+}
+
 auto MainWindow::initConnections( ) -> void {
     connect( impl_->openAct_, &QAction::triggered, this, &MainWindow::open );
     connect( impl_->exitAct_, &QAction::triggered, this, &MainWindow::close );
@@ -189,6 +218,8 @@ auto MainWindow::loadFile( const QString &fileName ) -> void {
         QApplication::setOverrideCursor( Qt::WaitCursor );
         // do stuff with the xml file
         // TODO:
+        xmlDisplay_->setXml( xml );
+        xmlFileExplorer_->setXml( xml );
         QApplication::restoreOverrideCursor( );
 
         setCurrentFile( fileName );

@@ -3,6 +3,9 @@
 #include <memory>
 
 class QCloseEvent;
+class XmlDisplay;
+class StackedTextDisplay;
+class XmlFileExplorer;
 
 constexpr int MaxRecentFiles{5};
 
@@ -25,6 +28,8 @@ private:
     auto initActions( ) -> void;
     auto initMenus( ) -> void;
     auto initToolBar( ) -> void;
+    auto initCentralWidget( ) -> void;
+    auto initFileExplorer( ) -> void;
     auto initConnections( ) -> void;
     auto maybeSave( ) const -> bool;
     auto loadFile( const QString &fileName ) -> void;
@@ -32,4 +37,8 @@ private:
 
     struct Impl;
     std::unique_ptr<Impl> impl_;
+
+    XmlDisplay *xmlDisplay_;
+    StackedTextDisplay *stackedTextDisplay_;
+    XmlFileExplorer *xmlFileExplorer_;
 };
