@@ -26,6 +26,8 @@ include_directories(${gtest_SOURCE_DIR}/include)
 set(test_sources gtest_main.cpp
     test_helper.hpp
     test_helper.cpp
+    xpath_query_test.cpp
+    xpath_result_set_test.cpp
     xslt_doc_test.cpp
     # synonyms_test.cpp
     # pathname_test.cpp
@@ -35,8 +37,6 @@ set(test_sources gtest_main.cpp
     # xml_schema_test.cpp
     # xml_schema_validator_test.cpp
     # xpath_ctxt_test.cpp
-    # xpath_query_test.cpp
-    # xpath_result_set_test.cpp
     xml_element_test.cpp
     qregexp_test.cpp
     )
