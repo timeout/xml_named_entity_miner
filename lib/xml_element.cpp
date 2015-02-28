@@ -10,6 +10,8 @@
 #include <numeric>
 #include <sstream>
 
+#include <iostream>
+
 static auto replaceAndDestroy( xmlNode *old, xmlNode *nn ) -> void;
 template <typename T>
 static auto xmlTreeMap( xmlNode *node, const std::function<void( xmlNode *, T * )> &f,
