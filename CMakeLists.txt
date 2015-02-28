@@ -51,6 +51,15 @@ find_package(Qt5Widgets REQUIRED)
 # )
 qt5_wrap_cpp( GUI2_headers
     gui2/mainwindow.hpp
+    gui2/xml_display.hpp
+    gui2/xml_display_highlighter.hpp
+    gui2/stacked_text_display.hpp
+    gui2/text_display.hpp
+    gui2/text_display_highlighter.hpp
+    gui2/xml_file_explorer.hpp
+    gui2/xml_file_outline.hpp
+    gui2/line_edit.hpp
+    gui2/xpath_query_widget.hpp
 )
 # qt5_wrap_cpp(QT_SYN_LIB_src
 #     lib/synonyms.hpp
@@ -74,6 +83,7 @@ add_library(xml_lib
     lib/xml_schema_validator.hpp
     lib/xpath_ctxt.hpp
     lib/xpath_ctxt.cpp
+    lib/xpath_expression.hpp
     lib/xpath_query.hpp
     lib/xpath_query.cpp
     lib/xpath_result_set.hpp
@@ -82,10 +92,21 @@ add_library(xml_lib
     lib/xml_element.hpp
     lib/xml_element.cpp
 )
+
 add_library( GUI2_library
     ${GUI2_headers}
     gui2/mainwindow.cpp
+    gui2/xml_display.cpp
+    gui2/xml_display_highlighter.cpp
+    gui2/stacked_text_display.cpp
+    gui2/text_display.cpp
+    gui2/text_display_highlighter.cpp
+    gui2/xml_file_explorer.cpp
+    gui2/xml_file_outline.cpp
+    gui2/line_edit.cpp
+    gui2/xpath_query_widget.cpp
 )
+
 # add_library(gui_widgets 
 #     ${QT_GUI_src}
 #     ${RESOURCE_ADDED}
