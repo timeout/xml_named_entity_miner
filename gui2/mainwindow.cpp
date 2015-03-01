@@ -35,9 +35,10 @@ struct MainWindow::Impl {
     QAction *openAct_;
     QAction *exitAct_;
     QAction *recentFileActs_[MaxRecentFiles];
+    QAction *nextAct_, *prevAct_;
 
-    QMenu *fileMenu_;
-    QToolBar *fileToolBar_;
+    QMenu *fileMenu_, *viewMenu_;
+    QToolBar *fileToolBar_, *viewToolBar_;
 
     QString curFile_;
     XmlDoc xml_;
@@ -47,8 +48,12 @@ MainWindow::Impl::Impl( )
     : openAct_{nullptr}
     , exitAct_{nullptr}
     , recentFileActs_{nullptr}
+    , nextAct_{nullptr}
+    , prevAct_{nullptr}
     , fileMenu_{nullptr}
-    , fileToolBar_{nullptr} {}
+    , viewMenu_{nullptr}
+    , fileToolBar_{nullptr}
+    , viewToolBar_{nullptr} {}
 
 auto MainWindow::Impl::updateRecentFileActions( ) -> void {
     QSettings settings;
@@ -68,11 +73,17 @@ auto MainWindow::Impl::updateRecentFileActions( ) -> void {
 
 auto MainWindow::Impl::configureFileToolBar( ) -> void {
     fileToolBar_->setObjectName( "FileToolBar" );
-    fileToolBar_->setMovable( false );
-    fileToolBar_->setAllowedAreas( Qt::TopToolBarArea );
     fileToolBar_->addAction( openAct_ );
     fileToolBar_->addAction( exitAct_ );
+    fileToolBar_->setMovable( false );
+    fileToolBar_->setAllowedAreas( Qt::TopToolBarArea );
     fileToolBar_->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+    viewToolBar_->setObjectName( "ViewToolBar" );
+    viewToolBar_->addAction( nextAct_ );
+    viewToolBar_->addAction( prevAct_ );
+    viewToolBar_->setMovable( false );
+    viewToolBar_->setAllowedAreas( Qt::TopToolBarArea );
+    viewToolBar_->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
 }
 
 auto MainWindow::Impl::configureActions( ) -> void {
@@ -82,6 +93,12 @@ auto MainWindow::Impl::configureActions( ) -> void {
     exitAct_->setShortcuts( QKeySequence::Quit );
     exitAct_->setStatusTip( tr( "Exit the application" ) );
     exitAct_->setIcon( QIcon::fromTheme( "application-exit" ) );
+    nextAct_->setStatusTip( tr( "Activate next selection" ) );
+    nextAct_->setIcon( QIcon::fromTheme( "arrow-right" ) );
+    nextAct_->setEnabled( false );
+    prevAct_->setStatusTip( tr( "Activate previous selection" ) );
+    prevAct_->setIcon( QIcon::fromTheme( "arrow-left" ) );
+    prevAct_->setEnabled( false );
 }
 
 auto MainWindow::Impl::configureMenu( ) -> void {
@@ -92,6 +109,9 @@ auto MainWindow::Impl::configureMenu( ) -> void {
         recentFilesMenu->addAction( recentFileActs_[i] );
     fileMenu_->addAction( exitAct_ );
     updateRecentFileActions( );
+
+    viewMenu_->addAction( nextAct_ );
+    viewMenu_->addAction( prevAct_ );
 }
 
 // -- end Impl
@@ -164,16 +184,20 @@ auto MainWindow::initActions( ) -> void {
         connect( impl_->recentFileActs_[i], &QAction::triggered, this,
                  &MainWindow::openRecentFile );
     }
+    impl_->nextAct_ = new QAction{tr( "Next Selection" ), this};
+    impl_->prevAct_ = new QAction{tr( "Previous Selection" ), this};
     impl_->configureActions( );
 }
 
 auto MainWindow::initMenus( ) -> void {
     impl_->fileMenu_ = menuBar( )->addMenu( tr( "&File" ) );
+    impl_->viewMenu_ = menuBar( )->addMenu( tr( "&View" ) );
     impl_->configureMenu( );
 }
 
 auto MainWindow::initToolBar( ) -> void {
     impl_->fileToolBar_ = addToolBar( "ApplicationToolBar" );
+    impl_->viewToolBar_ = addToolBar( "ApplicationToolBar" );
     impl_->configureFileToolBar( );
 }
 
@@ -197,6 +221,21 @@ auto MainWindow::initFileExplorer( ) -> void {
 auto MainWindow::initConnections( ) -> void {
     connect( impl_->openAct_, &QAction::triggered, this, &MainWindow::open );
     connect( impl_->exitAct_, &QAction::triggered, this, &MainWindow::close );
+    // next controllers
+    connect( impl_->nextAct_, &QAction::triggered, stackedTextDisplay_,
+             &StackedTextDisplay::next );
+    connect( stackedTextDisplay_, &StackedTextDisplay::enableNext, impl_->nextAct_,
+             &QAction::setEnabled );
+    // prev controllers
+    connect( impl_->prevAct_, &QAction::triggered, stackedTextDisplay_,
+             &StackedTextDisplay::prev );
+    connect( stackedTextDisplay_, &StackedTextDisplay::enablePrev, impl_->prevAct_,
+             &QAction::setEnabled );
+
+    connect( xmlFileExplorer_, &XmlFileExplorer::elementSelected, stackedTextDisplay_,
+             &StackedTextDisplay::addElement );
+    connect( xmlFileExplorer_, &XmlFileExplorer::elementDeselected, stackedTextDisplay_,
+             &StackedTextDisplay::removeElement );
 }
 
 auto MainWindow::maybeSave( ) const -> bool { return true; }
