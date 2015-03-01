@@ -8,8 +8,6 @@
 
 StackedTextDisplay::StackedTextDisplay( QWidget *parent ) : QStackedWidget{parent} {
     pos_ = elements_.begin( );
-    emit begin( );
-    emit end( );
 }
 
 void StackedTextDisplay::clear( ) {
@@ -19,8 +17,8 @@ void StackedTextDisplay::clear( ) {
         delete display;
     }
     setCurrentIndex( -1 );
-    emit begin( );
-    emit end( );
+    emit enableNext( false );
+    emit enablePrev( false );
 }
 
 void StackedTextDisplay::addElement( const XmlElement &element ) {
@@ -60,14 +58,14 @@ void StackedTextDisplay::removeElement( const XmlElement &element ) {
     emit widgetRemoved( index );
     if ( count( ) == 0 ) { // there _was_ only one display
         setCurrentIndex( -1 );
-        pos_ = std::end( elements_ );
+        pos_ = std::begin( elements_ );
     } else if ( index == 0 ) { // removed first display
         setCurrentIndex( 0 );
         pos_ = std::begin( elements_ );
     } else if ( index == count( ) ) { // removed last display
         qDebug( ) << "deleting last display";
         setCurrentIndex( --index );
-        pos_ = std::prev(std::end( elements_ ), 1);
+        pos_ = std::prev( std::end( elements_ ), 1 );
     } else {
         setCurrentIndex( index );
     }
@@ -111,10 +109,14 @@ void StackedTextDisplay::prev( ) {
 
 auto StackedTextDisplay::beginEnd( ) -> void {
     if ( pos_ == std::begin( elements_ ) ) {
-        emit begin( );
+        emit enablePrev( false );
+    } else {
+        emit enablePrev( true );
     }
     auto it = pos_;
-    if ( std::next( it ) == std::end( elements_ ) ) {
-        emit end( );
+    if ( pos_ == std::end(elements_ ) || std::next( it ) == std::end( elements_ ) ) {
+        emit enableNext( false );
+    } else {
+        emit enableNext( true );
     }
 }

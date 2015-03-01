@@ -25,8 +25,8 @@ public slots:
 
 signals:
     void entitySelected( const QString &entity );
-    void end( );
-    void begin( );
+    void enableNext( bool enable );
+    void enablePrev( bool enable );
 
 private:
     auto beginEnd( ) -> void;
