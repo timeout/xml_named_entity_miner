@@ -40,6 +40,13 @@ auto XmlFileExplorer::layout( ) -> void {
 }
 
 auto XmlFileExplorer::connections( ) -> void {
+    // internal connections
     connect( xPathQueryWidget_, &XPathQueryWidget::queryResult, xmlFileOutline_,
              &XmlFileOutline::xPathResult );
+
+    // external connections
+    connect( xmlFileOutline_, &XmlFileOutline::xmlItemSelected, this,
+             &XmlFileExplorer::elementSelected );
+    connect( xmlFileOutline_, &XmlFileOutline::xmlItemDeselected, this,
+             &XmlFileExplorer::elementDeselected );
 }
