@@ -9,10 +9,8 @@ public:
     TextDisplay( const QString &text, QWidget *parent = nullptr );
     virtual ~TextDisplay( );
 
-    auto addOntology( const QColor &color ) -> void;
-    auto removeOntology( int ontologyIndex ) -> void;
-    auto addHighlightRule( int ontologyIndex, const QString &rule ) -> void;
-    auto removeHighlightRule( int ontologyIndex, const QString &rule ) -> void;
+    auto addHighlightRule( const QString& entity, const QColor& color ) -> void;
+    auto removeHighlightRule( const QString& entity ) -> void;
 
 signals:
     void entrySelected( const QString &entry );

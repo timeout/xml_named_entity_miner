@@ -1,33 +1,23 @@
 #include "text_display.hpp"
+#include <QDebug>
 
 TextDisplay::TextDisplay( QWidget *parent ) : QPlainTextEdit{parent} {}
 
 TextDisplay::TextDisplay( const QString &text, QWidget *parent )
     : QPlainTextEdit{parent} {
+    setReadOnly( true );
     setPlainText( text );
     highlighter_ = new TextDisplayHighlighter( document( ) );
 }
 
 TextDisplay::~TextDisplay( ) {}
 
-auto TextDisplay::addOntology( const QColor &color ) -> void {
-    ontologyVec_.push_back( color );
+auto TextDisplay::addHighlightRule( const QString &entity, const QColor &color ) -> void {
+    highlighter_->addRule( entity, color );
 }
 
-auto TextDisplay::removeOntology( int ontologyIndex ) -> void {
-    auto pos = ontologyVec_.begin( ) + ontologyIndex;
-    auto color = *pos;
-    ontologyVec_.erase( pos );
-    highlighter_->removeAll( color );
-}
-
-auto TextDisplay::addHighlightRule( int ontologyIndex, const QString &rule ) -> void {
-    auto color = ontologyVec_.at( ontologyIndex );
-    highlighter_->addRule( rule, color );
-}
-
-auto TextDisplay::removeHighlightRule( int ontologyIndex, const QString &rule ) -> void {
-    highlighter_->removeRule( rule );
+auto TextDisplay::removeHighlightRule( const QString &entity ) -> void {
+    highlighter_->removeRule( entity );
 }
 
 void TextDisplay::mousePressEvent( QMouseEvent *event ) {
@@ -69,6 +59,7 @@ auto TextDisplay::cursorSelection( ) -> void {
     }
     QString textSelection = selection.cursor.selectedText( );
 
+    qDebug( ) << "text selection: " << textSelection;
     emit entrySelected( textSelection );
 }
 
