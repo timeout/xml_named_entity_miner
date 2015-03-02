@@ -12,6 +12,7 @@ auto TextDisplayHighlighter::addRule( const QString &rule, const QColor &color )
     format.setForeground( color );
     format.setBackground( QColor{0xee, 0xe8, 0xd5} );
     rules_.insert( rule, format );
+    rehighlight( );
 }
 
 auto TextDisplayHighlighter::removeRule( const QString &rule ) -> void {
