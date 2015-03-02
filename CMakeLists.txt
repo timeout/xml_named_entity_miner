@@ -60,7 +60,11 @@ qt5_wrap_cpp( GUI2_headers
     gui2/xml_file_outline.hpp
     gui2/line_edit.hpp
     gui2/xpath_query_widget.hpp
+    gui2/tabbed_ontology_view.hpp
+    gui2/ontology_view.hpp
+    gui2/add_ontology_dialog.hpp
 )
+
 # qt5_wrap_cpp(QT_SYN_LIB_src
 #     lib/synonyms.hpp
 # )
@@ -105,6 +109,13 @@ add_library( GUI2_library
     gui2/xml_file_outline.cpp
     gui2/line_edit.cpp
     gui2/xpath_query_widget.cpp
+    gui2/tabbed_ontology_view.cpp
+    gui2/ontology_view.cpp
+    gui2/add_ontology_dialog.cpp
+    gui2/dictionary.hpp
+    gui2/dictionary.cpp
+    gui2/thesaurus.hpp
+    gui2/thesaurus.cpp
 )
 
 # add_library(gui_widgets 
