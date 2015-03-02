@@ -8,6 +8,7 @@
 
 StackedTextDisplay::StackedTextDisplay( QWidget *parent ) : QStackedWidget{parent} {
     pos_ = elements_.begin( );
+    connections( );
 }
 
 void StackedTextDisplay::clear( ) {
@@ -37,6 +38,9 @@ void StackedTextDisplay::addElement( const XmlElement &element ) {
     // create TextDisplay
     auto text = QString::fromStdString( element.content( ) );
     TextDisplay *textDisplay = new TextDisplay{text, this};
+    connect( textDisplay, &TextDisplay::entrySelected, this,
+             &StackedTextDisplay::entitySelected );
+
     // insert
     auto index = std::distance( std::begin( elements_ ), pos_ );
     insertWidget( index, textDisplay );
@@ -75,6 +79,7 @@ void StackedTextDisplay::removeElement( const XmlElement &element ) {
 
 void StackedTextDisplay::addOntology( const QString &ontologyName,
                                       const QColor formatColor ) {
+    qDebug( ) << "StackedTextDisplay#addOntology: " << ontologyName;
     ontologyMap_.emplace( ontologyName, formatColor );
 }
 
@@ -84,7 +89,21 @@ void StackedTextDisplay::removeOntology( const QString &ontologyName ) {
     // remove ontologies in TextDisplay and TextDisplayHighlighter
 }
 
-void StackedTextDisplay::highlight( const QString &ontologyName, const QString &entiy ) {}
+void StackedTextDisplay::highlight( const QString &ontologyName, const QString &entity ) {
+    qDebug( ) << "highlight: " << ontologyName << ", " << entity;
+    for ( int i = 0; i < count( ); ++i ) {
+        auto textDisplay = reinterpret_cast<TextDisplay *>( widget( i ) );
+        // can throw an exception
+        textDisplay->addHighlightRule( entity, ontologyMap_.at( ontologyName ) );
+    }
+}
+
+void StackedTextDisplay::removeHighlight( const QString &entity ) {
+    for ( int i = 0; i < count( ); ++i ) {
+        auto textDisplay = reinterpret_cast<TextDisplay *>( widget( i ) );
+        textDisplay->removeHighlightRule( entity );
+    }
+}
 
 void StackedTextDisplay::next( ) {
     auto it = pos_;
@@ -114,9 +133,15 @@ auto StackedTextDisplay::beginEnd( ) -> void {
         emit enablePrev( true );
     }
     auto it = pos_;
-    if ( pos_ == std::end(elements_ ) || std::next( it ) == std::end( elements_ ) ) {
+    if ( pos_ == std::end( elements_ ) || std::next( it ) == std::end( elements_ ) ) {
         emit enableNext( false );
     } else {
         emit enableNext( true );
     }
+}
+
+auto StackedTextDisplay::connections( ) -> void {
+    auto textDisplay = reinterpret_cast<TextDisplay *>( currentWidget( ) );
+    connect( textDisplay, &TextDisplay::entrySelected, this,
+             &StackedTextDisplay::entitySelected );
 }

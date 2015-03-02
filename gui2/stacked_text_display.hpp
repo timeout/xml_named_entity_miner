@@ -19,7 +19,8 @@ public slots:
     void removeElement( const XmlElement &element );
     void addOntology( const QString &ontologyName, const QColor formatColor );
     void removeOntology( const QString &ontologyName );
-    void highlight( const QString &ontologyName, const QString &entiy );
+    void highlight( const QString &ontologyName, const QString &entity );
+    void removeHighlight( const QString &entity );
     void next( );
     void prev( );
 
@@ -30,6 +31,7 @@ signals:
 
 private:
     auto beginEnd( ) -> void;
+    auto connections( ) -> void;
     std::list<XmlElement> elements_;
     std::list<XmlElement>::iterator pos_;
     std::map<QString, QColor> ontologyMap_;
