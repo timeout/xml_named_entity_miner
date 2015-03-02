@@ -6,6 +6,7 @@ class QCloseEvent;
 class XmlDisplay;
 class StackedTextDisplay;
 class XmlFileExplorer;
+class TabbedOntologyView;
 
 constexpr int MaxRecentFiles{5};
 
@@ -30,6 +31,7 @@ private:
     auto initToolBar( ) -> void;
     auto initCentralWidget( ) -> void;
     auto initFileExplorer( ) -> void;
+    auto initTabbedOntologyView() -> void;
     auto initConnections( ) -> void;
     auto maybeSave( ) const -> bool;
     auto loadFile( const QString &fileName ) -> void;
@@ -41,4 +43,5 @@ private:
     XmlDisplay *xmlDisplay_;
     StackedTextDisplay *stackedTextDisplay_;
     XmlFileExplorer *xmlFileExplorer_;
+    TabbedOntologyView *tabbedOntologyView_;
 };

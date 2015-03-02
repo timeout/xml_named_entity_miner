@@ -3,6 +3,7 @@
 #include "xml_display.hpp"
 #include "stacked_text_display.hpp"
 #include "xml_file_explorer.hpp"
+#include "tabbed_ontology_view.hpp"
 
 #include <fstream>
 #include <sstream>
@@ -121,13 +122,15 @@ MainWindow::MainWindow( )
     , impl_{new Impl}
     , xmlDisplay_{new XmlDisplay{this}}
     , stackedTextDisplay_{new StackedTextDisplay{this}}
-    , xmlFileExplorer_{new XmlFileExplorer{this}} {
+    , xmlFileExplorer_{new XmlFileExplorer{this}}
+    , tabbedOntologyView_{new TabbedOntologyView{this}} {
     readSettings( );
     initActions( );
     initMenus( );
     initToolBar( );
     initCentralWidget( );
     initFileExplorer( ); // left dock widget
+    initTabbedOntologyView( );
     initConnections( );
 }
 
@@ -210,12 +213,23 @@ auto MainWindow::initCentralWidget( ) -> void {
 }
 
 auto MainWindow::initFileExplorer( ) -> void {
-    QDockWidget *leftDock = new QDockWidget( tr( "Xml File Explorer" ), this );
+    QDockWidget *leftDock = new QDockWidget{this};
     leftDock->setObjectName( "LeftDock" );
     leftDock->setWidget( xmlFileExplorer_ );
     leftDock->setAllowedAreas( Qt::LeftDockWidgetArea );
-    leftDock->setFeatures( QDockWidget::DockWidgetVerticalTitleBar );
+    leftDock->setFeatures( QDockWidget::NoDockWidgetFeatures );
+    leftDock->setTitleBarWidget( new QWidget{this} );
     addDockWidget( Qt::LeftDockWidgetArea, leftDock );
+}
+
+auto MainWindow::initTabbedOntologyView( ) -> void {
+    QDockWidget *rightDock = new QDockWidget{this};
+    rightDock->setObjectName( "RightDock" );
+    rightDock->setWidget( tabbedOntologyView_ );
+    rightDock->setAllowedAreas( Qt::RightDockWidgetArea );
+    rightDock->setFeatures( QDockWidget::NoDockWidgetFeatures );
+    rightDock->setTitleBarWidget( new QWidget{this} );
+    addDockWidget( Qt::RightDockWidgetArea, rightDock );
 }
 
 auto MainWindow::initConnections( ) -> void {
@@ -236,6 +250,13 @@ auto MainWindow::initConnections( ) -> void {
              &StackedTextDisplay::addElement );
     connect( xmlFileExplorer_, &XmlFileExplorer::elementDeselected, stackedTextDisplay_,
              &StackedTextDisplay::removeElement );
+
+    connect( stackedTextDisplay_, &StackedTextDisplay::entitySelected,
+             tabbedOntologyView_, &TabbedOntologyView::addEntity );
+    connect( tabbedOntologyView_, &TabbedOntologyView::ontologyAdded, stackedTextDisplay_,
+             &StackedTextDisplay::addOntology );
+    connect( tabbedOntologyView_, &TabbedOntologyView::entityAdded, stackedTextDisplay_,
+             &StackedTextDisplay::highlight );
 }
 
 auto MainWindow::maybeSave( ) const -> bool { return true; }
