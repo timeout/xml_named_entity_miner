@@ -7,6 +7,7 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QDebug>
+#include <QHeaderView>
 #include <QMenu>
 #include <QPoint>
 #include <QTreeWidgetItem>
@@ -20,6 +21,7 @@ static auto findXmlElement( QTreeWidgetItem *item, const XmlElement &element )
 
 XmlFileOutline::XmlFileOutline( QWidget *parent ) : QTreeWidget{parent} {
     setContextMenuPolicy( Qt::CustomContextMenu );
+    header( )->close( );
     contextMenu( );
     connections( );
 }
