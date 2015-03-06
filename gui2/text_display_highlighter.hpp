@@ -9,6 +9,9 @@ public:
     auto removeRule( const QString &rule ) -> void;
     auto removeAll( const QColor &color ) -> void;
 
+public slots:
+    void rehighlightModification( bool isModified );
+
 protected:
     virtual auto highlightBlock( const QString &text ) -> void override;
 

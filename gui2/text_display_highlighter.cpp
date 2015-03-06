@@ -30,6 +30,12 @@ auto TextDisplayHighlighter::removeAll( const QColor &color ) -> void {
     }
 }
 
+void TextDisplayHighlighter::rehighlightModification( bool isModified ) {
+    if ( isModified ) {
+        rehighlight( );
+    }
+}
+
 auto TextDisplayHighlighter::highlightBlock( const QString &text ) -> void {
     for ( auto iter = rules_.begin( ); iter != rules_.end( ); ++iter ) {
         QRegExp expr( iter.key( ) );

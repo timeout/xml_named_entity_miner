@@ -22,6 +22,9 @@ protected:
 private slots:
     void open( );
     void openRecentFile( );
+    void textEditLockToggle( bool checked );
+    void textEditLock( bool checked );
+    void textEditUnlock( bool checked );
 
 private:
     auto readSettings( ) -> void;
@@ -31,7 +34,8 @@ private:
     auto initToolBar( ) -> void;
     auto initCentralWidget( ) -> void;
     auto initFileExplorer( ) -> void;
-    auto initTabbedOntologyView() -> void;
+    auto initTabbedOntologyView( ) -> void;
+    auto initStatusBar( ) -> void;
     auto initConnections( ) -> void;
     auto maybeSave( ) const -> bool;
     auto loadFile( const QString &fileName ) -> void;

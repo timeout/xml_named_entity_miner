@@ -1,13 +1,12 @@
 #include "text_display.hpp"
 #include <QDebug>
 
-TextDisplay::TextDisplay( QWidget *parent ) : QPlainTextEdit{parent} {}
-
 TextDisplay::TextDisplay( const QString &text, QWidget *parent )
-    : QPlainTextEdit{parent} {
-    setReadOnly( true );
+    : QPlainTextEdit{parent}, lock_{true} {
+    setReadOnly( true ); // lock_
     setPlainText( text );
     highlighter_ = new TextDisplayHighlighter( document( ) );
+    connections( );
 }
 
 TextDisplay::~TextDisplay( ) {}
@@ -19,6 +18,22 @@ auto TextDisplay::addHighlightRule( const QString &entity, const QColor &color )
 auto TextDisplay::removeHighlightRule( const QString &entity ) -> void {
     highlighter_->removeRule( entity );
 }
+
+auto TextDisplay::unlock( ) -> void {
+    qDebug( ) << "unlocking text display";
+    lock_ = false;
+    setReadOnly( lock_ );
+    // could be edits
+    // caught via signal QPlainTextEdit#modificationChanged(bool)
+}
+
+auto TextDisplay::lock( ) -> void {
+    qDebug( ) << "locking text display";
+    lock_ = true;
+    setReadOnly( lock_ );
+}
+
+auto TextDisplay::isLocked( ) const -> bool { return lock_; }
 
 void TextDisplay::mousePressEvent( QMouseEvent *event ) {
     if ( event->button( ) == Qt::LeftButton ) {
@@ -38,6 +53,10 @@ void TextDisplay::mouseReleaseEvent( QMouseEvent *event ) {
 }
 
 auto TextDisplay::cursorSelection( ) -> void {
+    if ( lock_ == false ) {
+        qDebug( ) << "Text edit locked, cursor selection disabled";
+        return;
+    }
     if ( cursorSelection_.begin_.blockNumber( ) !=
          cursorSelection_.end_.blockNumber( ) ) {
         return;
@@ -58,8 +77,16 @@ auto TextDisplay::cursorSelection( ) -> void {
                                       QTextCursor::KeepAnchor );
     }
     QString textSelection = selection.cursor.selectedText( );
+    if ( textSelection.isEmpty( ) ) {
+        return;
+    }
 
     qDebug( ) << "text selection: " << textSelection;
     emit entrySelected( textSelection );
+}
+
+auto TextDisplay::connections( ) -> void {
+    connect( this, &TextDisplay::modificationChanged, highlighter_,
+             &TextDisplayHighlighter::rehighlightModification );
 }
 

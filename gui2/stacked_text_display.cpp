@@ -20,6 +20,7 @@ void StackedTextDisplay::clear( ) {
     setCurrentIndex( -1 );
     emit enableNext( false );
     emit enablePrev( false );
+    emit hasContent( false );
 }
 
 void StackedTextDisplay::addElement( const XmlElement &element ) {
@@ -46,8 +47,14 @@ void StackedTextDisplay::addElement( const XmlElement &element ) {
     insertWidget( index, textDisplay );
 
     setCurrentIndex( index );
+    emit textAdded( text );
     emit currentChanged( index );
     beginEnd( );
+
+    if ( count( ) == 1 ) {
+        qDebug( ) << "has content: true";
+        emit hasContent( true );
+    }
 }
 
 void StackedTextDisplay::removeElement( const XmlElement &element ) {
@@ -75,6 +82,11 @@ void StackedTextDisplay::removeElement( const XmlElement &element ) {
     }
     beginEnd( );
     emit currentChanged( index );
+
+    if ( count( ) <= 0 ) {
+        qDebug( ) << "has content: false";
+        emit hasContent( false );
+    }
 }
 
 void StackedTextDisplay::addOntology( const QString &ontologyName,
@@ -124,6 +136,31 @@ void StackedTextDisplay::prev( ) {
     auto index = std::distance( std::begin( elements_ ), pos_ );
     setCurrentIndex( index );
     emit currentChanged( index );
+}
+
+void StackedTextDisplay::unlock( ) {
+    TextDisplay *textDisplay =
+        reinterpret_cast<TextDisplay *>( widget( currentIndex( ) ) );
+    textDisplay->unlock( );
+    // disable next and prev
+    emit enableNext( false );
+    emit enablePrev( false );
+    emit disabled( true );
+}
+
+void StackedTextDisplay::lock( ) {
+    TextDisplay *textDisplay =
+        reinterpret_cast<TextDisplay *>( widget( currentIndex( ) ) );
+    textDisplay->lock( );
+    // enable next and prev
+    beginEnd( );
+    emit disabled( false );
+}
+
+auto StackedTextDisplay::currentTextDisplayLocked( ) const -> bool {
+    const TextDisplay *textDisplay =
+        reinterpret_cast<TextDisplay *>( widget( currentIndex( ) ) );
+    return textDisplay->isLocked( );
 }
 
 auto StackedTextDisplay::beginEnd( ) -> void {
