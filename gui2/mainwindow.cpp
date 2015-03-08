@@ -334,7 +334,7 @@ auto MainWindow::initTabbedOntologyView( ) -> void {
 auto MainWindow::initStatusBar( ) -> void {
     impl_->configureStatusBar( );
     statusBar( )->addWidget( impl_->textEditLock_ );
-    statusBar( )->addWidget( impl_->semanticLabel_, 1 );
+    statusBar( )->addWidget( impl_->semanticLabel_ );
     // updateStatusBar( );
 }
 
@@ -383,8 +383,12 @@ auto MainWindow::initConnections( ) -> void {
 
     connect( tabbedOntologyView_, &TabbedOntologyView::ontologyAdded, stackedTextDisplay_,
              &StackedTextDisplay::addOntology );
+    connect( tabbedOntologyView_, &TabbedOntologyView::ontologyRemoved,
+             stackedTextDisplay_, &StackedTextDisplay::removeOntology );
     connect( tabbedOntologyView_, &TabbedOntologyView::entityAdded, stackedTextDisplay_,
              &StackedTextDisplay::highlight );
+    connect( tabbedOntologyView_, &TabbedOntologyView::entityRemoved, stackedTextDisplay_,
+             &StackedTextDisplay::removeHighlight );
 }
 
 auto MainWindow::maybeSave( ) const -> bool { return true; }
