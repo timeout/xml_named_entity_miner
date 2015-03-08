@@ -37,8 +37,6 @@ OntologyView::OntologyView( QWidget *parent )
              SLOT( contextMenuRequest( const QPoint & )) );
 }
 void OntologyView::insertEntry( const QString &entry, int count ) {
-    std::cerr << "entry: " << entry.toStdString( ) << std::endl;
-
     QTreeWidgetItem *item = new QTreeWidgetItem;
     item->setText( 0, entry );
     item->setData( 1, Qt::DisplayRole, QVariant{count} );
@@ -51,13 +49,11 @@ void OntologyView::contextMenuRequest( const QPoint &pos ) {
     QModelIndex idx = indexAt( pos );
     if ( idx.isValid( ) ) {
         selectedItem_ = itemFromIndex( idx );
-        qDebug( ) << "selected item: " << selectedItem_->text( 0 );
         ontologyViewContextMenu_->exec( mapToGlobal( pos ) );
     }
 }
 
 void OntologyView::removeEntry( ) {
-    qDebug( ) << "removing entry: " << selectedItem_->text( 0 );
     const QString entry = selectedItem_->text( 0 );
     if ( selectedItem_->parent( ) ) {
         QTreeWidgetItem *parent = selectedItem_->parent( );
