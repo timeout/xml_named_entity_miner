@@ -96,9 +96,14 @@ void StackedTextDisplay::addOntology( const QString &ontologyName,
 }
 
 void StackedTextDisplay::removeOntology( const QString &ontologyName ) {
+    for ( auto i = count( ); i; ) {
+        qDebug( ) << "index i: " << i;
+        auto textDisplay = reinterpret_cast<TextDisplay *>( widget( --i ) );
+        qDebug( ) << "removing all highlight rules for: " << ontologyName << " ( "
+                  << ontologyMap_.at( ontologyName ) << " )";
+        textDisplay->removeAllHighlightRules( ontologyMap_.at( ontologyName ) );
+    }
     ontologyMap_.erase( ontologyName );
-    // TODO:
-    // remove ontologies in TextDisplay and TextDisplayHighlighter
 }
 
 void StackedTextDisplay::highlight( const QString &ontologyName, const QString &entity ) {

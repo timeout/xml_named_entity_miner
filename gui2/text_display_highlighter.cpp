@@ -16,7 +16,9 @@ auto TextDisplayHighlighter::addRule( const QString &rule, const QColor &color )
 }
 
 auto TextDisplayHighlighter::removeRule( const QString &rule ) -> void {
+    qDebug( ) << "removing highlight rule: " << rule;
     rules_.remove( rule );
+    rehighlight( );
 }
 
 auto TextDisplayHighlighter::removeAll( const QColor &color ) -> void {
@@ -28,6 +30,7 @@ auto TextDisplayHighlighter::removeAll( const QColor &color ) -> void {
             ++iter;
         }
     }
+    rehighlight( );
 }
 
 void TextDisplayHighlighter::rehighlightModification( bool isModified ) {

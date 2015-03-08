@@ -62,6 +62,7 @@ qt5_wrap_cpp( GUI2_headers
     gui2/xpath_query_widget.hpp
     gui2/tabbed_ontology_view.hpp
     gui2/ontology_view.hpp
+    gui2/ontology_view_context_menu.hpp
     gui2/add_ontology_dialog.hpp
 )
 
@@ -111,6 +112,7 @@ add_library( GUI2_library
     gui2/xpath_query_widget.cpp
     gui2/tabbed_ontology_view.cpp
     gui2/ontology_view.cpp
+    gui2/ontology_view_context_menu.cpp
     gui2/add_ontology_dialog.cpp
     gui2/dictionary.hpp
     gui2/dictionary.cpp

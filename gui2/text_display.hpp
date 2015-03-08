@@ -11,9 +11,11 @@ public:
 
     auto addHighlightRule( const QString &entity, const QColor &color ) -> void;
     auto removeHighlightRule( const QString &entity ) -> void;
+    auto removeAllHighlightRules( const QColor &color ) -> void;
     auto unlock( ) -> void;
     auto lock( ) -> void;
     auto isLocked( ) const -> bool;
+// auto removeOntology
 
 signals:
     void entrySelected( const QString &entry );

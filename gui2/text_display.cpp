@@ -19,6 +19,11 @@ auto TextDisplay::removeHighlightRule( const QString &entity ) -> void {
     highlighter_->removeRule( entity );
 }
 
+auto TextDisplay::removeAllHighlightRules( const QColor &color ) -> void {
+    qDebug() << "removing all rules associated with the color: " << color;
+    highlighter_->removeAll( color );
+}
+
 auto TextDisplay::unlock( ) -> void {
     qDebug( ) << "unlocking text display";
     lock_ = false;
