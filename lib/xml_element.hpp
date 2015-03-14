@@ -4,8 +4,13 @@
 #include <vector>
 #include <map>
 #include <QMetaType>
+// #include "xml_doc.hpp"
+
+// class XmlDoc;
 
 class XmlElement {
+    // friend class XmlDoc;
+
 public:
     XmlElement( ) : node_{nullptr} {} // default constructor for QVariant
 
@@ -15,12 +20,13 @@ public:
     auto name( const std::string &name ) -> std::string;
     auto hasAttributes( ) const -> bool;
     auto attribute( const std::string &key, const std::string &value ) -> void;
-    // auto attributes( ) const -> std::map<std::string, std::string>;
-    auto attributes( ) const -> std::vector<std::pair<std::string, std::string>>;
+    auto attributes( ) const -> std::map<std::string, std::string>;
     auto attributes( const std::map<std::string, std::string> &attrs )
         -> std::map<std::string, std::string>;
+    auto removeAttributes( ) -> void;
     auto hasChild( ) const -> bool;
     auto child( ) const -> XmlElement;
+    auto children( ) const -> const std::vector<XmlElement>;
     auto child( const std::string &name ) -> XmlElement;
     auto child( const std::string &name, const std::map<std::string, std::string> &attrs )
         -> XmlElement;
@@ -34,18 +40,21 @@ public:
     auto content( const std::string &content ) -> void;
     // auto markupEntity(const std::string &entity) -> void;
     auto toString( ) const -> std::string;
+    auto unlink( ) -> void;
+    auto destroy( ) -> void;
+    auto swap( XmlElement &other ) -> void;
 
-    auto operator==(const XmlElement& lhs) const -> bool;
-    auto operator!=(const XmlElement& lhs) const -> bool;
-    auto operator<(const XmlElement& lhs) const -> bool;
-    auto operator>(const XmlElement& lhs) const -> bool;
-    auto operator<=(const XmlElement& lhs) const -> bool;
-    auto operator>=(const XmlElement& lhs) const -> bool;
-    
+    auto operator==( const XmlElement &lhs ) const -> bool;
+    auto operator!=( const XmlElement &lhs ) const -> bool;
+    auto operator<( const XmlElement &lhs ) const -> bool;
+    auto operator>( const XmlElement &lhs ) const -> bool;
+    auto operator<=( const XmlElement &lhs ) const -> bool;
+    auto operator>=( const XmlElement &lhs ) const -> bool;
+
     // dev
     auto search( const std::string &needle, const std::string &entityType ) const -> void;
+    auto markup( const std::string &needle, const std::map<std::string, std::string>& attrs ) -> void;
     auto xpaths( ) const -> const std::vector<std::string>;
-    auto children( ) const -> const std::vector<XmlElement>;
     auto tags( ) const -> const std::pair<const std::string, const std::string>;
     auto tagsRegex( ) const -> const std::pair<const std::string, const std::string>;
     auto empty( ) const -> bool;

@@ -1,4 +1,5 @@
 #include "xml_element.hpp"
+// #include "xml_doc.hpp"
 #include <iostream>
 #include <cassert>
 #include <cstring>
@@ -41,34 +42,28 @@ auto XmlElement::hasAttributes( ) const -> bool {
 
 auto XmlElement::attribute( const std::string &key, const std::string &value ) -> void {
     if ( node_ ) {
-        xmlNewProp( node_, reinterpret_cast<const unsigned char *>( key.c_str( ) ),
-                    reinterpret_cast<const unsigned char *>( value.c_str( ) ) );
+        if ( node_->properties &&
+             xmlHasProp( node_,
+                         reinterpret_cast<const unsigned char *>( key.c_str( ) ) ) ) {
+            xmlSetProp( node_, reinterpret_cast<const unsigned char *>( key.c_str( ) ),
+                        reinterpret_cast<const unsigned char *>( value.c_str( ) ) );
+        } else {
+            xmlNewProp( node_, reinterpret_cast<const unsigned char *>( key.c_str( ) ),
+
+                        reinterpret_cast<const unsigned char *>( value.c_str( ) ) );
+        }
     }
 }
-// auto XmlElement::attributes( ) const -> std::map<std::string, std::string> {
-//     std::map<std::string, std::string> ret;
-//     if ( node_ && node_->properties ) {
-//         for ( xmlAttr *attr = node_->properties; nullptr != attr; attr = attr->next ) {
-//             // TODO: replace with XmlString
-//             xmlChar *valp = xmlGetProp( node_, attr->name );
-//             const std::string value = reinterpret_cast<const char *>( valp );
-//             xmlFree( valp );
-//             ret[reinterpret_cast<const char *>( attr->name )] = value;
-//         }
-//     }
-//     return ret;
-// }
 
-auto XmlElement::attributes( ) const -> std::vector<std::pair<std::string, std::string>> {
-    std::vector<std::pair<std::string, std::string>> ret;
+auto XmlElement::attributes( ) const -> std::map<std::string, std::string> {
+    std::map<std::string, std::string> ret;
     if ( node_ && node_->properties ) {
         for ( xmlAttr *attr = node_->properties; nullptr != attr; attr = attr->next ) {
             // TODO: replace with XmlString
             xmlChar *valp = xmlGetProp( node_, attr->name );
             const std::string value = reinterpret_cast<const char *>( valp );
             xmlFree( valp );
-            ret.push_back(
-                std::make_pair( reinterpret_cast<const char *>( attr->name ), value ) );
+            ret[reinterpret_cast<const char *>( attr->name )] = value;
         }
     }
     return ret;
@@ -88,11 +83,37 @@ auto XmlElement::attributes( const std::map<std::string, std::string> &attrs )
     }
     return ret;
 }
+
+auto XmlElement::removeAttributes( ) -> void {
+    if ( node_ && node_->properties ) {
+        for ( auto attr = node_->properties; attr; ) {
+            auto tmp = attr;
+            attr = attr->next;
+            xmlRemoveProp( tmp );
+        }
+    }
+}
+
 auto XmlElement::hasChild( ) const -> bool { return ( node_ && node_->children ); }
+
 auto XmlElement::child( ) const -> XmlElement {
     return ( node_ && node_->children ) ? XmlElement{node_->children}
                                         : XmlElement{nullptr};
 }
+
+auto XmlElement::children( ) const -> const std::vector<XmlElement> {
+    if ( node_->children == nullptr ) {
+        return {};
+    }
+    std::vector<XmlElement> ret;
+    for ( xmlNode *tmp = node_->children; tmp != nullptr; tmp = tmp->next ) {
+        if ( tmp->type == XML_ELEMENT_NODE ) {
+            ret.push_back( XmlElement{tmp} );
+        }
+    }
+    return ret;
+}
+
 auto XmlElement::child( const std::string &name ) -> XmlElement {
     // create a new node
     xmlNode *nn{
@@ -104,13 +125,16 @@ auto XmlElement::child( const std::string &name ) -> XmlElement {
     }
     return XmlElement{child};
 }
+
 auto XmlElement::child( const std::string &name,
                         const std::map<std::string, std::string> &attrs ) -> XmlElement {
     XmlElement child = this->child( name );
     child.attributes( attrs );
     return child;
 }
+
 auto XmlElement::hasSibling( ) const -> bool { return ( node_ && node_->next ); }
+
 auto XmlElement::sibling( const std::string &name ) -> XmlElement {
     if ( !node_ ) {
         return {nullptr};
@@ -123,6 +147,7 @@ auto XmlElement::sibling( const std::string &name ) -> XmlElement {
     }
     return sibling;
 }
+
 auto XmlElement::sibling( const std::string &name,
                           const std::map<std::string, std::string> &attrs )
     -> XmlElement {
@@ -190,6 +215,25 @@ auto XmlElement::toString( ) const -> std::string {
     return {};
 }
 
+auto XmlElement::unlink( ) -> void {
+    if ( node_->parent ) {
+        xmlUnlinkNode( node_ );
+        xmlFreeNode( node_ );
+        node_ = nullptr;
+    }
+}
+
+auto XmlElement::destroy( ) -> void {
+    xmlFreeNode( node_ );
+    node_ = nullptr;
+}
+
+auto XmlElement::swap( XmlElement &other ) -> void {
+    xmlNode *tmp = node_;
+    node_ = other.node_;
+    other = tmp;
+}
+
 auto XmlElement::operator==( const XmlElement &lhs ) const -> bool {
     return node_ == lhs.node_;
 }
@@ -243,6 +287,7 @@ auto XmlElement::operator>=( const XmlElement &lhs ) const -> bool {
     }
     return !( *this > lhs );
 }
+
 // TODO: xmlNodes instantiation failure?
 auto XmlElement::search( const std::string &needle,
                          const std::string &entityType ) const -> void {
@@ -286,6 +331,88 @@ auto XmlElement::search( const std::string &needle,
     }
 }
 
+// auto XmlElement::markup( const std::string &needle, XmlElement &element ) -> void {
+auto XmlElement::markup( const std::string &needle,
+                         const std::map<std::string, std::string> &attrs ) -> void {
+    if ( node_ ) {
+        for ( auto node = node_->children; node; node = node->next ) {
+            if ( node->type == XML_TEXT_NODE ) {
+                std::string content{reinterpret_cast<const char *>( node->content )};
+                std::pair<std::string, std::string> splstr;
+                std::string::size_type n = content.find( needle );
+                splstr.first = content.substr( 0, n );
+                splstr.second = content.substr( n + needle.size( ), std::string::npos );
+                if ( splstr.first.empty( ) ) {
+
+                    xmlNode *n = xmlNewNode(
+                        NULL, reinterpret_cast<const unsigned char *>( "entity" ) );
+                    XmlElement el{n};
+                    el.attributes( attrs );
+
+                    replaceAndDestroy( node, el.node_ );
+                } else {
+                    // printf( "DEBUG: '%s'\n", splstr.first.c_str( ) );
+                    xmlNode *textNode =
+                        xmlNewText( reinterpret_cast<const unsigned char *>(
+                            splstr.first.c_str( ) ) );
+                    replaceAndDestroy( node, textNode );
+
+                    xmlNode *n = xmlNewNode(
+                        NULL, reinterpret_cast<const unsigned char *>( "entity" ) );
+                    XmlElement el{n};
+                    el.attributes( attrs );
+
+                    std::cerr << el.toString( ) << std::endl;
+
+                    xmlAddNextSibling( textNode, el.node_ );
+                }
+
+                if ( !splstr.second.empty( ) ) {
+                    xmlNode *textNode =
+                        xmlNewText( reinterpret_cast<const unsigned char *>(
+                            splstr.first.c_str( ) ) );
+                    replaceAndDestroy( node, textNode );
+
+                    xmlNode *n = xmlNewNode(
+                        NULL, reinterpret_cast<const unsigned char *>( "entity" ) );
+                    XmlElement el{n};
+                    el.attributes( attrs );
+
+                    xmlAddNextSibling(
+                        el.node_, xmlNewText( reinterpret_cast<const unsigned char *>(
+                                      splstr.second.c_str( ) ) ) );
+                }
+            }
+        }
+    }
+    // std::string content{reinterpret_cast<const char *>( node_->children->content )};
+    // split into prefix | needle | suffix
+    // std::pair<std::string, std::string> splstr;
+    // n = content.find( needle, n );
+    // prefix
+    // splstr.first = content.substr( 0, n );
+    // suffix
+    // splstr.second = content.substr( n + needle.size( ), std::string::npos );
+    // std::cerr << "prefix: " << splstr.first << std::endl;
+    // std::cerr << "suffix: " << splstr.second << std::endl;
+
+    // if ( splstr.first.empty( ) ) {
+    //     replaceAndDestroy( node_->children, element.node_ );
+    // } else {
+    // printf( "DEBUG: '%s'\n", splstr.first.c_str( ) );
+    //    xmlNode *textNode = xmlNewText(
+    //        reinterpret_cast<const unsigned char *>( splstr.first.c_str( ) ) );
+    //    replaceAndDestroy( node_->children, textNode );
+    //    xmlAddNextSibling( textNode, element.node_ );
+    // }
+
+    // if ( !splstr.second.empty( ) ) {
+    //    xmlAddNextSibling( element.node_,
+    //                       xmlNewText( reinterpret_cast<const unsigned char *>(
+    //                           splstr.second.c_str( ) ) ) );
+    // }
+}
+
 auto XmlElement::xpaths( ) const -> const std::vector<std::string> {
     if ( nullptr == node_ ) {
         return {};
@@ -316,19 +443,6 @@ auto XmlElement::xpaths( ) const -> const std::vector<std::string> {
             tmp = tmp->next;
         }
     }
-}
-
-auto XmlElement::children( ) const -> const std::vector<XmlElement> {
-    if ( node_->children == nullptr ) {
-        return {};
-    }
-    std::vector<XmlElement> ret;
-    for ( xmlNode *tmp = node_->children; tmp != nullptr; tmp = tmp->next ) {
-        if ( tmp->type == XML_ELEMENT_NODE ) {
-            ret.push_back( XmlElement{tmp} );
-        }
-    }
-    return ret;
 }
 
 auto XmlElement::tags( ) const -> const std::pair<const std::string, const std::string> {
