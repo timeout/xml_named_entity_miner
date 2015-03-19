@@ -212,24 +212,24 @@ void XmlFileOutline::uncheckSubtree( QTreeWidgetItem *target ) {
 }
 
 auto XmlFileOutline::contextMenu( ) -> void {
-    // removeEntryAction_ = new QAction{tr( "&Delete" ), this};
-    // removeEntryAction_->setShortcut( QKeySequence::Delete );
-    // removeEntryAction_->setIcon( QIcon::fromTheme( "remove" ) );
-    // connect( removeEntryAction_, SIGNAL( triggered( ) ), SLOT( removeEntry( ) ) );
     semanticAction_ = new QAction{tr( "&Add Sentiment" ), this};
     semanticAction_->setShortcut( QKeySequence{Qt::CTRL + Qt::Key_I} );
-    semanticAction_->setIcon( QIcon::fromTheme( "configure" ) );
+    semanticAction_->setIcon(
+        QIcon::fromTheme( "configure", QIcon{":images/configure.svg"} ) );
 
     positiveSemanticAction_ = new QAction{tr( "Positive" ), this};
-    positiveSemanticAction_->setIcon( QIcon::fromTheme( "add" ) );
+    positiveSemanticAction_->setIcon(
+        QIcon::fromTheme( "add", QIcon{":images/add.svg"} ) );
     positiveSemanticAction_->setToolTip(
         "Add a positive semantic value to entities in this XML element" );
     negativeSemanticAction_ = new QAction{tr( "Negative" ), this};
-    negativeSemanticAction_->setIcon( QIcon::fromTheme( "edit-delete" ) );
+    negativeSemanticAction_->setIcon(
+        QIcon::fromTheme( "edit-delete", QIcon{":images/edit-delete.svg"} ) );
     positiveSemanticAction_->setToolTip(
         "Add a negative semantic value to entities in this XML element" );
     neutralSemanticAction_ = new QAction{tr( "Neutral" ), this};
-    neutralSemanticAction_->setIcon( QIcon::fromTheme( "help" ) );
+    neutralSemanticAction_->setIcon(
+        QIcon::fromTheme( "help", QIcon{":images/help-faq.svg"} ) );
     neutralSemanticAction_->setChecked( true );
 
     QActionGroup *semanticGroup = new QActionGroup{this};

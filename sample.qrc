@@ -1,4 +1,27 @@
-<RCC>
+<!DOCTYPE RCC>
+<RCC version="1.0">
   <qresource prefix="/">
+    <file>images/add.svg</file>
+    <file>images/application-exit.svg</file>
+    <file>images/bookmark-add.svg</file>
+    <file>images/configure.svg</file>
+    <file>images/dialog-apply.svg</file>
+    <file>images/document-open.svg</file>
+    <file>images/document-preview-archive.svg</file>
+    <file>images/document-save.svg</file>
+    <file>images/document-save-as.svg</file>
+    <file>images/draw-text.svg</file>
+    <file>images/edit-delete.svg</file>
+    <file>images/edit-find.svg</file>
+    <file>images/edit-find-replace.svg</file>
+    <file>images/gtk-preferences.svg</file>
+    <file>images/go-next.svg>
+    <file>images/go-previous.svg>
+    <file>images/lock-insecure.svg</file>
+    <file>images/lock-secure.svg</file>
+    <file>images/media-playlist-shuffle.svg</file>
+    <file>images/trash-empty.svg</file>
+    <file>images/view-sort-ascending.svg</file>
+    <file>images/view-sort-descending.svg</file>
   </qresource>
 </RCC>

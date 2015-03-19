@@ -14,14 +14,18 @@ OntologyViewContextMenu::OntologyViewContextMenu( QWidget *parent )
 auto OntologyViewContextMenu::configActions( ) -> void {
     removeAct_->setShortcuts( QKeySequence::Delete );
     removeAct_->setStatusTip( tr( "Remove entity" ) );
-    removeAct_->setIcon( QIcon::fromTheme( "trash-empty" ) );
+    removeAct_->setIcon(
+        QIcon::fromTheme( "trash-empty", QIcon{":images/trash-empty.svgz"} ) );
     sortAscAct_->setStatusTip( tr( "Sort ascending" ) );
-    sortAscAct_->setIcon( QIcon::fromTheme( "view-sort-ascending" ) );
+    sortAscAct_->setIcon(
+        QIcon::fromTheme( "view-sort-ascending", QIcon{":images/view-sort-ascending"} ) );
     sortDescAct_->setStatusTip( tr( "Sort " ) );
-    sortDescAct_->setIcon( QIcon::fromTheme( "view-sort-descending" ) );
+    sortDescAct_->setIcon( QIcon::fromTheme(
+        "view-sort-descending", QIcon{":images/view-sort-descending.svg"} ) );
     createSynonymAct_->setShortcuts( QKeySequence::New );
     createSynonymAct_->setStatusTip( tr( "Add new synonym" ) );
-    createSynonymAct_->setIcon( QIcon::fromTheme( "draw-text" ) );
+    createSynonymAct_->setIcon(
+        QIcon::fromTheme( "draw-text", QIcon{":images/draw-text.svg"} ) );
     addAction( removeAct_ );
     addAction( sortAscAct_ );
     addAction( sortDescAct_ );

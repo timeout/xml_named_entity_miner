@@ -126,35 +126,44 @@ auto MainWindow::Impl::configureFileToolBar( ) -> void {
 auto MainWindow::Impl::configureActions( ) -> void {
     openAct_->setShortcuts( QKeySequence::Open );
     openAct_->setStatusTip( tr( "Open an existing file" ) );
-    openAct_->setIcon( QIcon::fromTheme( "document-open" ) );
+    openAct_->setIcon(
+        QIcon::fromTheme( "document-open", QIcon{":images/document-open.svg"} ) );
     exitAct_->setShortcuts( QKeySequence::Quit );
     exitAct_->setStatusTip( tr( "Exit the application" ) );
-    exitAct_->setIcon( QIcon::fromTheme( "application-exit" ) );
+    exitAct_->setIcon(
+        QIcon::fromTheme( "application-exit", QIcon{":images/application-exit.svg"} ) );
     saveAct_->setShortcut( QKeySequence::Save );
     saveAct_->setStatusTip( tr( "Save file" ) );
-    saveAct_->setIcon( QIcon::fromTheme( "document-save" ) );
+    saveAct_->setIcon(
+        QIcon::fromTheme( "document-save", QIcon{":images/document-save.svg"} ) );
     saveAsAct_->setShortcut( QKeySequence::SaveAs );
     saveAsAct_->setStatusTip( tr( "Save file as..." ) );
-    saveAsAct_->setIcon( QIcon::fromTheme( "document-save-as" ) );
+    saveAsAct_->setIcon(
+        QIcon::fromTheme( "document-save-as", QIcon{":images/document-save-as.svg"} ) );
     nextAct_->setStatusTip( tr( "Activate next selection" ) );
-    nextAct_->setIcon( QIcon::fromTheme( "arrow-right" ) );
+    nextAct_->setIcon( QIcon::fromTheme( "arrow-right", QIcon{":images/go-next.svg"} ) );
     nextAct_->setEnabled( false );
     prevAct_->setStatusTip( tr( "Activate previous selection" ) );
-    prevAct_->setIcon( QIcon::fromTheme( "arrow-left" ) );
+    prevAct_->setIcon(
+        QIcon::fromTheme( "arrow-left", QIcon{":images/go-previous.svg"} ) );
     prevAct_->setEnabled( false );
     xmlViewAct_->setStatusTip( tr( "Overview of the current XML document" ) );
-    xmlViewAct_->setIcon( QIcon::fromTheme( "edit-find" ) );
+    xmlViewAct_->setIcon(
+        QIcon::fromTheme( "edit-find", QIcon{":images/edit-find.svg"} ) );
     textViewAct_->setStatusTip( tr( "View Selected XML element's contents" ) );
-    textViewAct_->setIcon( QIcon::fromTheme( "edit-find-replace" ) );
+    textViewAct_->setIcon(
+        QIcon::fromTheme( "edit-find-replace", QIcon{":images/edit-find-replace.svg"} ) );
     textViewAct_->setEnabled( false );
 
     unlockTextAct_->setShortcut( QKeySequence{Qt::CTRL + Qt::Key_U} );
     unlockTextAct_->setCheckable( true );
-    unlockTextAct_->setIcon( QIcon::fromTheme( "lock-insecure" ) );
+    unlockTextAct_->setIcon(
+        QIcon::fromTheme( "lock-insecure", QIcon{":images/lock-insecure.svg"} ) );
     unlockTextAct_->setStatusTip( tr( "Unlock current text display panel for editing" ) );
     lockTextAct_->setShortcut( QKeySequence{Qt::CTRL + Qt::Key_L} );
     lockTextAct_->setCheckable( true );
-    lockTextAct_->setIcon( QIcon::fromTheme( "lock-secure" ) );
+    lockTextAct_->setIcon(
+        QIcon::fromTheme( "lock-secure", QIcon{":images/lock-secure.svg"} ) );
     lockTextAct_->setStatusTip( tr( "Lock current text display panel for editing" ) );
 
     lockTextActionGroup_->setEnabled( false );
@@ -162,22 +171,25 @@ auto MainWindow::Impl::configureActions( ) -> void {
     lockTextActionGroup_->addAction( lockTextAct_ );
     lockTextAct_->setChecked( true );
 
-    addOntologyAct_->setIcon( QIcon::fromTheme( "bookmark-new" ) );
+    addOntologyAct_->setIcon(
+        QIcon::fromTheme( "bookmark-new", QIcon{":images/bookmark-new.svg"} ) );
     addOntologyAct_->setStatusTip( tr( "Add an ontology" ) );
     validateAct_->setShortcut( QKeySequence{Qt::CTRL + Qt::Key_V} );
-    validateAct_->setIcon( QIcon::fromTheme( "ok" ) );
+    validateAct_->setIcon( QIcon::fromTheme( "ok", QIcon{":images/dialog-apply.svg"} ) );
     validateAct_->setStatusTip( "Validate XML using XML Schema file" );
     validateAct_->setEnabled( false );
     transformAct_->setShortcut( QKeySequence{Qt::CTRL + Qt::Key_T} );
-    transformAct_->setIcon( QIcon::fromTheme( "media-playlist-shuffle" ) );
+    transformAct_->setIcon( QIcon::fromTheme(
+        "media-playlist-shuffle", QIcon{":images/media-playlist-shuffle.svg"} ) );
     transformAct_->setStatusTip( "Transform XML using XSLT stylesheet" );
     transformAct_->setEnabled( false );
 }
 
 auto MainWindow::Impl::configureMenu( ) -> void {
     fileMenu_->addAction( openAct_ );
-    QMenu *recentFilesMenu = fileMenu_->addMenu( QIcon::fromTheme( "application-menu" ),
-                                                 tr( "Recent &Files" ) );
+    QMenu *recentFilesMenu = fileMenu_->addMenu(
+        QIcon::fromTheme( "application-menu", QIcon{"gtk-preferences.svg"} ),
+        tr( "Recent &Files" ) );
     for ( int i = 0; i < MaxRecentFiles; ++i )
         recentFilesMenu->addAction( recentFileActs_[i] );
     fileMenu_->addAction( saveAct_ );
@@ -201,7 +213,7 @@ auto MainWindow::Impl::configureMenu( ) -> void {
 
 auto MainWindow::Impl::configureStatusBar( ) -> void {
     textEditLock_ = new QToolButton;
-    textEditLock_->setIcon( QIcon::fromTheme( "lock-secure" ) );
+    textEditLock_->setIcon( QIcon::fromTheme( "lock-secure", QIcon{":images/lock-secure"} ) );
     textEditLock_->setMinimumSize( textEditLock_->sizeHint( ) );
     textEditLock_->setEnabled( false );
     textEditLock_->setCheckable( true );
@@ -211,10 +223,10 @@ auto MainWindow::Impl::configureStatusBar( ) -> void {
 
 auto MainWindow::Impl::toggleEditLockIcon( bool checked ) -> void {
     if ( checked ) {
-        textEditLock_->setIcon( QIcon::fromTheme( "lock-insecure" ) );
+        textEditLock_->setIcon( QIcon::fromTheme( "lock-insecure", QIcon{":images/lock-insecure.svg"} ) );
         unlockTextAct_->setChecked( true );
     } else {
-        textEditLock_->setIcon( QIcon::fromTheme( "lock-secure" ) );
+        textEditLock_->setIcon( QIcon::fromTheme( "lock-secure", QIcon{":images/lock-secure.svg"} ) );
         lockTextAct_->setChecked( true );
     }
 }

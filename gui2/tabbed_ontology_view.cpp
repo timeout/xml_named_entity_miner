@@ -17,7 +17,7 @@
 
 TabbedOntologyView::TabbedOntologyView( QWidget *parent )
     : QTabWidget{parent}, newTabButton_{new QToolButton} {
-    newTabButton_->setIcon( QIcon::fromTheme( "add" ) );
+    newTabButton_->setIcon( QIcon::fromTheme( "add", QIcon{":images/add.svg"} ) );
     newTabButton_->setAutoRaise( true );
     newTabButton_->setToolTip( tr( "Add a new Ontology" ) );
 

@@ -24,7 +24,7 @@ XmlTaskDialog::XmlTaskDialog( const XmlDoc &xml, QWidget *parent )
     path_->setSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed );
     QFontMetrics metrics{QApplication::font( )};
     lineEdit_->setMinimumWidth( metrics.averageCharWidth( ) * 32 );
-    QIcon icon = QIcon::fromTheme( "document-open", QIcon( ":/images/document-open" ) );
+    QIcon icon = QIcon::fromTheme( "document-open", QIcon( ":/images/document-open.svg" ) );
     fileButton_->setIcon( icon );
 }
 
