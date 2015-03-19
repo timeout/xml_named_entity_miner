@@ -388,7 +388,13 @@ TEST_F( XmlDocTests, ElementSearch ) {
     XmlDoc menuDoc{menuIs};
     ASSERT_EQ( true, testBool_f<XmlDoc>( menuDoc ) );
     XmlElement root{menuDoc.getRootElement( )};
+}
 
-    auto children = root.children( );
-    std::cerr << "size: " << children.size() << std::endl;
+TEST_F( XmlDocTests, SetRootElement ) {
+    XmlDoc doc;
+    XmlElement root{"root-element"};
+    root.attributes( {{"checked", "yes"}, {"sentiment", "positive"}} );
+    doc.setRootElement( root );
+
+    std::cerr << doc << std::endl;
 }
