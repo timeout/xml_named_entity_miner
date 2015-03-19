@@ -1,309 +1,203 @@
-#include "xml_element.hpp"
-// #include "xml_doc.hpp"
 #include "gtest/gtest.h"
+#include <libxml/tree.h>
+#include "xml_element.hpp"
 #include <iostream>
 #include <map>
 #include <vector>
 
-TEST( ElementTest, Name ) {
-    // xmlNode is created and destroyed outside of class
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-
-    XmlElement el{n};
-    std::string currentName = el.name( );
-    EXPECT_STREQ( "test-node", currentName.c_str( ) );
-
-    std::string oldName = el.name( "changed-name" );
-    EXPECT_STREQ( currentName.c_str( ), oldName.c_str( ) );
-    currentName = el.name( );
-    EXPECT_STREQ( "changed-name", currentName.c_str( ) );
-
-    xmlFreeNode( n );
+TEST( XmlElementTest, Ctor ) {
+    xmlNode *node =
+        xmlNewNode( nullptr, reinterpret_cast<const unsigned char *>( "test-node" ) );
+    XmlElement element{node};
+    ASSERT_STREQ( "test-node", element.name( ).c_str( ) );
+    std::cerr << element << std::endl;
 }
 
-TEST( ElementTest, HasAttributes ) {
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-
-    XmlElement el{n};
-    ASSERT_FALSE( el.hasAttributes( ) );
-
-    xmlFreeNode( n );
+TEST( XmlElementTest, Ctor2 ) {
+    XmlElement element{"test-node"};
+    ASSERT_STREQ( "test-node", element.name( ).c_str( ) );
 }
 
-TEST( ElementTest, Attribute ) {
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    XmlElement el{n};
-    ASSERT_FALSE( el.hasAttributes( ) );
-    el.attribute( "id", "test-value" );
-    ASSERT_TRUE( el.hasAttributes( ) );
-    xmlFreeNode( n );
+TEST( XmlElementTest, CopyCtor ) {
+    XmlElement element{"test-node"};
+    XmlElement copy{element};
+    element.name( "element" );
+    ASSERT_TRUE( std::string{"element"} == copy.name( ) );
+    ASSERT_TRUE( std::string{"element"} == element.name( ) );
+    std::cerr << copy << std::endl;
+    std::cerr << element << std::endl;
 }
 
-TEST( ElementTest, SetAttributes ) {
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    XmlElement el{n};
-    ASSERT_FALSE( el.hasAttributes( ) );
-    std::map<std::string, std::string> attrs{{"class", "test-class"},
-                                             {"test-attr", "test-value"}};
-    el.attributes( attrs );
-    ASSERT_TRUE( el.hasAttributes( ) );
-    xmlFreeNode( n );
+TEST( XmlElementTest, CopyAssignment ) {
+    XmlElement first{"first"};
+    XmlElement second{"second"};
+    second = first;
+    ASSERT_STREQ( "first", second.name( ).c_str( ) );
+    ASSERT_TRUE( first == second );
 }
 
-TEST( ElementTest, GetAttributes ) {
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    XmlElement el{n};
-    ASSERT_FALSE( el.hasAttributes( ) );
-    std::map<std::string, std::string> attrs{{"class", "test-class"},
-                                             {"test-attr", "test-value"}};
-    el.attributes( attrs );
-    ASSERT_TRUE( el.hasAttributes( ) );
+TEST( XmlElementTest, SetName ) {
+    XmlElement element{"test-node"};
+    ASSERT_STREQ( "test-node", element.name( ).c_str( ) );
+    element.name( "renamed" );
+    ASSERT_STREQ( "renamed", element.name( ).c_str( ) );
+}
 
-    auto props = el.attributes( );
-    for ( auto attr : props ) {
-        auto key = attr.first;
-        auto value = attr.second;
-        auto look = attrs.find( key );
-        ASSERT_STREQ( look->second.c_str( ), value.c_str( ) );
+TEST( XmlElementTest, HasntAttribute ) {
+    XmlElement element{"test-node"};
+    ASSERT_FALSE( element.hasAttributes( ) );
+}
+
+TEST( XmlElementTest, HasAttribute ) {
+    XmlElement element{"test-node"};
+    element.attribute( "id", "42" );
+    ASSERT_TRUE( element.hasAttributes( ) );
+}
+
+TEST( XmlElementTest, RemoveAttribute ) {
+    XmlElement element{"test-node"};
+    element.attribute( "id", "42" );
+    ASSERT_TRUE( element.hasAttributes( ) );
+    element.removeAttribute( "id" );
+    ASSERT_FALSE( element.hasAttributes( ) );
+}
+
+TEST( XmlElementTest, GetAttributeMap ) {
+    XmlElement element{"test-node"};
+    element.attribute( "id", "42" );
+    element.attribute( "class", "answer" );
+    element.attribute( "author", "Douglas Adams" );
+    auto attrs = element.attributes( );
+    auto val = attrs.find( "class" );
+    ASSERT_TRUE( val->second == std::string{"answer"} );
+    val = attrs.find( "author" );
+    ASSERT_TRUE( val->second == std::string{"Douglas Adams"} );
+}
+
+TEST( XmlElementTest, SetAttributeMap ) {
+    XmlElement element{"test-node"};
+    element.attributes(
+        {{"id", "42"}, {"class", "answer"}, {"question", "meaning of life"}} );
+    auto attrs = element.attributes( );
+    auto val = attrs.find( "id" );
+    ASSERT_TRUE( std::string{"42"} == val->second );
+    val = attrs.find( "class" );
+    ASSERT_TRUE( std::string{"answer"} == val->second );
+    val = attrs.find( "question" );
+    ASSERT_TRUE( std::string{"meaning of life"} == val->second );
+    std::cerr << element << std::endl;
+}
+
+TEST( XmlElementTest, RemoveMoreAttribute ) {
+    XmlElement element{"test-node"};
+    element.attributes( {{"id", "42"}, {"class", "answer"}, {"person", "author"}} );
+    ASSERT_TRUE( element.hasAttributes( ) );
+    element.removeAttribute( "person" );
+    element.removeAttribute( "id" );
+    ASSERT_TRUE( element.hasAttributes( ) );
+    ASSERT_STREQ( "answer", element.attribute( "class" ).c_str( ) );
+    std::cerr << element << std::endl;
+}
+
+TEST( XmlElementTest, HasntContent ) {
+    XmlElement element{"test-node"};
+    ASSERT_STREQ( "test-node", element.name( ).c_str( ) );
+    ASSERT_FALSE( element.hasContent( ) );
+}
+
+TEST( XmlElementTest, HasContent ) {
+    XmlElement element{"test-node"};
+    element.content(
+        "Once you do know what the question actually is, you'll know what the answer "
+        "means..." );
+    ASSERT_TRUE( element.hasContent( ) );
+}
+
+TEST( XmlElementTest, GetNonRecursiveContent ) {
+    XmlElement element{"test-node"};
+    element.content(
+        "Once you do know what the question actually is, you'll know what the answer "
+        "means..." );
+    ASSERT_TRUE( element.hasContent( ) );
+    std::cerr << element.content( ) << std::endl;
+}
+
+TEST( XmlElementTest, HasntChild ) {
+    XmlElement element{"test-node"};
+    ASSERT_FALSE( element.hasChild( ) );
+}
+
+TEST( XmlElementTest, HasChild ) {
+    XmlElement element{"test-node"};
+    XmlElement child{"child-node"};
+    element.child( child );
+    ASSERT_TRUE( element.hasChild( ) );
+}
+
+TEST( XmlElementTest, AddChild ) {
+    XmlElement element{"root"};
+    element.child( XmlElement{"child"} );
+    std::cerr << element << std::endl;
+    ASSERT_TRUE( std::string{"root"} == element.name( ) );
+    auto child = element.child( );
+    ASSERT_TRUE( std::string{"child"} == child.name( ) );
+}
+
+TEST( XmlElementTest, AddSibling ) {
+    XmlElement element{"root"};
+    XmlElement child{"child"};
+    XmlElement sibling{"sibling"};
+    element.child( child );
+    child.sibling( sibling );
+    auto next = child.sibling( );
+    std::cerr << element << std::endl;
+    std::cerr << sibling << std::endl;
+    std::cerr << next << std::endl;
+    ASSERT_TRUE( std::string{"sibling"} == next.name( ) );
+}
+
+TEST( XmlElementTest, SwapTest1 ) {
+    XmlElement element{"original"};
+    XmlElement swapee{"swapped"};
+    element.swap( swapee );
+    ASSERT_TRUE( std::string{"swapped"} == element.name( ) );
+}
+
+TEST( XmlElementTest, ConstructElement ) {
+    // The Hitchhiker's Guide to the Galaxy was a concept for a science-fiction comedy
+    // radio
+    // series pitched by Adams and radio producer Simon Brett to BBC Radio 4 in 1977.
+
+    XmlElement element{"section"};
+    element.content(
+        "The Hitchiker's Guide to the Galaxy was a concept for a science-fiction comedy "
+        "raido series pitched by " );
+
+    XmlElement name{"named-entity"};
+    name.attribute( "type", "person" );
+    name.content( "Adams" );
+
+    element.child( name );
+    element.content( " and radio produced " );
+
+    XmlElement name1{"named-entity"};
+    name1.attribute( "type", "person" );
+    name1.content( "Simon Brett" );
+
+    element.child( name1 );
+    element.content( " to BBC Radio 4 in 1977." );
+
+    // std::cerr << element.toString( ) << std::endl;
+    if ( element.hasChild( ) ) {
+        auto ch = element.child( );
+        while ( ch ) {
+            if ( ch.content( ) == std::string{"Adams"} ) {
+                ch.name( "ENTITY" );
+                ch.attribute( "key", "value" );
+            }
+            ch = ch.sibling( );
+        }
     }
-
-    xmlFreeNode( n );
+    std::cerr << element.toString( ) << std::endl;
 }
 
-TEST( ElementTest, HasChild ) {
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    XmlElement el{n};
-    ASSERT_FALSE( el.hasChild( ) );
-    xmlFreeNode( n );
-}
-
-TEST( ElementTest, SetChildName ) {
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    XmlElement el{n};
-    ASSERT_FALSE( el.hasChild( ) );
-    XmlElement ch = el.child( "child-test" );
-    ASSERT_TRUE( el.hasChild( ) );
-    ASSERT_STREQ( "child-test", ch.name( ).c_str( ) );
-    xmlFreeNode( n );
-}
-
-TEST( ElementTest, SetChild ) {
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    XmlElement el{n};
-    ASSERT_FALSE( el.hasChild( ) );
-    std::map<std::string, std::string> attrs{{"class", "test-class"},
-                                             {"test-attr", "test-value"}};
-    XmlElement ch = el.child( "child-test", attrs );
-    ASSERT_TRUE( el.hasChild( ) );
-    ASSERT_STREQ( "child-test", ch.name( ).c_str( ) );
-    ASSERT_TRUE( ch.hasAttributes( ) );
-    auto props = ch.attributes( );
-    for ( auto attr : props ) {
-        auto key = attr.first;
-        auto value = attr.second;
-        auto look = attrs.find( key );
-        ASSERT_STREQ( look->second.c_str( ), value.c_str( ) );
-    }
-
-    for ( auto attr : props ) {
-        auto key = attr.first;
-        auto value = attr.second;
-        auto look = attrs.find( key );
-        ASSERT_STREQ( look->second.c_str( ), value.c_str( ) );
-    }
-
-    xmlFreeNode( n );
-}
-
-TEST( ElementTest, Child ) {
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    XmlElement el{n};
-    ASSERT_FALSE( el.hasChild( ) );
-    XmlElement ch = el.child( "child-test" );
-    ASSERT_TRUE( el.hasChild( ) );
-    ASSERT_STREQ( "child-test", ch.name( ).c_str( ) );
-    el = el.child( );
-    ASSERT_STREQ( "child-test", el.name( ).c_str( ) );
-    xmlFreeNode( n );
-}
-
-TEST( ElementTest, HasSiblings ) {
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    XmlElement el{n};
-    ASSERT_FALSE( el.hasChild( ) );
-    XmlElement ch1 = el.child( "first-child-test" );
-    XmlElement ch2 = el.child( "second-child-test" );
-    ASSERT_TRUE( ch1.hasSibling( ) );
-    xmlFreeNode( n );
-}
-
-TEST( ElementTest, SetSiblingName ) {
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    XmlElement el{n};
-    XmlElement ch = el.child( "child" );
-    XmlElement sibling = ch.sibling( "sibling-test" );
-    ASSERT_TRUE( ch.hasSibling( ) );
-    xmlFreeNode( n ); // only free's child nodes
-}
-
-TEST( ElementTest, SetSibling ) {
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    XmlElement el{n};
-    XmlElement ch = el.child( "child" );
-    std::map<std::string, std::string> attrs{{"class", "test-class"},
-                                             {"test-attr", "test-value"}};
-    XmlElement sibling = ch.sibling( "sibling-test", attrs );
-    ASSERT_TRUE( ch.hasSibling( ) );
-    // ASSERT_EQ( attrs, sibling.attributes( ) );
-    auto props = sibling.attributes( );
-    for ( auto attr : props ) {
-        auto key = attr.first;
-        auto value = attr.second;
-        auto look = attrs.find( key );
-        ASSERT_STREQ( look->second.c_str( ), value.c_str( ) );
-    }
-
-    xmlFreeNode( n ); // only free's child nodes
-}
-
-TEST( ElementTest, HasContent ) {
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    XmlElement el{n};
-    XmlElement ch = el.child( "child" );
-    std::map<std::string, std::string> attrs{{"class", "test-class"},
-                                             {"test-attr", "test-value"}};
-    XmlElement sibling = ch.sibling( "sibling-test", attrs );
-    ASSERT_TRUE( ch.hasSibling( ) );
-    // ASSERT_EQ( attrs, sibling.attributes( ) );
-    auto props = sibling.attributes( );
-    for ( auto attr : props ) {
-        auto key = attr.first;
-        auto value = attr.second;
-        auto look = attrs.find( key );
-        ASSERT_STREQ( look->second.c_str( ), value.c_str( ) );
-    }
-
-    ASSERT_FALSE( el.hasContent( ) );
-    xmlFreeNode( n ); // only free's child nodes
-}
-
-TEST( ElementTest, Content ) {
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    XmlElement el{n};
-    el.content( "This is some test content" );
-    ASSERT_TRUE( el.hasContent( ) );
-    std::cerr << el.content( ) << std::endl;
-    xmlFreeNode( n ); // only free's child nodes
-    n = nullptr;
-
-    n = xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    el = XmlElement{n};
-    XmlElement ch1 = el.child( "child" );
-    XmlElement sibling = el.child( "sibling" );
-    XmlElement ch2 = sibling.child( "child-of-sibling" );
-    ch2.content( "This is some more test content" );
-    ch2.child( "child-of-child-of-sibling" );
-    ASSERT_TRUE( el.hasContent( ) );
-    std::cerr << el.content( ) << std::endl;
-    xmlFreeNode( n ); // only free's child nodes
-    n = nullptr;
-}
-
-TEST( ElementTest, AddContent ) {
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    XmlElement el{n};
-    el.content( "This is some test content" );
-    ASSERT_TRUE( el.hasContent( ) );
-    xmlFreeNode( n ); // only free's child nodes
-    n = nullptr;
-
-    n = xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    el = XmlElement{n};
-    XmlElement ch1 = el.child( "child" );
-    XmlElement sibling = el.child( "sibling" );
-    XmlElement ch2 = sibling.child( "child-of-child" );
-    ch2.content( "This is some test content" );
-    ASSERT_TRUE( el.hasContent( ) );
-    xmlFreeNode( n ); // only free's child nodes
-    n = nullptr;
-
-    n = xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    el = XmlElement{n};
-    ch1 = el.child( "child" );
-    sibling = el.child( "sibling" );
-    ch2 = sibling.child( "child-of-child" );
-    ASSERT_FALSE( el.hasContent( ) );
-    xmlFreeNode( n ); // only free's child nodes
-}
-
-TEST( ElementTest, Equality ) {
-    XmlElement nullEl;
-    ASSERT_TRUE( nullEl == XmlElement{} );
-
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    XmlElement el1{n};
-    XmlElement ch1 = el1.child( "child" );
-    ASSERT_FALSE( el1 == ch1 );
-    ASSERT_FALSE( el1 == XmlElement{} );
-    ASSERT_TRUE( el1 != ch1 );
-    auto ch = el1.child( );
-    ASSERT_TRUE( ch == ch1 );
-    ASSERT_FALSE( ch != ch1 );
-    ASSERT_TRUE( ch != XmlElement{} );
-    xmlFreeNode( n );
-}
-
-TEST( ElementTest, StrictOrdering ) {
-    XmlElement nullEl;
-    ASSERT_FALSE( nullEl < XmlElement{} );
-    ASSERT_FALSE( nullEl > XmlElement{} );
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    XmlElement el{n};
-    ASSERT_TRUE( el < nullEl );
-    auto ch = el.child( "child-node" );
-    ASSERT_TRUE( el < ch );
-    ASSERT_FALSE( el < el );
-    ASSERT_TRUE( ch > el );
-    auto sblg = el.child( "sibling-of-child" );
-    ASSERT_TRUE( el < sblg );
-    ASSERT_TRUE( sblg > el );
-    ASSERT_TRUE( ch < sblg );
-    ASSERT_TRUE( sblg > ch );
-    auto grch = ch.child( "child-of-child" );
-    ASSERT_TRUE( ch < grch );
-    ASSERT_TRUE( grch < sblg );
-    auto grch1 = sblg.child( "child-of-siblg" );
-    ASSERT_TRUE( grch < grch1 );
-    ASSERT_TRUE( grch1 > grch );
-    xmlFreeNode( n );
-}
-
-TEST( ElementTest, WeakOrdering ) {
-    XmlElement nullEl;
-    ASSERT_TRUE( nullEl <= XmlElement{} );
-    ASSERT_TRUE( nullEl >= XmlElement{} );
-
-    xmlNode *n =
-        xmlNewNode( NULL, reinterpret_cast<const unsigned char *>( "test-node" ) );
-    XmlElement el{n};
-    ASSERT_TRUE( el >= el);
-    ASSERT_TRUE( el <= el);
-    xmlFreeNode( n );
-}

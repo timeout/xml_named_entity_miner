@@ -12,6 +12,7 @@ class XmlFileOutline : public QTreeWidget {
 public:
     XmlFileOutline( QWidget *parent = nullptr );
     auto xml( const XmlDoc &xml ) -> void;
+    auto writeXml( ) const -> XmlDoc;
     auto clear( ) -> void;
 
 public slots:

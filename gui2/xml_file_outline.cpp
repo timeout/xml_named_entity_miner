@@ -3,6 +3,7 @@
 #include "xml_element.hpp"
 #include <queue>
 #include <string>
+#include <sstream>
 
 #include <QAction>
 #include <QActionGroup>
@@ -19,6 +20,11 @@ static auto buildTreeFromXml( const XmlDoc &xml ) -> QTreeWidgetItem *;
 static auto findXmlElement( QTreeWidgetItem *item, const XmlElement &element )
     -> QTreeWidgetItem *;
 
+const std::string emptyXmlDoc{
+    R"(<?xml version="1.0" encoding="UTF-8"?>
+        <root/>
+        )"};
+
 XmlFileOutline::XmlFileOutline( QWidget *parent ) : QTreeWidget{parent} {
     setContextMenuPolicy( Qt::CustomContextMenu );
     header( )->close( );
@@ -33,6 +39,18 @@ auto XmlFileOutline::xml( const XmlDoc &xml ) -> void {
     if ( invisibleRootItem( )->child( 0 ) ) {
         expandItem( invisibleRootItem( )->child( 0 ) );
     }
+}
+
+auto XmlFileOutline::writeXml( ) const -> XmlDoc {
+    auto rootItem = topLevelItem( 0 );
+    auto rootVar = rootItem->data( 0, Qt::UserRole );
+    auto rootElement = rootVar.value<XmlElement>( );
+    XmlElement root;
+    root.clone( rootElement );
+    std::istringstream is{emptyXmlDoc};
+    XmlDoc ret{is};
+    ret.setRootElement( root );
+    return ret;
 }
 
 void XmlFileOutline::itemClicked( const QModelIndex &idx ) {
@@ -54,20 +72,8 @@ void XmlFileOutline::xPathResult( const XmlElement &element ) {
     qDebug( ) << "adding xpath result...\n";
     QTreeWidgetItem *root = invisibleRootItem( );
     QTreeWidgetItem *search = findXmlElement( root, element );
-    //    if ( search ) {
-    //        Qt::CheckState checkedState = search->checkState( 0 );
-    //        switch ( checkedState ) {
-    //        case Qt::Checked:
-    //            break;
-    //        case Qt::Unchecked:
-    //            checkSubtree( search );
-    //            break;
-    //        default:
-    //            // return;
-    //        }
-    //        search->setCheckState( 0, Qt::Checked );
-    //    }
     if ( search ) {
+        qDebug( ) << "search result found";
         search->setCheckState( 0, Qt::Checked );
         itemClicked( indexFromItem( search, 0 ) );
     }
@@ -98,6 +104,7 @@ void XmlFileOutline::checkSubtree( QTreeWidgetItem *target ) {
     if ( target->isDisabled( ) == true ) {
         return;
     }
+
     std::queue<QTreeWidgetItem *> parents;
     parents.push( target );
     while ( !parents.empty( ) ) {
@@ -121,12 +128,22 @@ void XmlFileOutline::checkSubtree( QTreeWidgetItem *target ) {
             child = parent->child( parent->indexOfChild( child ) + 1 );
         }
     }
+    std::cerr << "getting target data . . ." << std::endl;
     QVariant targetVar = target->data( 0, Qt::UserRole );
     XmlElement targetElement = targetVar.value<XmlElement>( );
+    // add checked attribute to element
+    targetElement.attribute( "checked", "yes" );
+    if ( !targetElement ) {
+        std::cerr << "targetElement is nullptr" << std::endl;
+    }
+    std::cerr << "xml item selected . . . " << targetElement.name( ) << std::endl;
     emit xmlItemSelected( targetElement );
 }
 
 auto XmlFileOutline::addSentiment( Sentiment sentiment ) -> void {
+    if ( selectedItem_->checkState( 0 ) != Qt::Checked ) {
+        return;
+    }
     QVariant elementVar = selectedItem_->data( 0, Qt::UserRole );
     XmlElement element = elementVar.value<XmlElement>( );
     // add attribute
@@ -156,6 +173,9 @@ void XmlFileOutline::customContextMenu( const QPoint &pos ) {
     QModelIndex idx = indexAt( pos );
     if ( idx.isValid( ) ) {
         selectedItem_ = itemFromIndex( idx );
+        if ( selectedItem_->checkState( 0 ) != Qt::Checked ) {
+            return;
+        }
         qDebug( ) << "selected item: " << selectedItem_->text( 0 );
         fileOutlineContextMenu_->exec( mapToGlobal( pos ) );
     }
@@ -180,6 +200,14 @@ void XmlFileOutline::uncheckSubtree( QTreeWidgetItem *target ) {
     }
     QVariant targetVar = target->data( 0, Qt::UserRole );
     XmlElement targetElement = targetVar.value<XmlElement>( );
+    auto value = targetElement.attribute( "checked" );
+    if ( !value.empty( ) ) {
+        targetElement.removeAttribute( "checked" );
+    }
+    auto sentiment = targetElement.attribute( "sentiment" );
+    if ( !sentiment.empty( ) ) {
+        targetElement.removeAttribute( "sentiment" );
+    }
     emit xmlItemDeselected( targetElement );
 }
 
@@ -194,8 +222,12 @@ auto XmlFileOutline::contextMenu( ) -> void {
 
     positiveSemanticAction_ = new QAction{tr( "Positive" ), this};
     positiveSemanticAction_->setIcon( QIcon::fromTheme( "add" ) );
+    positiveSemanticAction_->setToolTip(
+        "Add a positive semantic value to entities in this XML element" );
     negativeSemanticAction_ = new QAction{tr( "Negative" ), this};
     negativeSemanticAction_->setIcon( QIcon::fromTheme( "edit-delete" ) );
+    positiveSemanticAction_->setToolTip(
+        "Add a negative semantic value to entities in this XML element" );
     neutralSemanticAction_ = new QAction{tr( "Neutral" ), this};
     neutralSemanticAction_->setIcon( QIcon::fromTheme( "help" ) );
     neutralSemanticAction_->setChecked( true );
@@ -205,7 +237,10 @@ auto XmlFileOutline::contextMenu( ) -> void {
     semanticGroup->addAction( negativeSemanticAction_ );
     semanticGroup->addAction( neutralSemanticAction_ );
 
-    fileOutlineContextMenu_ = new QMenu{this};
+    fileOutlineContextMenu_ = new QMenu{"Sentiment", this};
+    fileOutlineContextMenu_->setWindowFlags( Qt::Popup );
+    // fileOutlineContextMenu_->addAction( "Add a Sentiment" )->setEnabled( false );
+    // fileOutlineContextMenu_->addSeparator( );
     fileOutlineContextMenu_->addAction( positiveSemanticAction_ );
     fileOutlineContextMenu_->addAction( neutralSemanticAction_ );
     fileOutlineContextMenu_->addAction( negativeSemanticAction_ );
@@ -226,7 +261,7 @@ auto XmlFileOutline::connections( ) -> void {
 static auto buildTreeFromXml( const XmlDoc &xml ) -> QTreeWidgetItem * {
     auto root = xml.getRootElement( );
     QTreeWidgetItem *rootItem = new QTreeWidgetItem;
-    rootItem->setText( 0, QString::fromUtf8( root.tags( ).first.c_str( ) ) );
+    rootItem->setText( 0, QString::fromUtf8( root.tags( false ).first.c_str( ) ) );
     // Using QMetaType
     rootItem->setData( 0, Qt::UserRole, QVariant::fromValue( root ) );
 
@@ -242,19 +277,19 @@ static auto buildTreeFromXml( const XmlDoc &xml ) -> QTreeWidgetItem * {
         auto parentItem = parentItemQu.front( );
         parentItemQu.pop( );
 
-        auto elementChildren = parentElement.children( );
-        for ( auto childElement : elementChildren ) {
-            // create childItems
-            QTreeWidgetItem *childItem = new QTreeWidgetItem( parentItem );
-            childItem->setText(
-                0, QString::fromUtf8( childElement.tagsRegex( ).first.c_str( ) ) );
-            childItem->setData( 0, Qt::UserRole, QVariant::fromValue( childElement ) );
-            childItem->setCheckState( 0, Qt::Unchecked );
-            childItem->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsEnabled );
-            // breadth first creation (Elements only)
-            if ( childElement.hasChild( ) ) {
-                parentElementQu.push( childElement );
-                parentItemQu.push( childItem );
+        if ( parentElement.hasChild( ) ) {
+            auto ch = parentElement.child( );
+            while ( ch ) {
+                QTreeWidgetItem *childItem = new QTreeWidgetItem( parentItem );
+                childItem->setText( 0, QString::fromStdString( ch.tags( true ).first ) );
+                childItem->setData( 0, Qt::UserRole, QVariant::fromValue( ch ) );
+                childItem->setCheckState( 0, Qt::Unchecked );
+                childItem->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsEnabled );
+                if ( ch.hasChild( ) ) {
+                    parentElementQu.push( ch );
+                    parentItemQu.push( childItem );
+                }
+                ch = ch.sibling( );
             }
         }
     }
@@ -263,14 +298,14 @@ static auto buildTreeFromXml( const XmlDoc &xml ) -> QTreeWidgetItem * {
 
 static auto findXmlElement( QTreeWidgetItem *item, const XmlElement &element )
     -> QTreeWidgetItem * {
+    qDebug( ) << "searching for element: " << QString::fromStdString( element.name( ) );
     std::queue<QTreeWidgetItem *> parents;
     parents.push( item );
     while ( !parents.empty( ) ) {
         auto parent = parents.front( );
         parents.pop( );
         QVariant parentData = parent->data( 0, Qt::UserRole );
-        const XmlElement parentElement = parentData.value<XmlElement>( );
-        if ( parentElement == element ) {
+        if ( parentData.value<XmlElement>( ) == element ) {
             return parent;
         }
         auto child = parent->child( 0 );

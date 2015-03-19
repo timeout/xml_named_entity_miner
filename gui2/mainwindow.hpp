@@ -22,9 +22,20 @@ protected:
 private slots:
     void open( );
     void openRecentFile( );
+    bool save( );
+    bool saveAs( );
     void textEditLockToggle( bool checked );
     void textEditLock( bool checked );
     void textEditUnlock( bool checked );
+    void schemaValidationDialog( );
+    void transformDialog( );
+    void showXmlOverview( );
+    void showTextDisplay( );
+    void enableSelectionTab( bool enabled );
+
+signals:
+    void enableXmlTask( bool enable );
+    void xmlLoaded( );
 
 private:
     auto readSettings( ) -> void;
@@ -37,9 +48,11 @@ private:
     auto initTabbedOntologyView( ) -> void;
     auto initStatusBar( ) -> void;
     auto initConnections( ) -> void;
-    auto maybeSave( ) const -> bool;
     auto loadFile( const QString &fileName ) -> void;
     auto setCurrentFile( const QString &fileName ) -> void;
+    auto writeXml( const QString &fileName ) const -> bool;
+    auto saveFile( const QString &fileName ) -> bool;
+    auto maybeSave( ) -> bool;
 
     struct Impl;
     std::unique_ptr<Impl> impl_;

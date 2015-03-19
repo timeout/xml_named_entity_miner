@@ -8,6 +8,7 @@ public:
     auto addRule( const QString &rule, const QColor &color ) -> void;
     auto removeRule( const QString &rule ) -> void;
     auto removeAll( const QColor &color ) -> void;
+    auto keywords( ) const -> const QMap<QString, QTextCharFormat>&;
 
 public slots:
     void rehighlightModification( bool isModified );

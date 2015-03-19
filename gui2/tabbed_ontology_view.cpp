@@ -10,7 +10,9 @@
 #include <QTabBar>
 #include <QToolButton>
 #include <QWidget>
+#include <cassert>
 
+#include <iostream>
 #include <QDebug>
 
 TabbedOntologyView::TabbedOntologyView( QWidget *parent )
@@ -29,6 +31,24 @@ TabbedOntologyView::TabbedOntologyView( QWidget *parent )
     connections( );
 }
 
+auto TabbedOntologyView::thesaurus( const QString &ontologyName ) const -> const Thesaurus
+    & {
+    for ( int i = 0; i < count( ) - 1; ++i ) {
+        OntologyView *ontologyView = reinterpret_cast<OntologyView *>( widget( i ) );
+        if ( ontologyName == ontologyView->ontologyName( ) ) {
+            return ontologyView->thesaurus( );
+        }
+    }
+    assert( false );
+}
+
+void TabbedOntologyView::clearOntologyViews( ) {
+    for ( int i = 0; i < count( ) - 1; ++i ) {
+        OntologyView *ontologyView = reinterpret_cast<OntologyView *>( widget( i ) );
+        ontologyView->clear( );
+    }
+}
+
 void TabbedOntologyView::addEntity( const QString &entity ) {
     qDebug( ) << "TabbedOntologyView#addEntity( " << entity << " )";
     // add entity to current ontology view
@@ -44,6 +64,7 @@ void TabbedOntologyView::addEntity( const QString &entity ) {
 }
 
 void TabbedOntologyView::scanText( const QString &text ) {
+    std::cerr << __PRETTY_FUNCTION__ << " scanning text" << std::endl;
     if ( count( ) == 1 ) {
         return;
     }

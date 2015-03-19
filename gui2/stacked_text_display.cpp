@@ -13,11 +13,14 @@ StackedTextDisplay::StackedTextDisplay( QWidget *parent ) : QStackedWidget{paren
 
 void StackedTextDisplay::clear( ) {
     std::cerr << "clearing stacked text display" << std::endl;
-    for ( int index = 0; index < count( ); ++index ) {
+    auto size = count( );
+    for ( int index = 0; index < size; ++index ) {
         TextDisplay *display = reinterpret_cast<TextDisplay *>( widget( index ) );
         delete display;
+        emit widgetRemoved( index );
     }
     setCurrentIndex( -1 );
+    elements_.clear( );
     emit enableNext( false );
     emit enablePrev( false );
     emit hasContent( false );
@@ -30,6 +33,9 @@ void StackedTextDisplay::addElement( const XmlElement &element ) {
         return;
     }
 
+    std::cerr << "adding element, elements current size: " << elements_.size( )
+              << std::endl;
+
     auto iter = std::begin( elements_ );
     while ( iter != std::end( elements_ ) && *iter < element ) {
         ++iter;
@@ -37,8 +43,7 @@ void StackedTextDisplay::addElement( const XmlElement &element ) {
     pos_ = elements_.insert( iter, element );
 
     // create TextDisplay
-    auto text = QString::fromStdString( element.content( ) );
-    TextDisplay *textDisplay = new TextDisplay{text, this};
+    TextDisplay *textDisplay = new TextDisplay{element, this};
     connect( textDisplay, &TextDisplay::entrySelected, this,
              &StackedTextDisplay::entitySelected );
 
@@ -47,14 +52,11 @@ void StackedTextDisplay::addElement( const XmlElement &element ) {
     insertWidget( index, textDisplay );
 
     setCurrentIndex( index );
-    emit textAdded( text );
     emit currentChanged( index );
+    emit textAdded( textDisplay->text( ) );
     beginEnd( );
 
-    if ( count( ) == 1 ) {
-        qDebug( ) << "has content: true";
-        emit hasContent( true );
-    }
+    emit hasContent( true );
 }
 
 void StackedTextDisplay::removeElement( const XmlElement &element ) {
@@ -110,9 +112,13 @@ void StackedTextDisplay::highlight( const QString &ontologyName, const QString &
     qDebug( ) << "highlight: " << ontologyName << ", " << entity;
     for ( int i = 0; i < count( ); ++i ) {
         auto textDisplay = reinterpret_cast<TextDisplay *>( widget( i ) );
+        std::cerr << textDisplay->text( ).toStdString( ) << std::endl;
+        std::cerr << "--------------------" << std::endl;
         // can throw an exception
-        textDisplay->addHighlightRule( entity, ontologyMap_.at( ontologyName ) );
+        // textDisplay->addHighlightRule( entity, ontologyMap_.at( ontologyName ) );
+        textDisplay->scanKeyword( ontologyName, entity, ontologyMap_.at( ontologyName ) );
     }
+    setWindowModified( true );
 }
 
 void StackedTextDisplay::removeHighlight( const QString &entity ) {

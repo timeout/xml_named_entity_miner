@@ -4,9 +4,18 @@
 #include "stacked_text_display.hpp"
 #include "xml_file_explorer.hpp"
 #include "tabbed_ontology_view.hpp"
+#include "text_display.hpp"
+#include "thesaurus.hpp"
+#include "xml_schema_dialog.hpp"
+#include "xslt_dialog.hpp"
+
+#include "xpath_ctxt.hpp"
+#include "xpath_query.hpp"
+#include "xpath_result_set.hpp"
 
 #include <fstream>
 #include <sstream>
+#include <queue>
 
 #include <QAction>
 #include <QActionGroup>
@@ -23,6 +32,7 @@
 #include <QSettings>
 #include <QStatusBar>
 #include <QString>
+#include <QStringList>
 #include <QTabWidget>
 #include <QToolBar>
 #include <QToolButton>
@@ -40,7 +50,9 @@ struct MainWindow::Impl {
 
     QAction *openAct_, *exitAct_;
     QAction *recentFileActs_[MaxRecentFiles];
+    QAction *saveAct_, *saveAsAct_;
     QAction *nextAct_, *prevAct_;
+    QAction *xmlViewAct_, *textViewAct_;
     QActionGroup *lockTextActionGroup_;
     QAction *unlockTextAct_, *lockTextAct_, *addOntologyAct_, *validateAct_,
         *transformAct_;
@@ -49,8 +61,9 @@ struct MainWindow::Impl {
     QToolBar *fileToolBar_, *viewToolBar_;
     QToolButton *textEditLock_;
     QLabel *semanticLabel_;
+    QTabWidget *tabbedWidget_;
 
-    QString curFile_;
+    QString curFile_, saveFile_;
     XmlDoc xml_;
 };
 
@@ -58,8 +71,12 @@ MainWindow::Impl::Impl( )
     : openAct_{nullptr}
     , exitAct_{nullptr}
     , recentFileActs_{nullptr}
+    , saveAct_{nullptr}
+    , saveAsAct_{nullptr}
     , nextAct_{nullptr}
     , prevAct_{nullptr}
+    , xmlViewAct_{nullptr}
+    , textViewAct_{nullptr}
     , lockTextActionGroup_{nullptr}
     , unlockTextAct_{nullptr}
     , lockTextAct_{nullptr}
@@ -71,7 +88,8 @@ MainWindow::Impl::Impl( )
     , fileToolBar_{nullptr}
     , viewToolBar_{nullptr}
     , textEditLock_{nullptr}
-    , semanticLabel_{nullptr} {}
+    , semanticLabel_{nullptr}
+    , tabbedWidget_{nullptr} {}
 
 auto MainWindow::Impl::updateRecentFileActions( ) -> void {
     QSettings settings;
@@ -92,6 +110,7 @@ auto MainWindow::Impl::updateRecentFileActions( ) -> void {
 auto MainWindow::Impl::configureFileToolBar( ) -> void {
     fileToolBar_->setObjectName( "FileToolBar" );
     fileToolBar_->addAction( openAct_ );
+    fileToolBar_->addAction( saveAct_ );
     fileToolBar_->addAction( exitAct_ );
     fileToolBar_->setMovable( false );
     fileToolBar_->setAllowedAreas( Qt::TopToolBarArea );
@@ -111,12 +130,23 @@ auto MainWindow::Impl::configureActions( ) -> void {
     exitAct_->setShortcuts( QKeySequence::Quit );
     exitAct_->setStatusTip( tr( "Exit the application" ) );
     exitAct_->setIcon( QIcon::fromTheme( "application-exit" ) );
+    saveAct_->setShortcut( QKeySequence::Save );
+    saveAct_->setStatusTip( tr( "Save file" ) );
+    saveAct_->setIcon( QIcon::fromTheme( "document-save" ) );
+    saveAsAct_->setShortcut( QKeySequence::SaveAs );
+    saveAsAct_->setStatusTip( tr( "Save file as..." ) );
+    saveAsAct_->setIcon( QIcon::fromTheme( "document-save-as" ) );
     nextAct_->setStatusTip( tr( "Activate next selection" ) );
     nextAct_->setIcon( QIcon::fromTheme( "arrow-right" ) );
     nextAct_->setEnabled( false );
     prevAct_->setStatusTip( tr( "Activate previous selection" ) );
     prevAct_->setIcon( QIcon::fromTheme( "arrow-left" ) );
     prevAct_->setEnabled( false );
+    xmlViewAct_->setStatusTip( tr( "Overview of the current XML document" ) );
+    xmlViewAct_->setIcon( QIcon::fromTheme( "edit-find" ) );
+    textViewAct_->setStatusTip( tr( "View Selected XML element's contents" ) );
+    textViewAct_->setIcon( QIcon::fromTheme( "edit-find-replace" ) );
+    textViewAct_->setEnabled( false );
 
     unlockTextAct_->setShortcut( QKeySequence{Qt::CTRL + Qt::Key_U} );
     unlockTextAct_->setCheckable( true );
@@ -150,9 +180,13 @@ auto MainWindow::Impl::configureMenu( ) -> void {
                                                  tr( "Recent &Files" ) );
     for ( int i = 0; i < MaxRecentFiles; ++i )
         recentFilesMenu->addAction( recentFileActs_[i] );
+    fileMenu_->addAction( saveAct_ );
+    fileMenu_->addAction( saveAsAct_ );
     fileMenu_->addAction( exitAct_ );
     updateRecentFileActions( );
 
+    viewMenu_->addAction( xmlViewAct_ );
+    viewMenu_->addAction( textViewAct_ );
     viewMenu_->addAction( nextAct_ );
     viewMenu_->addAction( prevAct_ );
 
@@ -217,18 +251,46 @@ auto MainWindow::closeEvent( QCloseEvent *event ) -> void {
 }
 
 auto MainWindow::open( ) -> void {
-    const QString filename = QFileDialog::getOpenFileName(
-        this, tr( "Open XML file" ), "/usr/local/home/joe", tr( "Xml Files (*.xml)" ) );
-    if ( !filename.isEmpty( ) ) {
-        loadFile( filename );
+    if ( maybeSave( ) ) {
+        const QString filename = QFileDialog::getOpenFileName(
+            this, tr( "Open XML file" ), "/usr/local/home/joe",
+            tr( "Xml Files (*.xml)" ) );
+        if ( !filename.isEmpty( ) ) {
+            loadFile( filename );
+        }
     }
 }
 
 auto MainWindow::openRecentFile( ) -> void {
     QAction *action = qobject_cast<QAction *>( sender( ) );
     if ( action ) {
-        loadFile( action->data( ).toString( ) );
+        if ( maybeSave( ) ) {
+            loadFile( action->data( ).toString( ) );
+        }
     }
+}
+
+auto MainWindow::save( ) -> bool {
+    if ( impl_->saveFile_.isEmpty( ) ) {
+        return saveAs( );
+    } else {
+        return saveFile( impl_->saveFile_ );
+    }
+}
+
+auto MainWindow::saveAs( ) -> bool {
+    QFileDialog dialog( this );
+    dialog.setWindowTitle( tr( "Save file" ) );
+    dialog.setWindowModality( Qt::WindowModal );
+    dialog.setAcceptMode( QFileDialog::AcceptSave );
+    dialog.setNameFilter( tr( "XML Files (*.xml);; NEX Files (*nex)" ) );
+    QStringList files;
+    if ( dialog.exec( ) )
+        files = dialog.selectedFiles( );
+    else
+        return false;
+
+    return saveFile( files.at( 0 ) );
 }
 
 void MainWindow::textEditLockToggle( bool checked ) {
@@ -250,6 +312,43 @@ void MainWindow::textEditUnlock( bool checked ) {
     if ( checked && !impl_->textEditLock_->isChecked( ) ) {
         impl_->toggleEditLockIcon( true );
     }
+}
+
+void MainWindow::schemaValidationDialog( ) {
+    // TODO:
+    XmlSchemaDialog dialog{impl_->xml_, this};
+    dialog.exec( );
+}
+
+void MainWindow::transformDialog( ) {
+    // TODO:
+    XsltDialog dialog{impl_->xml_, this};
+    if ( dialog.exec( ) ) {
+        if ( maybeSave( ) ) {
+            impl_->xml_ = dialog.transformedXml( );
+            QApplication::setOverrideCursor( Qt::WaitCursor );
+            stackedTextDisplay_->clear( );
+            xmlDisplay_->setXml( impl_->xml_ );
+            xmlFileExplorer_->setXml( impl_->xml_ );
+            QApplication::restoreOverrideCursor( );
+
+            statusBar( )->showMessage( tr( "File Transformed" ), 2000 );
+            emit enableXmlTask( true );
+        }
+    }
+}
+
+void MainWindow::showXmlOverview( ) { impl_->tabbedWidget_->setCurrentIndex( 0 ); }
+
+void MainWindow::showTextDisplay( ) { impl_->tabbedWidget_->setCurrentIndex( 1 ); }
+
+void MainWindow::enableSelectionTab( bool enabled ) {
+    if ( enabled == false ) {
+        impl_->tabbedWidget_->setCurrentIndex( 0 );
+    } else {
+        impl_->tabbedWidget_->setCurrentIndex( 1 );
+    }
+    impl_->tabbedWidget_->setTabEnabled( 1, enabled );
 }
 
 auto MainWindow::readSettings( ) -> void {
@@ -279,8 +378,12 @@ auto MainWindow::initActions( ) -> void {
         connect( impl_->recentFileActs_[i], &QAction::triggered, this,
                  &MainWindow::openRecentFile );
     }
+    impl_->saveAct_ = new QAction{tr( "&Save" ), this};
+    impl_->saveAsAct_ = new QAction{tr( "&Save As..." ), this};
     impl_->nextAct_ = new QAction{tr( "Next Selection" ), this};
     impl_->prevAct_ = new QAction{tr( "Previous Selection" ), this};
+    impl_->xmlViewAct_ = new QAction{tr( "XML Overview" ), this};
+    impl_->textViewAct_ = new QAction{tr( "Selection Text" ), this};
     impl_->lockTextActionGroup_ = new QActionGroup{this};
     impl_->unlockTextAct_ = new QAction{tr( "Unlock Text" ), this};
     impl_->lockTextAct_ = new QAction{tr( "Lock Text" ), this};
@@ -304,11 +407,13 @@ auto MainWindow::initToolBar( ) -> void {
 }
 
 auto MainWindow::initCentralWidget( ) -> void {
-    QTabWidget *tabWidget = new QTabWidget;
-    tabWidget->addTab( xmlDisplay_, tr( "Overview" ) );
-    tabWidget->addTab( stackedTextDisplay_, tr( "Selection" ) );
-    tabWidget->setTabPosition( QTabWidget::South );
-    setCentralWidget( tabWidget );
+    impl_->tabbedWidget_ = new QTabWidget;
+    impl_->tabbedWidget_->addTab( xmlDisplay_, tr( "Overview" ) );
+    auto index = impl_->tabbedWidget_->addTab( stackedTextDisplay_, tr( "Selection" ) );
+    std::cerr << "selection index: " << index << std::endl;
+    impl_->tabbedWidget_->setTabEnabled( index, false );
+    impl_->tabbedWidget_->setTabPosition( QTabWidget::South );
+    setCentralWidget( impl_->tabbedWidget_ );
 }
 
 auto MainWindow::initFileExplorer( ) -> void {
@@ -340,7 +445,22 @@ auto MainWindow::initStatusBar( ) -> void {
 
 auto MainWindow::initConnections( ) -> void {
     connect( impl_->openAct_, &QAction::triggered, this, &MainWindow::open );
+    connect( impl_->saveAct_, &QAction::triggered, this, &MainWindow::save );
+    connect( impl_->saveAsAct_, &QAction::triggered, this, &MainWindow::saveAs );
     connect( impl_->exitAct_, &QAction::triggered, this, &MainWindow::close );
+    connect( impl_->addOntologyAct_, &QAction::triggered, tabbedOntologyView_,
+             &TabbedOntologyView::addOntology );
+
+    connect( impl_->xmlViewAct_, &QAction::triggered, this,
+             &MainWindow::showXmlOverview );
+    connect( impl_->textViewAct_, &QAction::triggered, this,
+             &MainWindow::showTextDisplay );
+    connect( stackedTextDisplay_, &StackedTextDisplay::hasContent, this,
+             &MainWindow::enableSelectionTab );
+    connect( this, &MainWindow::enableXmlTask, impl_->textViewAct_,
+             &QAction::setEnabled );
+    connect( this, &MainWindow::xmlLoaded, tabbedOntologyView_,
+             &TabbedOntologyView::clearOntologyViews );
     // next controllers
     connect( impl_->nextAct_, &QAction::triggered, stackedTextDisplay_,
              &StackedTextDisplay::next );
@@ -359,6 +479,14 @@ auto MainWindow::initConnections( ) -> void {
     connect( impl_->lockTextAct_, &QAction::triggered, stackedTextDisplay_,
              &StackedTextDisplay::lock );
     connect( impl_->lockTextAct_, &QAction::triggered, this, &MainWindow::textEditLock );
+    connect( this, &MainWindow::enableXmlTask, impl_->validateAct_,
+             &QAction::setEnabled );
+    connect( impl_->validateAct_, &QAction::triggered, this,
+             &MainWindow::schemaValidationDialog );
+    connect( this, &MainWindow::enableXmlTask, impl_->transformAct_,
+             &QAction::setEnabled );
+    connect( impl_->transformAct_, &QAction::triggered, this,
+             &MainWindow::transformDialog );
 
     connect( xmlFileExplorer_, &XmlFileExplorer::elementSelected, stackedTextDisplay_,
              &StackedTextDisplay::addElement );
@@ -378,8 +506,6 @@ auto MainWindow::initConnections( ) -> void {
 
     connect( impl_->textEditLock_, &QToolButton::toggled, this,
              &MainWindow::textEditLockToggle );
-    // connect( impl_->textEditLock_, &QToolButton::clicked, impl_->editTextAct_,
-    //          &QAction::triggered );
 
     connect( tabbedOntologyView_, &TabbedOntologyView::ontologyAdded, stackedTextDisplay_,
              &StackedTextDisplay::addOntology );
@@ -391,7 +517,20 @@ auto MainWindow::initConnections( ) -> void {
              &StackedTextDisplay::removeHighlight );
 }
 
-auto MainWindow::maybeSave( ) const -> bool { return true; }
+auto MainWindow::maybeSave( ) -> bool {
+    if ( stackedTextDisplay_->isWindowModified( ) ) {
+        QMessageBox::StandardButton ret;
+        ret = QMessageBox::warning(
+            this, tr( "Application" ), tr( "The document has been modified.\n"
+                                           "Do you want to save your changes?" ),
+            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel );
+        if ( ret == QMessageBox::Save )
+            return save( );
+        else if ( ret == QMessageBox::Cancel )
+            return false;
+    }
+    return true;
+}
 
 auto MainWindow::loadFile( const QString &fileName ) -> void {
     std::ifstream in{fileName.toStdString( )};
@@ -403,19 +542,25 @@ auto MainWindow::loadFile( const QString &fileName ) -> void {
         return;
     }
 
+    QApplication::setOverrideCursor( Qt::WaitCursor );
     impl_->xml_ = XmlDoc{in};
+    QApplication::restoreOverrideCursor( );
     XmlDoc &xml = impl_->xml_;
     if ( xml ) {
         // xml open and exists
         QApplication::setOverrideCursor( Qt::WaitCursor );
         // do stuff with the xml file
         // TODO:
+        stackedTextDisplay_->clear( );
         xmlDisplay_->setXml( xml );
         xmlFileExplorer_->setXml( xml );
         QApplication::restoreOverrideCursor( );
 
+        impl_->saveFile_.clear( );
         setCurrentFile( fileName );
         statusBar( )->showMessage( tr( "File loaded" ), 2000 );
+        emit enableXmlTask( true );
+        emit xmlLoaded( );
     } else {
         QString msg;
         if ( xml.errorHandler( ).hasErrors( ) ) {
@@ -450,6 +595,93 @@ auto MainWindow::setCurrentFile( const QString &fileName ) -> void {
         if ( mainWin )
             mainWin->impl_->updateRecentFileActions( );
     }
+}
+
+auto MainWindow::writeXml( const QString &fileName ) const -> bool {
+    QApplication::setOverrideCursor( Qt::WaitCursor );
+
+    std::cerr << "write xml. . ." << std::endl;
+    auto xml = xmlFileExplorer_->writeXml( );
+    // std::cerr << xml << std::endl;
+
+    XPathCtxt ctxt{xml};
+    if ( ctxt.errorHandler( ).hasErrors( ) ) {
+        // TODO:
+        std::cerr << "error handler has errors" << std::endl;
+    }
+    XPathQuery xpq{ctxt};
+    xpq.query( "//*[@checked=\"yes\"]" );
+    if ( xpq ) {
+        XPathResultSet resultSet{xpq};
+        auto index = 0;
+        for ( auto iter = resultSet.begin( ); iter != resultSet.end( );
+              ++iter, ++index ) {
+            std::cerr << *iter << std::endl;
+
+            std::cerr << "index: " << index << " from: " << stackedTextDisplay_->count( )
+                      << std::endl;
+
+            auto textDisplay =
+                reinterpret_cast<TextDisplay *>( stackedTextDisplay_->widget( index ) );
+            auto element = textDisplay->xmlElement( );
+
+            // std::cerr << element << std::endl;
+
+            if ( element.hasChild( ) ) {
+                for ( auto child = element.child( ); child; child = child.sibling( ) ) {
+                    auto keyword = child.content( );
+                    auto ontologyName = child.attribute( "type" );
+                    if ( !ontologyName.empty( ) ) {
+                        auto thes = tabbedOntologyView_->thesaurus(
+                            QString::fromStdString( ontologyName ) );
+                        auto canon = thes.canonical( QString::fromStdString( keyword ) );
+                        if ( !canon.isEmpty( ) ) {
+                            child.attribute( "synonym", canon.toStdString( ) );
+                        }
+                    }
+                }
+            }
+            auto result = *iter;
+            result.clear( );
+            result.copy( element );
+            result.removeAttribute( "checked" );
+        }
+    } else {
+        std::cerr << "xpath query error" << std::endl;
+    }
+
+    std::ofstream out;
+    out.open( fileName.toStdString( ) );
+    if ( out.fail( ) ) {
+        // TODO: error
+        return false;
+    }
+
+    out << xml << std::endl;
+
+    QApplication::restoreOverrideCursor( );
+    return true;
+}
+
+auto MainWindow::saveFile( const QString &fileName ) -> bool {
+    QFile file( fileName );
+    if ( !file.open( QFile::WriteOnly | QFile::Text ) ) {
+        QMessageBox::warning( this, tr( "Application" ),
+                              tr( "Cannot write file %1:\n%2." ).arg( fileName ).arg(
+                                  file.errorString( ) ) );
+        return false;
+    }
+
+    auto success = writeXml( fileName );
+    if ( !success ) {
+        return false;
+    }
+    stackedTextDisplay_->setWindowModified( false );
+
+    impl_->saveFile_ = fileName;
+    setCurrentFile( fileName );
+    statusBar( )->showMessage( tr( "File saved" ), 2000 );
+    return true;
 }
 
 auto strippedName( const QString &fullFileName ) -> QString {

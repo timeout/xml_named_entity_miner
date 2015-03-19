@@ -12,6 +12,9 @@ class StackedTextDisplay : public QStackedWidget {
     Q_OBJECT
 public:
     StackedTextDisplay( QWidget *parent = nullptr );
+    auto ontologyMap( ) const -> const std::map<QString, QColor> & {
+        return ontologyMap_;
+    }
 
 public slots:
     void clear( );

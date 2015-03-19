@@ -8,6 +8,7 @@
 #include <QTreeWidgetItem>
 
 #include <QDebug>
+#include <iostream>
 
 OntologyView::OntologyView( const QString &ontologyName, const QColor &color,
                             QWidget *parent )
@@ -25,13 +26,14 @@ OntologyView::OntologyView( const QString &ontologyName, const QColor &color,
     connections( );
 }
 
-auto OntologyView::ontologyName( const QString &name ) -> void {
-    ontologyName_ = name;
+auto OntologyView::clear( ) -> void {
+    std::cerr << "hey hey!" << std::endl;
+    QTreeWidget::clear( );
 }
 
-auto OntologyView::ontologyName( ) const -> const QString & {
-    return ontologyName_;
-}
+auto OntologyView::ontologyName( const QString &name ) -> void { ontologyName_ = name; }
+
+auto OntologyView::ontologyName( ) const -> const QString & { return ontologyName_; }
 
 auto OntologyView::color( const QColor &color ) -> void { color_ = color; }
 
@@ -58,12 +60,15 @@ auto OntologyView::removeSynonym( const QString &entity ) -> void {
 }
 
 auto OntologyView::scanText( const QString &contents ) -> void {
+    std::cerr << __PRETTY_FUNCTION__ << ", scanning text: " << contents.toStdString( )
+              << std::endl;
     // scan text for words in dictionary
     for ( auto entity : dictionary_.entries( ) ) {
         if ( contents.contains( entity ) ) {
             if ( !contains( entity ) ) {
                 insertItem( entity );
             }
+            std::cerr << "entity added: " << entity.toStdString( ) << std::endl;
             emit entityAdded( ontologyName_, entity );
         }
     }
@@ -107,7 +112,8 @@ auto OntologyView::createSynonym( ) -> void {
         auto child = new QTreeWidgetItem{parent};
         child->setText( 0, childText );
         addTopLevelItem( parent );
-        thesaurus_.insert( selectedItem_->text( 0 ), synonym );
+        qDebug( ) << "creating synonym for: " << child->text( 0 ) << " => " << synonym;
+        thesaurus_.insert( child->text( 0 ), synonym );
     }
     selectedItem_ = nullptr;
 }

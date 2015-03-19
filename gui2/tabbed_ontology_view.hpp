@@ -6,13 +6,16 @@ class QColor;
 class QString;
 class QToolButton;
 class QWidget;
+class Thesaurus;
 
 class TabbedOntologyView : public QTabWidget {
     Q_OBJECT
 public:
     explicit TabbedOntologyView( QWidget *parent = nullptr );
+    auto thesaurus( const QString &ontologyName ) const -> const Thesaurus &;
 
 public slots:
+    void clearOntologyViews( );
     void addEntity( const QString &entity );
     void scanText( const QString &text );
     void addOntology( );

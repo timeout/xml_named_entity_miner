@@ -15,6 +15,7 @@ class OntologyView : public QTreeWidget {
 public:
     OntologyView( const QString &ontologyName = QString{}, const QColor &color = QColor{},
                   QWidget *parent = nullptr );
+    auto clear( ) -> void;
     auto ontologyName( const QString &name ) -> void;
     auto ontologyName( ) const -> const QString &;
     auto color( const QColor &color ) -> void;
@@ -24,6 +25,7 @@ public:
     auto addSynonym( const QString &entity, const QString &canon ) -> void;
     auto removeSynonym( const QString &entity ) -> void;
     auto scanText( const QString &contents ) -> void;
+    auto thesaurus( ) const -> const Thesaurus & { return thesaurus_; }
 
 public slots:
     void removeSelectedItem( );

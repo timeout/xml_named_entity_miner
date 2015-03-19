@@ -13,6 +13,8 @@ XmlFileExplorer::XmlFileExplorer( QWidget *parent )
     connections( );
 }
 
+auto XmlFileExplorer::writeXml( ) const -> XmlDoc { return xmlFileOutline_->writeXml( ); }
+
 auto XmlFileExplorer::clear( ) -> void {
     xml_ = XmlDoc{};
     xmlFileOutline_->clear( );

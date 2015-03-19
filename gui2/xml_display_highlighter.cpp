@@ -43,14 +43,21 @@ auto XmlDisplayHighlighter::generateTagSet( const XmlDoc &xml ) -> void {
     while ( !elementQueue.empty( ) ) {
         XmlElement parent{elementQueue.front( )};
         elementQueue.pop( );
-        QRegExp regex{QString::fromStdString( parent.tagsRegex( ).first )};
+        QRegExp regex{QString::fromStdString( parent.tags( true ).first )};
         tags_ << regex;
-        if ( !parent.tagsRegex( ).second.empty( ) ) {
-            QRegExp regex{QString::fromStdString( parent.tagsRegex( ).second )};
+        if ( !parent.tags( true ).second.empty( ) ) {
+            QRegExp regex{QString::fromStdString( parent.tags( true ).second )};
             tags_ << regex;
         }
-        for ( auto child : parent.children( ) ) {
-            elementQueue.push( child );
+        // for ( auto child : parent.children( XmlElement::Recursive::NonRecursive ) ) {
+        //     elementQueue.push( child );
+        // }
+        if ( parent.hasChild( ) ) {
+            auto ch = parent.child( );
+            while ( ch ) {
+                elementQueue.push( ch );
+                ch = ch.sibling( );
+            }
         }
     }
     entityReferences_ = {"&lt;", "&gt;", "&amp;", "&apos;", "&quot;"};
@@ -64,7 +71,7 @@ auto XmlDisplayHighlighter::cdataFormat( const QTextCharFormat &format ) -> void
     cdataFormat_ = format;
 }
 
-auto XmlDisplayHighlighter::processFormat( const QTextCharFormat &format )  -> void{
+auto XmlDisplayHighlighter::processFormat( const QTextCharFormat &format ) -> void {
     processFormat_ = format;
 }
 
@@ -80,7 +87,8 @@ auto XmlDisplayHighlighter::enetityFormat( const QTextCharFormat &format ) -> vo
     entityFormat_ = format;
 }
 
-auto XmlDisplayHighlighter::entityReference( const QString &entityReference ) const ->bool {
+auto XmlDisplayHighlighter::entityReference(
+    const QString &entityReference ) const -> bool {
     return entityReferences_.contains( entityReference );
 }
 
@@ -88,7 +96,8 @@ auto XmlDisplayHighlighter::addEntityReference( const QString &entityReference )
     entityReferences_ << entityReference;
 }
 
-auto XmlDisplayHighlighter::removeEntityReference( const QString &entityReference ) -> bool{
+auto XmlDisplayHighlighter::removeEntityReference( const QString &entityReference )
+    -> bool {
     return entityReferences_.remove( entityReference );
 }
 

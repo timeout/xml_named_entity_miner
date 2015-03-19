@@ -6,6 +6,7 @@ TextDisplayHighlighter::TextDisplayHighlighter( QTextDocument *document )
     : QSyntaxHighlighter{document} {}
 
 auto TextDisplayHighlighter::addRule( const QString &rule, const QColor &color ) -> void {
+    qDebug( ) << __PRETTY_FUNCTION__;
     qDebug( ) << "adding rule: " << rule << " with color: " << color;
     QTextCharFormat format;
     // TODO: formatting
@@ -31,6 +32,10 @@ auto TextDisplayHighlighter::removeAll( const QColor &color ) -> void {
         }
     }
     rehighlight( );
+}
+
+auto TextDisplayHighlighter::keywords( ) const -> const QMap<QString, QTextCharFormat> & {
+    return rules_;
 }
 
 void TextDisplayHighlighter::rehighlightModification( bool isModified ) {

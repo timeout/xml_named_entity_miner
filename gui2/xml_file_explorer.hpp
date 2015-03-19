@@ -10,6 +10,7 @@ class XmlFileExplorer : public QWidget {
     Q_OBJECT
 public:
     explicit XmlFileExplorer( QWidget *parent = nullptr );
+    auto writeXml( ) const -> XmlDoc;
 
 public slots:
     void clear( );
@@ -20,8 +21,8 @@ signals:
     void elementDeselected( const XmlElement &element );
 
 private:
-    auto layout() -> void;
-    auto connections() -> void;
+    auto layout( ) -> void;
+    auto connections( ) -> void;
 
     XmlFileOutline *xmlFileOutline_;
     XPathQueryWidget *xPathQueryWidget_;
