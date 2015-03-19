@@ -48,18 +48,23 @@ auto XmlDoc::operator=( XmlDoc &&rhs ) -> XmlDoc & {
 
 XmlDoc::operator bool( ) const { return ( xmlDoc_.get( ) != nullptr ); }
 
-auto XmlDoc::setRootElement( const std::string &name ) -> XmlElement {
+auto XmlDoc::setRootElement( const std::string &name ) -> void {
     xmlNode *root =
         xmlNewNode( nullptr, reinterpret_cast<const unsigned char *>( name.c_str( ) ) );
-    if ( !root ) {
-        return XmlElement{nullptr};
-    }
     if ( !xmlDoc_ ) {
         xmlDoc_ = std::shared_ptr<xmlDoc>{
             xmlNewDoc( reinterpret_cast<const unsigned char *>( "1.0" ) ), FreeXmlDoc( )};
     }
     // if xmlDoc * is null function returns nullptr
-    return XmlElement{xmlDocSetRootElement( xmlDoc_.get( ), root )};
+    xmlDocSetRootElement( xmlDoc_.get( ), root );
+}
+
+auto XmlDoc::setRootElement( const XmlElement &element ) -> void {
+    if ( !xmlDoc_ ) {
+        xmlDoc_ = std::shared_ptr<xmlDoc>{
+            xmlNewDoc( reinterpret_cast<const unsigned char *>( "1.0" ) ), FreeXmlDoc( )};
+    }
+    xmlDocSetRootElement( xmlDoc_.get( ), element.node_.get( ) );
 }
 
 auto XmlDoc::getRootElement( ) const -> XmlElement {
