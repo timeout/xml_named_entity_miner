@@ -32,7 +32,8 @@ public:
     explicit operator bool( ) const;
     auto get( ) const -> xmlDoc * { return xmlDoc_.get( ); }
     friend auto operator>>( std::istream &is, XmlDoc &doc ) -> std::istream &;
-    auto setRootElement( const std::string &name ) -> XmlElement;
+    auto setRootElement( const std::string &name ) -> void;
+    auto setRootElement( const XmlElement &element ) -> void;
     auto getRootElement( ) const -> XmlElement;
     auto errorHandler( ) const -> const IErrorHandler & { return xmlHandler_; }
     auto toString( ) const -> std::string;
