@@ -1,7 +1,6 @@
 #pragma once
 
 #include "xml_parser_ctxt.hpp"
-#include "pathname.hpp"
 #include "libxml2_error_handlers.hpp"
 #include "xml_string.hpp"
 #include "xml_element.hpp"
