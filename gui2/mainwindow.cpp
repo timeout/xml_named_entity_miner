@@ -327,13 +327,11 @@ void MainWindow::textEditUnlock( bool checked ) {
 }
 
 void MainWindow::schemaValidationDialog( ) {
-    // TODO:
     XmlSchemaDialog dialog{impl_->xml_, this};
     dialog.exec( );
 }
 
 void MainWindow::transformDialog( ) {
-    // TODO:
     XsltDialog dialog{impl_->xml_, this};
     if ( dialog.exec( ) ) {
         if ( maybeSave( ) ) {
