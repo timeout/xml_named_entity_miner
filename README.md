@@ -3,9 +3,12 @@ This is a university project.
 
 The application is for annotating named entities in semi-structured text (XML)
 
+[!XML Named Entity Miner](http://i.imgur.com/T5qtVCh.png)
+
 Example:
 from:
 
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <article>
   [...]
@@ -27,8 +30,10 @@ from:
   </section>
   [...]
 </article>
+```
 
 to:
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <article>
   <title>Angela Merkel</title>
@@ -52,3 +57,4 @@ to:
   </section>
   [...]
 </article>
+```
