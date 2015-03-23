@@ -251,6 +251,7 @@ auto XmlElement::sibling( ) const -> XmlElement {
     return XmlElement{};
 }
 
+// the following functions are not used
 auto XmlElement::sibling( const XmlElement &element ) -> void {
     auto sibling = xmlAddSibling( node_.get( ), element.node_.get( ) );
     if ( !sibling ) {
@@ -260,10 +261,16 @@ auto XmlElement::sibling( const XmlElement &element ) -> void {
 
 auto XmlElement::nextSibling( const XmlElement &element ) -> void {
     auto node = xmlAddNextSibling( node_.get( ), element.node_.get( ) );
+    if ( !node ) {
+        std::cerr << __PRETTY_FUNCTION__ << ": boom!" << std::endl;
+    }
 }
 
 auto XmlElement::prevSibling( const XmlElement &element ) -> void {
     auto node = xmlAddPrevSibling( node_.get( ), element.node_.get( ) );
+    if ( !node ) {
+        std::cerr << __PRETTY_FUNCTION__ << ": boom!" << std::endl;
+    }
 }
 
 auto XmlElement::hasParent( ) const -> bool { return node_ && node_->parent; }
