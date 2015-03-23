@@ -1,5 +1,3 @@
-#include "lib/bilanz.hpp"
-// #include "gui/mainwindow.hpp"
 #include "gui2/mainwindow.hpp"
 #include <QApplication>
 
