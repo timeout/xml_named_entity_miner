@@ -32,5 +32,6 @@ void LineEdit::resizeEvent( QResizeEvent *event ) {
     int frameWidth = style( )->pixelMetric( QStyle::PM_DefaultFrameWidth );
     clearButton_->move( rect( ).right( ) - frameWidth - sz.width( ),
                         ( rect( ).bottom( ) + 1 - sz.height( ) ) / 2 );
+    QLineEdit::resizeEvent( event );
 }
 
