@@ -92,7 +92,6 @@ auto TextDisplay::isLocked( ) const -> bool { return lock_; }
 auto TextDisplay::xmlElement( ) const -> XmlElement {
     std::cerr << __PRETTY_FUNCTION__ << std::endl;
     auto text = text_.toStdString( );
-    auto length = text.length( );
     std::vector<std::pair<std::string::size_type, std::string::size_type>> spans;
     for ( auto keyword : keywords_ ) {
         std::string::size_type index = 0;
