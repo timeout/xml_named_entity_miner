@@ -40,7 +40,10 @@ include_directories(${LIBXSLT_INCLUDE_DIR})
 check_include_files("transform.h" HAVE_LIBXSLT_TRANSFORM_H)
 set(CMAKE_REQUIRED_INCLUDES "")
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
+
 enable_testing()
+include(gtest)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 

@@ -1,9 +1,3 @@
-set(GTEST_DIR "../../gtest-1.7.0")
-
-add_subdirectory(${GTEST_DIR} ${CMAKE_BINARY_DIR}/gtest)
-set_property(TARGET gtest APPEND_STRING PROPERTY COMPILE_FLAGS " -w")
-
-include_directories(SYSTEM ${GTEST_DIR}/gtest/include)
 
 find_package(Qt5Core REQUIRED)
 
@@ -25,12 +19,11 @@ set(test_sources
     qregexp_test.cpp
 )
 
-add_executable(run_tests.out ${test_sources})
+# add_executable(run_tests.out ${test_sources})
 
+add_gtest(run_tests.out ${test_sources})
 target_link_libraries(run_tests.out 
-    gtest_main 
     xml_lib 
     Qt5::Core
 )
 
-add_test(run_tests.out run_tests.out)
