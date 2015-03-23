@@ -28,7 +28,7 @@ XPathQueryWidget::XPathQueryWidget( QWidget *parent )
     queryListView_->setEditTriggers( QAbstractItemView::NoEditTriggers );
     queryListView_->setSelectionMode( QAbstractItemView::SingleSelection );
     QIcon searchIcon = QIcon::fromTheme( "document-preview",
-                                         QIcon{":/images/document-preview-archive.svg"} );
+                                         QIcon{":/document-preview-archive"} );
     searchButton_->setIcon( searchIcon );
     searchButton_->setCursor( Qt::ArrowCursor );
     lineEdit_->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );

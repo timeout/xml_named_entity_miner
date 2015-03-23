@@ -4,7 +4,7 @@
 
 LineEdit::LineEdit( QWidget *parent ) : QLineEdit{parent} {
     clearButton_ = new QToolButton( this );
-    QIcon icon = QIcon::fromTheme( "edit-clear", QIcon( ":/images/edit-clear" ) );
+    QIcon icon = QIcon::fromTheme( "edit-clear", QIcon( ":/edit-clear" ) );
     clearButton_->setIcon( icon );
     clearButton_->setCursor( Qt::ArrowCursor );
     clearButton_->setStyleSheet( "QToolButton { border: none; padding: 0px; }" );

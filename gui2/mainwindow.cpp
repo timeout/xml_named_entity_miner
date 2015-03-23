@@ -21,6 +21,7 @@
 #include <QActionGroup>
 #include <QApplication>
 #include <QCloseEvent>
+#include <QDir>
 #include <QDockWidget>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -127,43 +128,43 @@ auto MainWindow::Impl::configureActions( ) -> void {
     openAct_->setShortcuts( QKeySequence::Open );
     openAct_->setStatusTip( tr( "Open an existing file" ) );
     openAct_->setIcon(
-        QIcon::fromTheme( "document-open", QIcon{":images/document-open.svg"} ) );
+        QIcon::fromTheme( "document-open", QIcon{":/document-open"} ) );
     exitAct_->setShortcuts( QKeySequence::Quit );
     exitAct_->setStatusTip( tr( "Exit the application" ) );
     exitAct_->setIcon(
-        QIcon::fromTheme( "application-exit", QIcon{":images/application-exit.svg"} ) );
+        QIcon::fromTheme( "application-exit", QIcon{":/application-exit"} ) );
     saveAct_->setShortcut( QKeySequence::Save );
     saveAct_->setStatusTip( tr( "Save file" ) );
     saveAct_->setIcon(
-        QIcon::fromTheme( "document-save", QIcon{":images/document-save.svg"} ) );
+        QIcon::fromTheme( "document-save", QIcon{":/document-save"} ) );
     saveAsAct_->setShortcut( QKeySequence::SaveAs );
     saveAsAct_->setStatusTip( tr( "Save file as..." ) );
     saveAsAct_->setIcon(
-        QIcon::fromTheme( "document-save-as", QIcon{":images/document-save-as.svg"} ) );
+        QIcon::fromTheme( "document-save-as", QIcon{":/document-save-as"} ) );
     nextAct_->setStatusTip( tr( "Activate next selection" ) );
-    nextAct_->setIcon( QIcon::fromTheme( "arrow-right", QIcon{":images/go-next.svg"} ) );
+    nextAct_->setIcon( QIcon::fromTheme( "arrow-right", QIcon{":/go-next"} ) );
     nextAct_->setEnabled( false );
     prevAct_->setStatusTip( tr( "Activate previous selection" ) );
     prevAct_->setIcon(
-        QIcon::fromTheme( "arrow-left", QIcon{":images/go-previous.svg"} ) );
+        QIcon::fromTheme( "arrow-left", QIcon{":/go-previous"} ) );
     prevAct_->setEnabled( false );
     xmlViewAct_->setStatusTip( tr( "Overview of the current XML document" ) );
     xmlViewAct_->setIcon(
-        QIcon::fromTheme( "edit-find", QIcon{":images/edit-find.svg"} ) );
+        QIcon::fromTheme( "edit-find", QIcon{":/edit-find"} ) );
     textViewAct_->setStatusTip( tr( "View Selected XML element's contents" ) );
     textViewAct_->setIcon(
-        QIcon::fromTheme( "edit-find-replace", QIcon{":images/edit-find-replace.svg"} ) );
+        QIcon::fromTheme( "edit-find-replace", QIcon{":/edit-find-replace"} ) );
     textViewAct_->setEnabled( false );
 
     unlockTextAct_->setShortcut( QKeySequence{Qt::CTRL + Qt::Key_U} );
     unlockTextAct_->setCheckable( true );
     unlockTextAct_->setIcon(
-        QIcon::fromTheme( "lock-insecure", QIcon{":images/lock-insecure.svg"} ) );
+        QIcon::fromTheme( "lock-insecure", QIcon{":/lock-insecure"} ) );
     unlockTextAct_->setStatusTip( tr( "Unlock current text display panel for editing" ) );
     lockTextAct_->setShortcut( QKeySequence{Qt::CTRL + Qt::Key_L} );
     lockTextAct_->setCheckable( true );
     lockTextAct_->setIcon(
-        QIcon::fromTheme( "lock-secure", QIcon{":images/lock-secure.svg"} ) );
+        QIcon::fromTheme( "lock-secure", QIcon{":/lock-secure"} ) );
     lockTextAct_->setStatusTip( tr( "Lock current text display panel for editing" ) );
 
     lockTextActionGroup_->setEnabled( false );
@@ -172,15 +173,15 @@ auto MainWindow::Impl::configureActions( ) -> void {
     lockTextAct_->setChecked( true );
 
     addOntologyAct_->setIcon(
-        QIcon::fromTheme( "bookmark-new", QIcon{":images/bookmark-new.svg"} ) );
+        QIcon::fromTheme( "bookmark-new", QIcon{":/bookmark-new"} ) );
     addOntologyAct_->setStatusTip( tr( "Add an ontology" ) );
     validateAct_->setShortcut( QKeySequence{Qt::CTRL + Qt::Key_V} );
-    validateAct_->setIcon( QIcon::fromTheme( "ok", QIcon{":images/dialog-apply.svg"} ) );
+    validateAct_->setIcon( QIcon::fromTheme( "ok", QIcon{":/dialog-apply"} ) );
     validateAct_->setStatusTip( "Validate XML using XML Schema file" );
     validateAct_->setEnabled( false );
     transformAct_->setShortcut( QKeySequence{Qt::CTRL + Qt::Key_T} );
     transformAct_->setIcon( QIcon::fromTheme(
-        "media-playlist-shuffle", QIcon{":images/media-playlist-shuffle.svg"} ) );
+        "media-playlist-shuffle", QIcon{":/media-playlist-shuffle"} ) );
     transformAct_->setStatusTip( "Transform XML using XSLT stylesheet" );
     transformAct_->setEnabled( false );
 }
@@ -188,7 +189,7 @@ auto MainWindow::Impl::configureActions( ) -> void {
 auto MainWindow::Impl::configureMenu( ) -> void {
     fileMenu_->addAction( openAct_ );
     QMenu *recentFilesMenu = fileMenu_->addMenu(
-        QIcon::fromTheme( "application-menu", QIcon{"gtk-preferences.svg"} ),
+        QIcon::fromTheme( "application-menu", QIcon{":/gtk-preferences"} ),
         tr( "Recent &Files" ) );
     for ( int i = 0; i < MaxRecentFiles; ++i )
         recentFilesMenu->addAction( recentFileActs_[i] );
@@ -213,7 +214,7 @@ auto MainWindow::Impl::configureMenu( ) -> void {
 
 auto MainWindow::Impl::configureStatusBar( ) -> void {
     textEditLock_ = new QToolButton;
-    textEditLock_->setIcon( QIcon::fromTheme( "lock-secure", QIcon{":images/lock-secure"} ) );
+    textEditLock_->setIcon( QIcon::fromTheme( "lock-secure", QIcon{":/lock-secure"} ) );
     textEditLock_->setMinimumSize( textEditLock_->sizeHint( ) );
     textEditLock_->setEnabled( false );
     textEditLock_->setCheckable( true );
@@ -223,10 +224,10 @@ auto MainWindow::Impl::configureStatusBar( ) -> void {
 
 auto MainWindow::Impl::toggleEditLockIcon( bool checked ) -> void {
     if ( checked ) {
-        textEditLock_->setIcon( QIcon::fromTheme( "lock-insecure", QIcon{":images/lock-insecure.svg"} ) );
+        textEditLock_->setIcon( QIcon::fromTheme( "lock-insecure", QIcon{":/lock-insecure"} ) );
         unlockTextAct_->setChecked( true );
     } else {
-        textEditLock_->setIcon( QIcon::fromTheme( "lock-secure", QIcon{":images/lock-secure.svg"} ) );
+        textEditLock_->setIcon( QIcon::fromTheme( "lock-secure", QIcon{":/lock-secure"} ) );
         lockTextAct_->setChecked( true );
     }
 }

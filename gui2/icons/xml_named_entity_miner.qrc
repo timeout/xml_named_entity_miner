@@ -1,27 +1,27 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
   <qresource prefix="/">
-    <file>images/add.svg</file>
-    <file>images/application-exit.svg</file>
-    <file>images/bookmark-add.svg</file>
-    <file>images/configure.svg</file>
-    <file>images/dialog-apply.svg</file>
-    <file>images/document-open.svg</file>
-    <file>images/document-preview-archive.svg</file>
-    <file>images/document-save.svg</file>
-    <file>images/document-save-as.svg</file>
-    <file>images/draw-text.svg</file>
-    <file>images/edit-delete.svg</file>
-    <file>images/edit-find.svg</file>
-    <file>images/edit-find-replace.svg</file>
-    <file>images/gtk-preferences.svg</file>
-    <file>images/go-next.svg>
-    <file>images/go-previous.svg>
-    <file>images/lock-insecure.svg</file>
-    <file>images/lock-secure.svg</file>
-    <file>images/media-playlist-shuffle.svg</file>
-    <file>images/trash-empty.svg</file>
-    <file>images/view-sort-ascending.svg</file>
-    <file>images/view-sort-descending.svg</file>
+    <file alias="add">add.svg</file>
+    <file alias="application-exit">application-exit.svg</file>
+    <file alias="bookmark-add">bookmark-add.svg</file>
+    <file alias="configure">configure.svg</file>
+    <file alias="dialog-apply">dialog-apply.svg</file>
+    <file alias="document-open">document-open.svg</file>
+    <file alias="document-preview-archive">document-preview-archive.svg</file>
+    <file alias="document-save">document-save.svg</file>
+    <file alias="document-save-as">document-save-as.svg</file>
+    <file alias="draw-text">draw-text.svg</file>
+    <file alias="edit-delete">edit-delete.svg</file>
+    <file alias="edit-find">edit-find.svg</file>
+    <file alias="edit-find-replace">edit-find-replace.svg</file>
+    <file alias="gtk-preferences">gtk-preferences.svg</file>
+    <file alias="go-next">go-next.svg</file>
+    <file alias="go-previos">go-previous.svg</file>
+    <file alias="lock-insecure">lock-insecure.svg</file>
+    <file alias="lock-secure">lock-secure.svg</file>
+    <file alias="media-playlist-shuffle">media-playlist-shuffle.svg</file>
+    <file alias="trash-empty">trash-empty.svg</file>
+    <file alias="view-sort-ascending">view-sort-ascending.svg</file>
+    <file alias="view-sort-descending">view-sort-descending.svg</file>
   </qresource>
 </RCC>
