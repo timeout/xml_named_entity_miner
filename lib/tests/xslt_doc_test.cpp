@@ -1,5 +1,5 @@
-#include "xslt_doc.hpp"
-#include "xml_doc.hpp"
+#include "lib/xslt_doc.hpp"
+#include "lib/xml_doc.hpp"
 
 #include <sstream>
 #include <iostream>

@@ -1,4 +1,4 @@
-#include "xpath_query.hpp"
+#include "lib/xpath_query.hpp"
 
 #include "gtest/gtest.h"
 #include <limits.h>

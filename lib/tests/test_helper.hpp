@@ -1,8 +1,8 @@
 #pragma once
 
-#include "xml_doc.hpp"
-#include "xpath_ctxt.hpp"
-#include "xpath_query.hpp"
+#include "lib/xml_doc.hpp"
+#include "lib/xpath_ctxt.hpp"
+#include "lib/xpath_query.hpp"
 
 class XmlCreator {
 public:

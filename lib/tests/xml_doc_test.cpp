@@ -1,7 +1,5 @@
-#include "xml_doc.hpp"
-#include "pathname.hpp"
-#include "dir.hpp"
-#include "xml_element.hpp"
+#include "lib/xml_doc.hpp"
+#include "lib/xml_element.hpp"
 
 #include <stdexcept>
 #include <regex>
@@ -16,7 +14,6 @@
 
 #include "test_helper.hpp"
 
-static const Pathname buildDir_{Dir::getInstance( )->pwd( )};
 const std::string books_xml{
     R"(<?xml version="1.0"?>
 <catalog>
@@ -180,87 +177,23 @@ const std::string menu_xml{
     </food>
 </menu>)"};
 
-class XmlDocTests : public ::testing::Test {
-protected:
-    virtual auto SetUp( ) -> void { Dir::getInstance( )->chdir( buildDir_ ); }
-};
 
-TEST_F( XmlDocTests, DefaultCtor ) {
+TEST( XmlDocTests, DefaultCtor ) {
     const XmlDoc xml;
     EXPECT_FALSE( xml.errorHandler( ).hasErrors( ) );
     EXPECT_STREQ( "", xml.toString( ).c_str( ) );
     ASSERT_EQ( false, testBool_f<XmlDoc>( xml ) );
 }
 
-TEST_F( XmlDocTests, ValidPathnameConstructor ) {
-    Dir::getInstance( )->chdir( Pathname{"tests/xmltest/valid/sa"} );
-    std::regex glob{".*\\.xml"};
-    auto ls = Dir::getInstance( )->read( ).entries( );
-    std::vector<Pathname> xmlValidEntries{filter( ls, glob )};
-    std::sort( xmlValidEntries.begin( ), xmlValidEntries.end( ) );
 
-    for ( auto &p : xmlValidEntries ) {
-        if ( p.basename( ) == Pathname{"012.xml"} )
-            continue;
-        if ( p.basename( ) == Pathname{"045.xml"} )
-            continue;
-        if ( p.basename( ) == Pathname{"095.xml"} )
-            continue;
-        XmlDoc xml;
-        std::ifstream f;
-        try {
-            f = std::ifstream{p.toString( ), std::ios::in};
-        } catch ( ... ) {
-            std::cerr << "ERROR: could not open '" << p << "'" << std::endl;
-            throw;
-        }
-        f >> xml;
-        EXPECT_FALSE( xml.errorHandler( ).hasErrors( ) );
-        if ( xml.errorHandler( ).hasErrors( ) ) {
-            std::cerr << p << std::endl;
-            std::cerr << xml.errorHandler( ) << std::endl;
-        }
-        ASSERT_EQ( true, testBool_f<XmlDoc>( xml ) );
-    }
-}
-
-TEST_F( XmlDocTests, NotWellFormedXml ) {
-    Dir::getInstance( )->chdir( Pathname{"tests/xmltest/not-wf/sa"} );
-    std::regex glob{".*\\.xml"};
-    auto ls = Dir::getInstance( )->read( ).entries( );
-    std::vector<Pathname> xmlNotWFEntries{filter( ls, glob )};
-    std::sort( xmlNotWFEntries.begin( ), xmlNotWFEntries.end( ) );
-    for ( auto &p : xmlNotWFEntries ) {
-        if ( p.basename( ) == Pathname{"050.xml"} )
-            continue;
-        if ( p.basename( ) == Pathname{"140.xml"} )
-            continue;
-        if ( p.basename( ) == Pathname{"141.xml"} )
-            continue;
-        XmlDoc xml;
-        std::ifstream f;
-        try {
-            f = std::ifstream{p.toString( ), std::ios::in};
-        } catch ( ... ) {
-            std::cerr << "ERROR: could not open '" << p << "'" << std::endl;
-            throw;
-        }
-        f >> xml;
-        EXPECT_TRUE( xml.errorHandler( ).hasErrors( ) );
-        if ( !xml.errorHandler( ).hasErrors( ) ) {
-            std::cerr << p << std::endl;
-        }
-    }
-}
-
-TEST_F( XmlDocTests, Ctor ) {
+TEST( XmlDocTests, Ctor ) {
     std::istringstream is{books_xml};
     XmlDoc xml{is};
     ASSERT_EQ( true, testBool_f<XmlDoc>( xml ) );
     EXPECT_FALSE( xml.errorHandler( ).hasErrors( ) );
 }
 
-TEST_F( XmlDocTests, CopyCtor ) {
+TEST( XmlDocTests, CopyCtor ) {
     // copy a null doc
     XmlDoc nullDoc;
     ASSERT_EQ( false, testBool_f<XmlDoc>( nullDoc ) );
@@ -279,7 +212,7 @@ TEST_F( XmlDocTests, CopyCtor ) {
     EXPECT_FALSE( cpBooksDoc.errorHandler( ).hasErrors( ) );
 }
 
-TEST_F( XmlDocTests, CopyAssignment ) {
+TEST( XmlDocTests, CopyAssignment ) {
     // null doc
     XmlDoc RHSNullDoc;
     ASSERT_EQ( false, testBool_f<XmlDoc>( RHSNullDoc ) );
@@ -316,7 +249,7 @@ TEST_F( XmlDocTests, CopyAssignment ) {
     EXPECT_FALSE( menuDoc.errorHandler( ).hasErrors( ) );
 }
 
-TEST_F( XmlDocTests, CopyMoveCtor ) {
+TEST( XmlDocTests, CopyMoveCtor ) {
     XmlDoc nullDoc;
     ASSERT_EQ( false, testBool_f<XmlDoc>( nullDoc ) );
 
@@ -332,7 +265,7 @@ TEST_F( XmlDocTests, CopyMoveCtor ) {
     EXPECT_FALSE( cpMvMenuDoc.errorHandler( ).hasErrors( ) );
 }
 
-TEST_F( XmlDocTests, CopyMoveAssignment ) {
+TEST( XmlDocTests, CopyMoveAssignment ) {
     // null doc
     XmlDoc RHSNullDoc;
     ASSERT_EQ( false, testBool_f<XmlDoc>( RHSNullDoc ) );
@@ -369,7 +302,7 @@ TEST_F( XmlDocTests, CopyMoveAssignment ) {
     EXPECT_FALSE( menuDoc.errorHandler( ).hasErrors( ) );
 }
 
-TEST_F( XmlDocTests, ToString ) {
+TEST( XmlDocTests, ToString ) {
     std::istringstream menuIs{menu_xml};
     XmlDoc menuDoc{menuIs};
     ASSERT_EQ( true, testBool_f<XmlDoc>( menuDoc ) );
@@ -383,14 +316,14 @@ TEST_F( XmlDocTests, ToString ) {
     EXPECT_STRNE( booksDoc.toString( ).c_str( ), menuDoc.toString( ).c_str( ) );
 }
 
-TEST_F( XmlDocTests, ElementSearch ) {
+TEST( XmlDocTests, ElementSearch ) {
     std::istringstream menuIs{menu_xml};
     XmlDoc menuDoc{menuIs};
     ASSERT_EQ( true, testBool_f<XmlDoc>( menuDoc ) );
     XmlElement root{menuDoc.getRootElement( )};
 }
 
-TEST_F( XmlDocTests, SetRootElement ) {
+TEST( XmlDocTests, SetRootElement ) {
     XmlDoc doc;
     XmlElement root{"root-element"};
     root.attributes( {{"checked", "yes"}, {"sentiment", "positive"}} );

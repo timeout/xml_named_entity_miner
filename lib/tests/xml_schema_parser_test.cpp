@@ -1,5 +1,4 @@
-#include "xml_schema_parser.hpp"
-#include "dir.hpp"
+#include "lib/xml_schema_parser.hpp"
 
 #include <fstream>
 

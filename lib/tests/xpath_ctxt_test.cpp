@@ -1,6 +1,5 @@
-#include "xpath_ctxt.hpp"
-#include "xml_doc.hpp"
-#include "pathname.hpp"
+#include "lib/xpath_ctxt.hpp"
+#include "lib/xml_doc.hpp"
 
 #include "gtest/gtest.h"
 #include <limits.h>

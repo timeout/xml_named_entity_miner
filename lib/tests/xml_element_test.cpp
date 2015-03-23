@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include <libxml/tree.h>
-#include "xml_element.hpp"
+#include "lib/xml_element.hpp"
 #include <iostream>
 #include <map>
 #include <vector>
