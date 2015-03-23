@@ -22,8 +22,8 @@ from:
         Südamerika-Reise gegründet haben. Viele Paktmitglieder, allesamt Männer, haben sich in der Partei über
         Jahrzehnte hochgedient – das unterscheidet sie von der ostdeutschen Senkrechtstarterin Merkel.
     </paragraph>
-    <paragraph>Regelrechte Feinde <entity type="Persons" synonym="Angela Merkel">Merkel</entity>s sind zwei Männer: ihre Vorgänger als Partei- beziehungsweise als
-        Fraktionschef, Wolfgang Schäuble und Friedrich Merz. Beide sind fachlich hoch geachtet, beide hat <entity type="Persons" synonym="Angela Merkel">Merkel</entity> zur
+    <paragraph>Regelrechte Feinde Merkels sind zwei Männer: ihre Vorgänger als Partei- beziehungsweise als
+        Fraktionschef, Wolfgang Schäuble und Friedrich Merz. Beide sind fachlich hoch geachtet, beide hat Merkel zur
         Seite geschoben. Schäuble gilt als verbittert. Merz, den sie rabiat aus dem Amt drängte, hat sich zurückgezogen
         und lauert im Hintergrund auf eine neue Chance.
     </paragraph>
