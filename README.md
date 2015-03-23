@@ -3,7 +3,7 @@ This is a university project.
 
 The application is for annotating named entities in semi-structured text (XML)
 
-[!XML Named Entity Miner](http://i.imgur.com/T5qtVCh.png)
+[XML Named Entity Miner screenshot](http://i.imgur.com/T5qtVCh.png)
 
 Example:
 from:
