@@ -4,7 +4,7 @@
 
 auto FreeXPathQuery::operator( )( xmlXPathObject *queryObject ) const -> void {
     xmlXPathFreeObject( queryObject );
-};
+}
 
 XPathQuery::XPathQuery( ) : query_{nullptr} {}
 XPathQuery::XPathQuery( const XPathCtxt &ctxt ) : query_{nullptr}, queryCtxt_{ctxt} {}

@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <cstring>
 
 #include "line_edit.hpp"
 #include <QFileDialog>
@@ -49,7 +50,7 @@ auto XmlSchemaDialog::parse( const QString &filename ) -> void {
     std::ifstream in{file};
     if ( in.fail( ) ) {
         QString msg{"Could not open file"};
-        emit errorRaised( makeErrorMsg( msg, std::strerror( errno ) ) );
+        emit errorRaised( makeErrorMsg( msg, strerror( errno ) ) );
         return;
     }
     emit progress( 1 );

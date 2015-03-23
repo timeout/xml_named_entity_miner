@@ -48,7 +48,7 @@ auto XsltDialog::parse( const QString &filename ) -> void {
     std::ifstream fin{f, std::ios::in};
     if ( fin.fail( ) ) {
         QString msg{"Could not open file"};
-        emit errorRaised( makeErrorMsg( msg, std::strerror( errno ) ) );
+        emit errorRaised( makeErrorMsg( msg, strerror( errno ) ) );
         return;
     }
     emit progress( 1 );
