@@ -64,7 +64,7 @@ auto XPathResultSet::operator[]( size_t idx ) -> XmlElement {
 XPathResultSet::iterator::iterator( xmlNodeSet *nodeSet )
     : set_{nodeSet ? nodeSet->nodeTab : nullptr}
     , idx_{0}
-    , size_{nodeSet ? nodeSet->nodeNr : 0} {}
+    , size_{nodeSet ? static_cast<size_t>( nodeSet->nodeNr ) : 0} {}
 
 auto XPathResultSet::iterator::operator*( ) -> XmlElement {
     return set_ ? XmlElement{*( set_ + idx_ )} : XmlElement{};
@@ -109,10 +109,7 @@ auto XPathResultSet::iterator::operator--( int ) -> iterator {
     return tmp;
 }
 
-auto XPathResultSet::iterator::operator[]( int index ) -> XmlElement {
-    if ( index < 0 ) {
-        idx_ = 0;
-    }
+auto XPathResultSet::iterator::operator[]( std::size_t index ) -> XmlElement {
     if ( index >= size_ ) {
         idx_ = 0;
         set_ = nullptr;

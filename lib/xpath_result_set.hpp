@@ -19,7 +19,7 @@ public:
     class iterator : public std::iterator<std::random_access_iterator_tag, XmlElement> {
         xmlNode **set_;
         std::size_t idx_;
-        int size_;
+        std::size_t size_;
 
     public:
         iterator( xmlNodeSet *nodeSet = nullptr );
@@ -28,7 +28,7 @@ public:
         auto operator++( int ) -> iterator;
         auto operator--( ) -> iterator &;
         auto operator--( int ) -> iterator;
-        auto operator[]( int index ) -> XmlElement;
+        auto operator[]( std::size_t index ) -> XmlElement;
         auto operator==( const iterator &other ) const -> bool;
         auto operator!=( const iterator &other ) const -> bool;
         auto operator<( const iterator &other ) const -> bool;
@@ -43,7 +43,7 @@ public:
 private:
     XPathQuery query_;
     xmlNodeSetPtr resultSet_;
-    size_t sz_;
-    size_t idx_;
+    std::size_t sz_;
+    std::size_t idx_;
 };
 
