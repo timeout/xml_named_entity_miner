@@ -51,6 +51,29 @@ auto Utils::collapseWhiteSpace( std::string::iterator start, std::string::iterat
     }
     return end;
 }
-// auto Utils::sentenceBoundary( const std::string &text, std::string::iterator start,
-//                               std::string::iterator end ) -> std::string::iterator {}
+auto Utils::sentenceBoundary( std::string::iterator start, std::string::iterator end )
+    -> std::string::iterator {
+    const char *endOfSentence = ".?!";
+    while ( start != end ) {
+        start = std::find_if( start, end, [=]( char c ) -> bool {
+            for ( int i = 0; i < 3; ++i ) {
+                if ( c == endOfSentence[i] ) {
+                    return true;
+                }
+            }
+            return false;
+        } );
+        if ( start != end ) {
+            // naiive sentence match: white space followed by a capital
+            // letter
+            auto nonwhite =
+                std::find_if( std::next( start ), end,
+                              [=]( char c ) -> bool { return !std::isspace( c ); } );
+            if ( nonwhite == end || std::isupper( *nonwhite ) ) {
+                return start;
+            }
+        }
+    }
+    return start;
+}
 
