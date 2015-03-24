@@ -7,6 +7,7 @@ set(test_sources
     gtest_main.cpp
     test_helper.hpp
     test_helper.cpp
+    utils_test.cpp
     xml_element_test.cpp
     xml_doc_test.cpp
     xpath_query_test.cpp
