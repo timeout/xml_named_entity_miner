@@ -14,7 +14,7 @@ public:
     TextDisplay( const XmlElement &element = XmlElement{}, QWidget *parent = nullptr );
     virtual ~TextDisplay( );
 
-    auto text() const -> const QString &;
+    auto text( ) const -> const QString &;
     auto scanKeyword( const QString &ontologyName, const QString &entity,
                       const QColor &color ) -> void;
     auto removeHighlightRule( const QString &entity ) -> void;
@@ -23,7 +23,6 @@ public:
     auto lock( ) -> void;
     auto isLocked( ) const -> bool;
     auto xmlElement( ) const -> XmlElement;
-// auto removeOntology
 
 signals:
     void entrySelected( const QString &entry );
@@ -33,6 +32,7 @@ protected:
     auto mouseReleaseEvent( QMouseEvent *event ) -> void override;
 
 private:
+    auto formatText( std::string &content ) -> void;
     auto addHighlightRule( const QString &entity, const QColor &color ) -> void;
     auto connections( ) -> void;
     auto cursorSelection( ) -> void;

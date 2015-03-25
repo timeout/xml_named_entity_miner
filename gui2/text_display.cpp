@@ -1,8 +1,11 @@
 #include "text_display.hpp"
+#include "utils.hpp"
 #include <QString>
 #include <QDebug>
 #include <vector>
 #include <algorithm>
+#include <iterator>
+#include <sstream>
 #include <QApplication>
 
 #include <iostream>
@@ -11,7 +14,9 @@ TextDisplay::TextDisplay( const XmlElement &element, QWidget *parent )
     : QPlainTextEdit{parent}, lock_{true} {
 
     xmlElement_.clone( element );
-    text_ = QString::fromStdString( xmlElement_.content( ) );
+    std::string content = xmlElement_.content( );
+    formatText( content );
+    // text_ = QString::fromStdString( xmlElement_.content( ) );
     setPlainText( text_ );
 
     setReadOnly( true ); // lock_
@@ -19,9 +24,29 @@ TextDisplay::TextDisplay( const XmlElement &element, QWidget *parent )
     connections( );
 }
 
-TextDisplay::~TextDisplay( ) {}
+TextDisplay::~TextDisplay( ) { setPlainText( text_ ); }
 
 auto TextDisplay::text( ) const -> const QString & { return text_; }
+
+auto TextDisplay::formatText( std::string &content ) -> void {
+    std::vector<std::string> paragraphs;
+    for ( auto start = std::begin( content ); start != std::end( content ); ) {
+        auto paragraphEnd = Utils::paragraphBoundary( start, std::end( content ) );
+        auto paragraph = content.substr( std::distance( std::begin( content ), start ),
+                                         std::distance( start, paragraphEnd ) );
+        Utils::ltrim( paragraph );
+        paragraphs.push_back( paragraph );
+        start = paragraphEnd;
+    }
+    std::ostringstream text;
+    for ( auto paragraph : paragraphs ) {
+        paragraph.erase(
+            Utils::collapseWhiteSpace( std::begin( paragraph ), std::end( paragraph ) ),
+            std::end( paragraph ) );
+        text << paragraph;
+    }
+    text_ = QString::fromStdString( text.str( ) );
+}
 
 auto TextDisplay::addHighlightRule( const QString &entity, const QColor &color ) -> void {
     highlighter_->addRule( entity, color );
