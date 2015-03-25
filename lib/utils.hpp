@@ -9,4 +9,6 @@ namespace Utils {
         -> std::string::iterator;
     auto sentenceBoundary( std::string::iterator start, std::string::iterator end )
         -> std::string::iterator;
+    auto paragraphBoundary( std::string::iterator start, std::string::iterator end )
+        -> std::string::iterator;
 }

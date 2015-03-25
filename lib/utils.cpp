@@ -36,6 +36,7 @@ auto Utils::collapseWhiteSpace( std::string::iterator start, std::string::iterat
     -> std::string::iterator {
     for ( ; start != end; ++start ) {
         if ( std::isspace( *start ) && std::isspace( *std::next( start ) ) ) {
+            *start = ' '; // constraint: space is a blank
             auto white = std::next( start );
             auto nonwhite = std::find_if(
                 white, end, [=]( char c ) -> bool { return !std::isspace( c ); } );
@@ -73,6 +74,30 @@ auto Utils::sentenceBoundary( std::string::iterator start, std::string::iterator
                 return start;
             }
         }
+    }
+    return start;
+}
+auto Utils::paragraphBoundary( std::string::iterator start, std::string::iterator end )
+    -> std::string::iterator {
+    // paragraph boundary is a carriage return, preceded by
+    // whitespace and a sentence ending punctuation mark
+    while ( start != end ) {
+        start = std::find( start, end, '\n' );
+        if ( start != end ) {
+            auto nonwhite = start;
+            while ( nonwhite != start && std::isspace( *nonwhite ) ) {
+                std::advance( nonwhite, -1 );
+            }
+            std::advance( nonwhite, -1 );
+            const char *endOfSentence = ".?!";
+            for ( int i = 0; i < 3; ++i ) {
+                if ( endOfSentence[i] == *nonwhite ) {
+                    return std::next( start );
+                }
+            }
+        }
+        if ( start != end )
+            std::advance( start, 1 );
     }
     return start;
 }
